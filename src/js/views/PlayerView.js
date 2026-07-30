@@ -255,6 +255,10 @@ class PlayerViewComponent {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.PlayerViewComponent = PlayerViewComponent;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = PlayerViewComponent;
 }

@@ -441,6 +441,10 @@ class MatchupViewComponent {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.MatchupViewComponent = MatchupViewComponent;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = MatchupViewComponent;
 }

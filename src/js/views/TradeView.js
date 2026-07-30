@@ -478,6 +478,10 @@ class TradeViewComponent {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.TradeViewComponent = TradeViewComponent;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = TradeViewComponent;
 }

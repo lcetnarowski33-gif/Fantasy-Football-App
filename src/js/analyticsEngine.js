@@ -198,6 +198,10 @@ class AnalyticsEngine {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.AnalyticsEngine = AnalyticsEngine;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = AnalyticsEngine;
 }

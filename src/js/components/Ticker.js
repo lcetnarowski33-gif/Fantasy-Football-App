@@ -37,6 +37,10 @@ class TickerComponent {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.TickerComponent = TickerComponent;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = TickerComponent;
 }

@@ -186,6 +186,10 @@ class ChartManager {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.ChartManager = ChartManager;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = ChartManager;
 }

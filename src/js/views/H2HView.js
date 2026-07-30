@@ -83,6 +83,10 @@ class H2HViewComponent {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.H2HViewComponent = H2HViewComponent;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = H2HViewComponent;
 }

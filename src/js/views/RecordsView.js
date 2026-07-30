@@ -40,6 +40,10 @@ class RecordsViewComponent {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.RecordsViewComponent = RecordsViewComponent;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = RecordsViewComponent;
 }

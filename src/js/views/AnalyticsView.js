@@ -276,6 +276,10 @@ class AnalyticsViewComponent {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.AnalyticsViewComponent = AnalyticsViewComponent;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = AnalyticsViewComponent;
 }

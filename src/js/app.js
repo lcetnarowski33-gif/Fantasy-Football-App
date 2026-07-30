@@ -4,7 +4,7 @@
  * and boots up the fantasy analytics platform.
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+function bootApp() {
   console.log('🏈 Initializing Fantasy League Analytics Platform...');
 
   // Mount Shell Containers
@@ -15,16 +15,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const espnModalMount = document.getElementById('espn-modal-mount');
 
   // Render Static Component Framework
-  if (searchModalMount) SearchModalComponent.render(searchModalMount);
-  if (espnModalMount) EspnSyncModalComponent.render(espnModalMount);
+  if (searchModalMount && typeof SearchModalComponent !== 'undefined') SearchModalComponent.render(searchModalMount);
+  if (espnModalMount && typeof EspnSyncModalComponent !== 'undefined') EspnSyncModalComponent.render(espnModalMount);
 
   // Main Render Function triggered on store state changes
   function renderApp(state) {
+    if (!state) state = store ? store.getState() : {};
+
     // 1. Render Header
-    if (headerMount) HeaderComponent.render(headerMount, state);
+    if (headerMount && typeof HeaderComponent !== 'undefined') HeaderComponent.render(headerMount, state);
 
     // 2. Render Ticker
-    if (tickerMount) TickerComponent.render(tickerMount, state);
+    if (tickerMount && typeof TickerComponent !== 'undefined') TickerComponent.render(tickerMount, state);
 
     // 3. Render Active Dynamic View Page
     if (mainViewContainer) {
@@ -32,59 +34,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
       switch (activeView) {
         case 'home':
-          HomeViewComponent.render(mainViewContainer, state);
+          if (typeof HomeViewComponent !== 'undefined') HomeViewComponent.render(mainViewContainer, state);
           break;
         case 'league':
-          LeagueViewComponent.render(mainViewContainer, state);
+          if (typeof LeagueViewComponent !== 'undefined') LeagueViewComponent.render(mainViewContainer, state);
           break;
         case 'team':
-          TeamViewComponent.render(mainViewContainer, state);
+          if (typeof TeamViewComponent !== 'undefined') TeamViewComponent.render(mainViewContainer, state);
           break;
         case 'player':
-          PlayerViewComponent.render(mainViewContainer, state);
+          if (typeof PlayerViewComponent !== 'undefined') PlayerViewComponent.render(mainViewContainer, state);
           break;
         case 'analytics':
-          AnalyticsViewComponent.render(mainViewContainer, state);
+          if (typeof AnalyticsViewComponent !== 'undefined') AnalyticsViewComponent.render(mainViewContainer, state);
           break;
         case 'h2h':
-          H2HViewComponent.render(mainViewContainer, state);
+          if (typeof H2HViewComponent !== 'undefined') H2HViewComponent.render(mainViewContainer, state);
           break;
         case 'records':
-          RecordsViewComponent.render(mainViewContainer, state);
+          if (typeof RecordsViewComponent !== 'undefined') RecordsViewComponent.render(mainViewContainer, state);
           break;
         case 'trade':
-          TradeViewComponent.render(mainViewContainer, state);
+          if (typeof TradeViewComponent !== 'undefined') TradeViewComponent.render(mainViewContainer, state);
           break;
         case 'waiver':
         case 'freeagency':
-          FreeAgencyViewComponent.render(mainViewContainer, state);
+          if (typeof FreeAgencyViewComponent !== 'undefined') FreeAgencyViewComponent.render(mainViewContainer, state);
           break;
         case 'draft':
-          DraftViewComponent.render(mainViewContainer, state);
+          if (typeof DraftViewComponent !== 'undefined') DraftViewComponent.render(mainViewContainer, state);
           break;
         case 'matchup':
-          MatchupViewComponent.render(mainViewContainer, state);
+          if (typeof MatchupViewComponent !== 'undefined') MatchupViewComponent.render(mainViewContainer, state);
           break;
         case 'efficiency':
-          EfficiencyViewComponent.render(mainViewContainer, state);
+          if (typeof EfficiencyViewComponent !== 'undefined') EfficiencyViewComponent.render(mainViewContainer, state);
           break;
         default:
-          HomeViewComponent.render(mainViewContainer, state);
+          if (typeof HomeViewComponent !== 'undefined') HomeViewComponent.render(mainViewContainer, state);
           break;
       }
     }
   }
 
   // Subscribe renderApp to Store state updates
-  store.subscribe(renderApp);
+  if (typeof store !== 'undefined') {
+    store.subscribe(renderApp);
+
+    // Initial Boot Render
+    renderApp(store.getState());
+  }
 
   // Parse Hash URL Routing (e.g. #/league or #/team or #/efficiency)
   function handleHashRoute() {
     const hash = window.location.hash.replace('#/', '');
     if (hash && ['home', 'efficiency', 'league', 'team', 'player', 'analytics', 'h2h', 'records', 'trade', 'waiver', 'freeagency', 'draft', 'matchup'].includes(hash)) {
-      store.setView(hash);
+      if (typeof store !== 'undefined') store.setView(hash);
     } else {
-      store.setView('home');
+      if (typeof store !== 'undefined') store.setView('home');
     }
   }
 
@@ -97,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/league/current');
       if (res.ok) {
         const payload = await res.json();
-        if (payload.success && payload.hasCachedData && payload.data) {
+        if (payload.success && payload.hasCachedData && payload.data && typeof store !== 'undefined') {
           console.log(`🌐 Automatically loaded global single-league dataset: "${payload.data.name}"`);
           store.applyEspnSync(payload.data, payload.config);
         }
@@ -115,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if ((data.type === 'ESPN_SYNC_SUCCESS' || data.type === 'ESPN_AUTO_SYNC_SUCCESS') && data.data) {
+        if ((data.type === 'ESPN_SYNC_SUCCESS' || data.type === 'ESPN_AUTO_SYNC_SUCCESS') && data.data && typeof store !== 'undefined') {
           console.log(`⚡ Received live server update for "${data.data.name}"`);
           store.applyEspnSync(data.data);
         }
@@ -123,8 +130,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   } catch (e) {}
 
-  // Initial Boot Render
-  renderApp(store.getState());
-
   console.log('✅ Fantasy League Analytics Platform ready!');
-});
+}
+
+// Safely execute bootApp regardless of DOM loading state
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootApp);
+} else {
+  bootApp();
+}

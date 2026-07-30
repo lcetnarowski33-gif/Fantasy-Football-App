@@ -31,7 +31,7 @@ class AppStore {
       viewHistory: [],
 
       // Active Dataset (Defaults to Mock Data)
-      data: INITIAL_MOCK_DATA
+      data: (typeof INITIAL_MOCK_DATA !== 'undefined' ? INITIAL_MOCK_DATA : (typeof window !== 'undefined' && window.INITIAL_MOCK_DATA ? window.INITIAL_MOCK_DATA : {}))
     };
 
     // Load saved data and ESPN credentials from localStorage if available
@@ -226,7 +226,11 @@ class AppStore {
 }
 
 // Global Store Singleton Instance
-const store = new AppStore();
+var store = new AppStore();
+
+if (typeof window !== 'undefined') {
+  window.store = store;
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = store;

@@ -6,7 +6,7 @@
  * transactions, and all-time records.
  */
 
-const INITIAL_MOCK_DATA = {
+var INITIAL_MOCK_DATA = {
   league: {
     id: "league-001",
     name: "The Gridiron Dynasty Championship",
@@ -922,6 +922,10 @@ const INITIAL_MOCK_DATA = {
     { id: "log-106", teamId: "team-10", week: 5, category: "WAIVER", title: "Waiver Priority Waste", outcome: "BUST", netPoints: -14.0, impact: "Lost Priority #1", description: "Used #1 Waiver Priority on RB who was dropped 2 weeks later after 3.2 avg PPG." }
   ]
 };
+
+if (typeof window !== 'undefined') {
+  window.INITIAL_MOCK_DATA = INITIAL_MOCK_DATA;
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = INITIAL_MOCK_DATA;

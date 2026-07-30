@@ -111,6 +111,10 @@ class SearchModalComponent {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.SearchModalComponent = SearchModalComponent;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = SearchModalComponent;
 }

@@ -199,6 +199,10 @@ class EspnSyncModalComponent {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.EspnSyncModalComponent = EspnSyncModalComponent;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = EspnSyncModalComponent;
 }

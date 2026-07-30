@@ -359,6 +359,10 @@ class DraftViewComponent {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.DraftViewComponent = DraftViewComponent;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = DraftViewComponent;
 }

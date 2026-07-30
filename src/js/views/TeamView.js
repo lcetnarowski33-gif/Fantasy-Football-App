@@ -194,6 +194,10 @@ class TeamViewComponent {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.TeamViewComponent = TeamViewComponent;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = TeamViewComponent;
 }

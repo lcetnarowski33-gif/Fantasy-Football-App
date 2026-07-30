@@ -320,6 +320,10 @@ class FreeAgencyViewComponent {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.FreeAgencyViewComponent = FreeAgencyViewComponent;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = FreeAgencyViewComponent;
 }

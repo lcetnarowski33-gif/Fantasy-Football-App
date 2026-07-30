@@ -440,6 +440,10 @@ class HomeViewComponent {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.HomeViewComponent = HomeViewComponent;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = HomeViewComponent;
 }

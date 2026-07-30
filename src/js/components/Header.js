@@ -94,6 +94,10 @@ class HeaderComponent {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.HeaderComponent = HeaderComponent;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = HeaderComponent;
 }

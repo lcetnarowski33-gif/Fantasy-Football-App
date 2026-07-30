@@ -218,6 +218,10 @@ class EfficiencyViewComponent {
   }
 }
 
+if (typeof window !== 'undefined') {
+  window.EfficiencyViewComponent = EfficiencyViewComponent;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = EfficiencyViewComponent;
 }
