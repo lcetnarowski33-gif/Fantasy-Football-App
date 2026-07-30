@@ -11,6 +11,7 @@ class ChartManager {
    * Helper to create a vertical gradient fill for line/area charts
    */
   static createGradient(ctx, colorHex, alphaTop = 0.4, alphaBottom = 0.0) {
+    if (!ctx || typeof ctx.createLinearGradient !== 'function') return colorHex;
     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
     gradient.addColorStop(0, colorHex);
     gradient.addColorStop(1, 'rgba(11, 14, 20, 0.0)');
@@ -21,6 +22,10 @@ class ChartManager {
    * Render Line Chart for Weekly Scoring Trends / Power Ranking Movement
    */
   static renderLineChart(canvasId, labels, datasets) {
+    if (typeof Chart === 'undefined') {
+      console.warn('Chart.js CDN is unavailable or blocked by browser tracking prevention.');
+      return;
+    }
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
 
@@ -51,6 +56,10 @@ class ChartManager {
    * Render Bar Chart for Scoring Distributions / Position Scores / Bench Efficiency
    */
   static renderBarChart(canvasId, labels, data, barColor = '#38bdf8') {
+    if (typeof Chart === 'undefined') {
+      console.warn('Chart.js CDN is unavailable or blocked by browser tracking prevention.');
+      return;
+    }
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
 
@@ -81,6 +90,10 @@ class ChartManager {
    * Render Radar Chart for Skillset & Team Profile Comparisons
    */
   static renderRadarChart(canvasId, labels, datasets) {
+    if (typeof Chart === 'undefined') {
+      console.warn('Chart.js CDN is unavailable or blocked by browser tracking prevention.');
+      return;
+    }
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
 
@@ -121,6 +134,10 @@ class ChartManager {
    * Render Scatter Plot for Luck Index vs Points For
    */
   static renderScatterPlot(canvasId, scatterData) {
+    if (typeof Chart === 'undefined') {
+      console.warn('Chart.js CDN is unavailable or blocked by browser tracking prevention.');
+      return;
+    }
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
 

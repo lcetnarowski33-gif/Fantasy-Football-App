@@ -9,6 +9,14 @@ class AppStore {
   constructor() {
     this.listeners = [];
 
+    // Safe global dataset fallback
+    let defaultData = {};
+    if (typeof INITIAL_MOCK_DATA !== 'undefined' && INITIAL_MOCK_DATA && INITIAL_MOCK_DATA.league) {
+      defaultData = INITIAL_MOCK_DATA;
+    } else if (typeof window !== 'undefined' && window.INITIAL_MOCK_DATA && window.INITIAL_MOCK_DATA.league) {
+      defaultData = window.INITIAL_MOCK_DATA;
+    }
+
     // Initial Default State
     this.state = {
       activeView: 'home',         // 'home' | 'league' | 'team' | 'player' | 'analytics' | 'h2h' | 'records' | 'trade' | 'draft' | 'matchup'
@@ -31,12 +39,27 @@ class AppStore {
       viewHistory: [],
 
       // Active Dataset (Defaults to Mock Data)
-      data: (typeof INITIAL_MOCK_DATA !== 'undefined' ? INITIAL_MOCK_DATA : (typeof window !== 'undefined' && window.INITIAL_MOCK_DATA ? window.INITIAL_MOCK_DATA : {}))
+      data: defaultData
     };
 
-    // Load saved data and ESPN credentials from localStorage if available
+    // Load saved data and ESPN credentials safely if browser tracking prevention permits
     this.loadSavedLeagueData();
     this.loadSavedEspnCredentials();
+  }
+
+  /**
+   * Safely obtain localStorage reference without triggering Tracking Prevention DOMExceptions
+   */
+  getLocalStorage() {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.getItem('__test__');
+        return window.localStorage;
+      }
+    } catch (e) {
+      console.warn('localStorage is blocked or restricted by browser tracking prevention.');
+    }
+    return null;
   }
 
   /**
@@ -55,7 +78,13 @@ class AppStore {
    */
   notify() {
     this.saveLeagueData();
-    this.listeners.forEach(listener => listener(this.state));
+    this.listeners.forEach(listener => {
+      try {
+        listener(this.state);
+      } catch (e) {
+        console.error('Error in store listener callback:', e);
+      }
+    });
   }
 
   /**
@@ -68,50 +97,49 @@ class AppStore {
   /**
    * Navigate to a specific view
    * @param {string} viewName 
-   * @param {Object} [params] 
    */
-  setView(viewName, params = {}) {
-    if (this.state.activeView && this.state.activeView !== viewName) {
-      if (!this.state.viewHistory) this.state.viewHistory = [];
-      this.state.viewHistory.push({
-        view: this.state.activeView,
-        teamId: this.state.selectedTeamId,
-        playerId: this.state.selectedPlayerId
-      });
+  setView(viewName) {
+    if (this.state.activeView !== viewName) {
+      this.state.viewHistory.push(this.state.activeView);
+      this.state.activeView = viewName;
+      this.notify();
     }
-
-    this.state.activeView = viewName;
-
-    if (params.teamId) this.state.selectedTeamId = params.teamId;
-    if (params.playerId) this.state.selectedPlayerId = params.playerId;
-    if (params.compareTeamIds) this.state.compareTeamIds = params.compareTeamIds;
-
-    window.location.hash = `#/${viewName}`;
-    this.notify();
   }
 
   /**
-   * Go back to previous visited page
+   * Set active team selection for detailed team view
+   * @param {string} teamId 
    */
-  goBack() {
-    if (this.state.viewHistory && this.state.viewHistory.length > 0) {
-      const prev = this.state.viewHistory.pop();
-      this.state.activeView = prev.view;
-      if (prev.teamId) this.state.selectedTeamId = prev.teamId;
-      if (prev.playerId) this.state.selectedPlayerId = prev.playerId;
-    } else {
-      this.state.activeView = 'home';
-    }
-    window.location.hash = `#/${this.state.activeView}`;
-    this.notify();
+  setSelectedTeam(teamId) {
+    this.state.selectedTeamId = teamId;
+    this.setView('team');
   }
 
   /**
-   * Update active filters
-   * @param {Object} newFilters 
+   * Set active player selection for detailed player modal/view
+   * @param {string} playerId 
    */
-  setFilters(newFilters) {
-    this.state.filters = { ...this.state.filters, ...newFilters };
+  setSelectedPlayer(playerId) {
+    this.state.selectedPlayerId = playerId;
+    this.setView('player');
+  }
+
+  /**
+   * Set teams for head-to-head comparison
+   * @param {string} team1Id 
+   * @param {string} team2Id 
+   */
+  setCompareTeams(team1Id, team2Id) {
+    this.state.compareTeamIds = [team1Id, team2Id];
+    this.setView('h2h');
+  }
+
+  /**
+   * Update active filters (position, season, week, scoring, etc.)
+   * @param {Object} filterUpdates 
+   */
+  updateFilters(filterUpdates) {
+    this.state.filters = { ...this.state.filters, ...filterUpdates };
     this.notify();
   }
 
@@ -125,49 +153,74 @@ class AppStore {
   }
 
   /**
-   * Synchronize live ESPN data into the state store
-   * @param {Object} normalizedEspnData 
+   * Apply live ESPN API synced dataset to store state
+   * @param {Object} espnNormalizedData 
    * @param {Object} credentials 
    */
-  applyEspnSync(normalizedEspnData, credentials = null) {
+  applyEspnSync(espnNormalizedData, credentials = null) {
+    if (!espnNormalizedData || !espnNormalizedData.teams) return;
+
+    this.state.data = espnNormalizedData;
     this.state.isEspnSynced = true;
-    this.state.espnCredentials = credentials;
-
-    // Merge normalized ESPN data with baseline metrics
-    this.state.data.league.name = normalizedEspnData.name;
-    this.state.data.league.season = normalizedEspnData.season;
-    this.state.data.league.currentWeek = normalizedEspnData.currentWeek;
-    this.state.data.league.totalTeams = normalizedEspnData.totalTeams;
-
-    if (normalizedEspnData.teams && normalizedEspnData.teams.length > 0) {
-      this.state.data.teams = normalizedEspnData.teams;
-    }
-
-    if (normalizedEspnData.players && normalizedEspnData.players.length > 0) {
-      this.state.data.players = normalizedEspnData.players;
-    }
 
     if (credentials) {
-      try {
-        localStorage.setItem('espn_sync_creds', JSON.stringify(credentials));
-      } catch (e) {
-        console.warn('Unable to access localStorage for ESPN credentials.');
-      }
+      this.state.espnCredentials = credentials;
+      this.saveEspnCredentials(credentials);
     }
 
+    if (espnNormalizedData.teams.length > 0) {
+      this.state.selectedTeamId = espnNormalizedData.teams[0].id;
+    }
+
+    console.log(`✅ Applied live ESPN API data for "${espnNormalizedData.name}"`);
     this.notify();
   }
 
   /**
-   * Save complete active dataset snapshot into browser localStorage
+   * Disconnect live ESPN sync and restore baseline dataset
+   */
+  resetToMockData() {
+    this.state.data = (typeof INITIAL_MOCK_DATA !== 'undefined' ? INITIAL_MOCK_DATA : (typeof window !== 'undefined' && window.INITIAL_MOCK_DATA ? window.INITIAL_MOCK_DATA : {}));
+    this.state.isEspnSynced = false;
+    this.state.espnCredentials = null;
+
+    const storage = this.getLocalStorage();
+    if (storage) {
+      try {
+        storage.removeItem('espn_sync_creds');
+        storage.removeItem('fantasy_league_data_2025');
+      } catch (e) {}
+    }
+
+    console.log('🔄 Reset store state to default baseline dataset.');
+    this.notify();
+  }
+
+  /**
+   * Persist ESPN sync credentials to browser localStorage
+   */
+  saveEspnCredentials(credentials) {
+    const storage = this.getLocalStorage();
+    if (storage) {
+      try {
+        storage.setItem('espn_sync_creds', JSON.stringify(credentials));
+      } catch (e) {
+        console.warn('Unable to write ESPN credentials to localStorage.');
+      }
+    }
+  }
+
+  /**
+   * Persist active league dataset to browser localStorage
    */
   saveLeagueData() {
-    try {
-      if (typeof localStorage !== 'undefined' && this.state.data) {
-        localStorage.setItem('fantasy_league_data_2025', JSON.stringify(this.state.data));
+    const storage = this.getLocalStorage();
+    if (storage && this.state.data && this.state.data.league) {
+      try {
+        storage.setItem('fantasy_league_data_2025', JSON.stringify(this.state.data));
+      } catch (e) {
+        console.warn('Unable to write to localStorage for league data persistence.');
       }
-    } catch (e) {
-      console.warn('Unable to write to localStorage for league data persistence.');
     }
   }
 
@@ -175,15 +228,15 @@ class AppStore {
    * Load saved league dataset snapshot from browser localStorage on app startup
    */
   loadSavedLeagueData() {
+    const storage = this.getLocalStorage();
+    if (!storage) return;
     try {
-      if (typeof localStorage !== 'undefined') {
-        const saved = localStorage.getItem('fantasy_league_data_2025');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed && parsed.teams) {
-            this.state.data = parsed;
-            console.log('📦 Successfully restored saved league data from localStorage!');
-          }
+      const saved = storage.getItem('fantasy_league_data_2025');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.teams && parsed.league) {
+          this.state.data = parsed;
+          console.log('📦 Successfully restored saved league data from localStorage!');
         }
       }
     } catch (e) {
@@ -192,32 +245,15 @@ class AppStore {
   }
 
   /**
-   * Export complete league data snapshot as downloadable JSON file
-   */
-  exportLeagueDataBackup() {
-    try {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.state.data, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `fantasy_league_${this.state.data.league.season}_backup.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    } catch (e) {
-      console.error('Error exporting backup JSON:', e);
-    }
-  }
-
-  /**
    * Load saved ESPN League credentials from browser localStorage
    */
   loadSavedEspnCredentials() {
+    const storage = this.getLocalStorage();
+    if (!storage) return;
     try {
-      if (typeof localStorage !== 'undefined') {
-        const saved = localStorage.getItem('espn_sync_creds');
-        if (saved) {
-          this.state.espnCredentials = JSON.parse(saved);
-        }
+      const saved = storage.getItem('espn_sync_creds');
+      if (saved) {
+        this.state.espnCredentials = JSON.parse(saved);
       }
     } catch (e) {
       console.warn('Unable to access localStorage for ESPN credentials.');
