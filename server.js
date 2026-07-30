@@ -258,10 +258,11 @@ function startServer(portToTry) {
   });
 }
 
-// Auto-refresh ESPN data every 10 minutes in background
-setInterval(autoRefreshEspnData, 10 * 60 * 1000);
-
-startServer(PORT);
+// Auto-refresh ESPN data every 10 minutes in background when running standalone
+if (process.env.VERCEL !== '1' && require.main === module) {
+  startServer(PORT);
+  setInterval(autoRefreshEspnData, 10 * 60 * 1000);
+}
 
 module.exports = app;
 
