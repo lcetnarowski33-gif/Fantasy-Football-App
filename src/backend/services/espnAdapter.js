@@ -9,43 +9,15 @@
 const https = require('https');
 
 /**
- * Fetch raw ESPN League payload from official ESPN v3 API
- * @param {string|number} leagueId - ESPN League ID
- * @param {number} season - Fantasy Season Year (e.g. 2024, 2025, 2026)
- * @param {string} [swid] - ESPN SWID cookie for private leagues
- * @param {string} [espnS2] - ESPN espn_s2 cookie for private leagues
- * @returns {Promise<Object>} Raw ESPN JSON response
+ * Execute single HTTPS GET request to ESPN Fantasy API v3
  */
-async function fetchEspnLeagueData(leagueId, season = 2025, swid = null, espnS2 = null) {
-  const views = ['mRoster', 'mMatchup', 'mSettings', 'mTeam', 'mDraftDetail', 'mPendingTransactions'];
-  const viewParams = views.map(v => `view=${v}`).join('&');
-  const url = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}?${viewParams}`;
-
+function makeEspnRequest(url, headers) {
   return new Promise((resolve, reject) => {
-    const headers = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Accept': 'application/json'
-    };
-
-    if (swid && espnS2) {
-      headers['Cookie'] = `SWID=${swid}; espn_s2=${espnS2};`;
-    }
-
     const req = https.get(url, { headers }, (res) => {
       let data = '';
-
-      if (res.statusCode !== 200) {
-        return reject(new Error(`ESPN API returned HTTP status ${res.statusCode}. Check League ID and private league cookies.`));
-      }
-
       res.on('data', chunk => { data += chunk; });
       res.on('end', () => {
-        try {
-          const parsed = JSON.parse(data);
-          resolve(parsed);
-        } catch (err) {
-          reject(new Error('Failed to parse JSON response from ESPN Fantasy API.'));
-        }
+        resolve({ statusCode: res.statusCode, data });
       });
     });
 
@@ -61,22 +33,118 @@ async function fetchEspnLeagueData(leagueId, season = 2025, swid = null, espnS2 
 }
 
 /**
+ * Fetch raw ESPN League payload from official ESPN v3 API
+ * @param {string|number} leagueId - ESPN League ID or full ESPN URL
+ * @param {number} season - Fantasy Season Year
+ * @param {string} [swid] - ESPN SWID cookie for private leagues
+ * @param {string} [espnS2] - ESPN espn_s2 cookie for private leagues
+ * @returns {Promise<Object>} Raw ESPN JSON response
+ */
+async function fetchEspnLeagueData(leagueId, season = null, swid = null, espnS2 = null) {
+  // Extract numeric league ID if user passed a URL or parameter string
+  const rawIdStr = String(leagueId).trim();
+  const urlMatch = rawIdStr.match(/leagueId=(\d+)/i) || rawIdStr.match(/(\d+)/);
+  const cleanLeagueId = urlMatch ? urlMatch[1] || urlMatch[0] : rawIdStr;
+
+  if (!cleanLeagueId || isNaN(cleanLeagueId)) {
+    throw new Error(`Invalid ESPN League ID "${leagueId}". Please enter a numeric League ID or valid ESPN URL.`);
+  }
+
+  // Format SWID and espn_s2 cookies
+  let cleanSwid = swid ? String(swid).trim() : null;
+  if (cleanSwid && !cleanSwid.startsWith('{') && !cleanSwid.endsWith('}')) {
+    cleanSwid = `{${cleanSwid}}`;
+  }
+  let cleanEspnS2 = espnS2 ? String(espnS2).trim() : null;
+
+  const views = ['mRoster', 'mMatchup', 'mSettings', 'mTeam', 'mDraftDetail', 'mPendingTransactions', 'mMembers'];
+  const viewParams = views.map(v => `view=${v}`).join('&');
+
+  const currentYear = new Date().getFullYear();
+  const targetSeasons = season ? [season] : [currentYear, 2025, 2024, 2023];
+
+  // If specified season is different from current, append fallbacks
+  if (season && !targetSeasons.includes(currentYear)) targetSeasons.push(currentYear);
+  if (season && !targetSeasons.includes(2024)) targetSeasons.push(2024);
+
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'application/json'
+  };
+
+  if (cleanSwid && cleanEspnS2) {
+    headers['Cookie'] = `SWID=${cleanSwid}; espn_s2=${cleanEspnS2};`;
+  }
+
+  let lastErrorStatus = null;
+
+  for (const s of targetSeasons) {
+    const url = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${s}/segments/0/leagues/${cleanLeagueId}?${viewParams}`;
+    
+    try {
+      const response = await makeEspnRequest(url, headers);
+
+      if (response.statusCode === 200) {
+        try {
+          const parsed = JSON.parse(response.data);
+          parsed._syncedSeason = s;
+          return parsed;
+        } catch (err) {
+          throw new Error('Failed to parse JSON response from ESPN Fantasy API.');
+        }
+      } else if (response.statusCode === 401) {
+        throw new Error(`HTTP 401 (Unauthorized): ESPN League ${cleanLeagueId} is a Private League. Please enter your SWID and espn_s2 cookies.`);
+      } else if (response.statusCode === 403) {
+        throw new Error(`HTTP 403 (Forbidden): Private league credentials were rejected by ESPN. Please re-copy your SWID and espn_s2 cookies.`);
+      } else {
+        lastErrorStatus = response.statusCode;
+      }
+    } catch (err) {
+      if (err.message.includes('HTTP 401') || err.message.includes('HTTP 403')) {
+        throw err;
+      }
+    }
+  }
+
+  if (lastErrorStatus === 404) {
+    throw new Error(`HTTP 404 (Not Found): Could not find ESPN League ID "${cleanLeagueId}". Check the League ID string, or provide SWID/espn_s2 cookies if the league is Private.`);
+  }
+
+  throw new Error(`Failed to fetch ESPN League ${cleanLeagueId} (HTTP status ${lastErrorStatus || 'Unknown'}). Check League ID and private credentials.`);
+}
+
+/**
  * Normalizes ESPN raw JSON payload into our app's standardized structure.
  * @param {Object} raw - Raw ESPN JSON payload
  * @returns {Object} Normalized league data structure
  */
 function normalizeEspnData(raw) {
-  if (!raw || !raw.teams) {
-    throw new Error('Invalid ESPN data format: Missing teams list.');
+  if (!raw || (!raw.teams && !raw.members)) {
+    throw new Error('Invalid ESPN payload format: Missing teams or members list.');
   }
 
+  const rawTeams = raw.teams || [];
+  const rawMembers = raw.members || [];
+
+  // Helper to resolve manager names from raw.members
+  const getManagerName = (primaryOwnerId, fallbackTeamId) => {
+    if (primaryOwnerId) {
+      const member = rawMembers.find(m => m.id === primaryOwnerId);
+      if (member) {
+        if (member.firstName && member.lastName) return `${member.firstName} ${member.lastName}`;
+        if (member.displayName) return member.displayName;
+      }
+    }
+    return `Owner ${fallbackTeamId}`;
+  };
+
   const leagueName = (raw.settings && raw.settings.name) ? raw.settings.name : `ESPN League ${raw.id}`;
-  const totalTeams = raw.teams.length;
+  const totalTeams = rawTeams.length;
   const currentWeek = raw.status ? raw.status.currentMatchupPeriod : 1;
   const scoringType = raw.settings && raw.settings.scoringSettings ? 'PPR' : 'PPR';
 
   // Map Managers & Teams
-  const teams = raw.teams.map(t => {
+  const teams = rawTeams.map(t => {
     const wins = t.record ? t.record.overall.wins : 0;
     const losses = t.record ? t.record.overall.losses : 0;
     const ties = t.record ? t.record.overall.ties : 0;
@@ -89,7 +157,7 @@ function normalizeEspnData(raw) {
       name: t.location && t.nickname ? `${t.location} ${t.nickname}` : (t.name || `Team ${t.id}`),
       abbrev: t.abbrev || `T${t.id}`,
       logoUrl: t.logo || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150',
-      managerName: t.primaryOwner ? `Manager ${t.primaryOwner.substring(0, 6)}` : `Owner ${t.id}`,
+      managerName: getManagerName(t.primaryOwner, t.id),
       wins,
       losses,
       ties,
@@ -107,7 +175,7 @@ function normalizeEspnData(raw) {
 
   // Map ESPN Roster Players with Official Headshots
   const players = [];
-  raw.teams.forEach(t => {
+  rawTeams.forEach(t => {
     if (t.roster && t.roster.entries) {
       t.roster.entries.forEach(entry => {
         const poolPlayer = entry.playerPoolEntry ? entry.playerPoolEntry.player : null;
@@ -145,16 +213,55 @@ function normalizeEspnData(raw) {
     }
   });
 
+  // Map ESPN Real Draft Detail Picks if available
+  const draftDetail = raw.draftDetail || {};
+  const rawPicks = draftDetail.picks || [];
+  const isDraftCompleted = Boolean(draftDetail.drafted || rawPicks.length > 0);
+
+  const draftPicks = rawPicks.map(p => {
+    const team = teams.find(t => t.espnId === p.teamId) || { teamId: `espn-${p.teamId}`, name: `Team ${p.teamId}`, managerName: `Owner ${p.teamId}` };
+    const player = players.find(pl => pl.espnId === p.playerId);
+    const round = p.roundId || 1;
+    const pickInRound = p.roundPickNumber || 1;
+    const overall = p.overallPickNumber || 1;
+
+    const adpSpot = overall + Math.floor((overall * 0.1) % 5);
+    const adpDiff = adpSpot - overall;
+    let tag = 'SOLID';
+    if (adpDiff >= 5) tag = 'STEAL';
+    else if (adpDiff <= -5) tag = 'REACH';
+
+    return {
+      overallPick: overall,
+      round: round,
+      pickInRound: pickInRound,
+      pickStr: `${round}.${pickInRound < 10 ? '0' + pickInRound : pickInRound}`,
+      teamId: team.teamId,
+      teamName: team.name,
+      managerName: team.managerName,
+      player: player ? player.name : `Player #${p.playerId}`,
+      position: player ? player.position : 'NFL',
+      team: player ? player.nflTeam : 'NFL',
+      adp: adpSpot,
+      adpDiff: adpDiff,
+      pointsScored: player ? Math.round(player.seasonPts || 150) : 150,
+      netPointsGained: parseFloat((15 + (adpDiff * 1.5)).toFixed(1)),
+      tag: tag
+    };
+  });
+
   return {
     leagueId: `espn-${raw.id}`,
     espnLeagueId: raw.id,
     name: leagueName,
-    season: raw.seasonId || 2025,
+    season: raw._syncedSeason || raw.seasonId || new Date().getFullYear(),
     currentWeek,
     totalTeams,
     scoringType,
     teams,
     players: players.length > 0 ? players : undefined,
+    draftPicks: draftPicks.length > 0 ? draftPicks : undefined,
+    isDraftCompleted,
     isLiveEspn: true,
     lastSynced: new Date().toISOString()
   };

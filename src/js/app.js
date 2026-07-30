@@ -55,6 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
         case 'trade':
           TradeViewComponent.render(mainViewContainer, state);
           break;
+        case 'waiver':
+        case 'freeagency':
+          FreeAgencyViewComponent.render(mainViewContainer, state);
+          break;
         case 'draft':
           DraftViewComponent.render(mainViewContainer, state);
           break;
@@ -77,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Parse Hash URL Routing (e.g. #/league or #/team or #/efficiency)
   function handleHashRoute() {
     const hash = window.location.hash.replace('#/', '');
-    if (hash && ['home', 'efficiency', 'league', 'team', 'player', 'analytics', 'h2h', 'records', 'trade', 'draft', 'matchup'].includes(hash)) {
+    if (hash && ['home', 'efficiency', 'league', 'team', 'player', 'analytics', 'h2h', 'records', 'trade', 'waiver', 'freeagency', 'draft', 'matchup'].includes(hash)) {
       store.setView(hash);
     } else {
       store.setView('home');
@@ -86,6 +90,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.addEventListener('hashchange', handleHashRoute);
   handleHashRoute();
+
+  // Fetch Global Persistent Server League Data on Startup
+  async function initGlobalLeagueData() {
+    try {
+      const res = await fetch('/api/league/current');
+      if (res.ok) {
+        const payload = await res.json();
+        if (payload.success && payload.hasCachedData && payload.data) {
+          console.log(`🌐 Automatically loaded global single-league dataset: "${payload.data.name}"`);
+          store.applyEspnSync(payload.data, payload.config);
+        }
+      }
+    } catch (err) {
+      console.warn('Initial server league fetch skipped or offline.');
+    }
+  }
+
+  initGlobalLeagueData();
+
+  // Listen to Server-Sent Events (SSE) Stream for Live Multi-User Sync
+  try {
+    const eventSource = new EventSource('/api/sync/stream');
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if ((data.type === 'ESPN_SYNC_SUCCESS' || data.type === 'ESPN_AUTO_SYNC_SUCCESS') && data.data) {
+          console.log(`⚡ Received live server update for "${data.data.name}"`);
+          store.applyEspnSync(data.data);
+        }
+      } catch (e) {}
+    };
+  } catch (e) {}
 
   // Initial Boot Render
   renderApp(store.getState());

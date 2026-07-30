@@ -17,6 +17,7 @@ class HomeViewComponent {
     const league = state.data.league;
     const teams = state.data.teams || [];
     const matchups = state.data.weeklyMatchups || [];
+    const allLeagueMatchups = this.getAllLeagueMatchups(teams, matchups);
     const transactions = state.data.transactions || [];
     const decisionLogs = state.data.managerDecisionLogs || [];
 
@@ -75,157 +76,115 @@ class HomeViewComponent {
         </div>
 
         <!-- ========================================================================= -->
-        <!-- FEATURED MANAGER DECISION COMMAND CENTER -->
+        <!-- FEATURED LEAGUE POWER RANKINGS (PRIMARY DASHBOARD OPENING SECTION) -->
         <!-- ========================================================================= -->
-        <div class="decision-suite-container">
+        <div class="decision-suite-container" style="margin-bottom: 2rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
             <div>
               <h2 style="margin:0; font-size:1.5rem; display:flex; align-items:center; gap:0.5rem;">
-                <i class="fa-solid fa-brain text-green"></i> Manager Decision Command Center & IQ Scorecard
+                <i class="fa-solid fa-ranking-star text-gold"></i> Official League Power Rankings
               </h2>
               <div class="text-secondary" style="font-size:0.85rem; margin-top:0.2rem;">
-                Comprehensive rating of every manager decision: Start/Sit Lineup IQ, FAAB ROI, Trade Net Value, Draft VORP & FLEX Efficiency.
+                Weekly power ratings calculated via ELO rating model, scoring output, matchup strength, and overall roster performance.
               </div>
             </div>
             <span class="badge badge-gold" style="font-size:0.8rem; padding:0.4rem 0.8rem;">
-              <i class="fa-solid fa-calculator"></i> 5 Decision Pillars Active
+              <i class="fa-solid fa-bolt"></i> Week ${league.currentWeek} ELO Ratings Active
             </span>
           </div>
 
-          <!-- Featured Decision Leaders Bar -->
-          <div class="decision-leader-grid">
+          <!-- Featured Power Leader Highlights -->
+          <div class="decision-leader-grid" style="margin-bottom: 1.25rem;">
             <div class="decision-leader-card">
-              <div class="decision-leader-icon" style="background:rgba(0,230,118,0.15); color:var(--accent-sleeper);">
-                <i class="fa-solid fa-award"></i>
+              <div class="decision-leader-icon" style="background:rgba(245,158,11,0.15); color:var(--accent-gold);">
+                <i class="fa-solid fa-crown"></i>
               </div>
               <div>
-                <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">Highest Decision IQ</div>
-                <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${decisionLeaders.topComposite?.managerName || 'N/A'}</div>
-                <div style="font-size:0.75rem;" class="text-green font-mono">${decisionLeaders.topComposite?.decisionStats?.compositeIQ} Composite IQ</div>
+                <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">#1 Power Ranker</div>
+                <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${powerRankings[0]?.name || 'N/A'}</div>
+                <div style="font-size:0.75rem;" class="text-gold font-mono">${powerRankings[0]?.eloRating} ELO Rating (${powerRankings[0]?.wins}-${powerRankings[0]?.losses})</div>
+              </div>
+            </div>
+
+            <div class="decision-leader-card">
+              <div class="decision-leader-icon" style="background:rgba(0,230,118,0.15); color:var(--accent-sleeper);">
+                <i class="fa-solid fa-fire"></i>
+              </div>
+              <div>
+                <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">Highest Scorer</div>
+                <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${[...teams].sort((a,b)=>b.pointsFor - a.pointsFor)[0]?.name || 'N/A'}</div>
+                <div style="font-size:0.75rem;" class="text-green font-mono">${[...teams].sort((a,b)=>b.pointsFor - a.pointsFor)[0]?.pointsFor} Total PF</div>
               </div>
             </div>
 
             <div class="decision-leader-card">
               <div class="decision-leader-icon" style="background:rgba(56,189,248,0.15); color:var(--accent-blue);">
-                <i class="fa-solid fa-chess-king"></i>
+                <i class="fa-solid fa-chart-line"></i>
               </div>
               <div>
-                <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">Lineup Mastermind</div>
-                <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${decisionLeaders.topLineupMaster?.managerName || 'N/A'}</div>
-                <div style="font-size:0.75rem;" class="text-blue font-mono">${decisionLeaders.topLineupMaster?.decisionStats?.startIQ}% Start IQ</div>
+                <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">Top Power Manager</div>
+                <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${powerRankings[0]?.managerName || 'N/A'}</div>
+                <div style="font-size:0.75rem;" class="text-blue font-mono">Baseline ELO ${powerRankings[0]?.eloRating}</div>
               </div>
             </div>
 
             <div class="decision-leader-card">
-              <div class="decision-leader-icon" style="background:rgba(245,158,11,0.15); color:var(--accent-gold);">
-                <i class="fa-solid fa-eagle"></i>
+              <div class="decision-leader-icon" style="background:rgba(168,85,247,0.15); color:#a855f7;">
+                <i class="fa-solid fa-shield-halved"></i>
               </div>
               <div>
-                <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">Waiver Hawk</div>
-                <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${decisionLeaders.topWaiverHawk?.managerName || 'N/A'}</div>
-                <div style="font-size:0.75rem;" class="text-gold font-mono">${decisionLeaders.topWaiverHawk?.decisionStats?.faabRoi} Pts/$ FAAB</div>
-              </div>
-            </div>
-
-            <div class="decision-leader-card">
-              <div class="decision-leader-icon" style="background:rgba(239,68,68,0.15); color:#ef4444;">
-                <i class="fa-solid fa-skull"></i>
-              </div>
-              <div>
-                <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">Most Points Sacrificed</div>
-                <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${decisionLeaders.mostPenalized?.managerName || 'N/A'}</div>
-                <div style="font-size:0.75rem;" class="text-red font-mono">-${decisionLeaders.mostPenalized?.decisionStats?.pointsSacrificed} Pts Bench</div>
+                <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">League Format</div>
+                <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${teams.length} Active Rosters</div>
+                <div style="font-size:0.75rem;" class="text-purple font-mono">${league.scoringType} Scoring</div>
               </div>
             </div>
           </div>
 
-          <!-- Decision Category Filter Tabs -->
-          <div class="decision-pillar-tabs">
-            <button class="decision-tab-btn ${this.activeTab === 'ALL' ? 'active' : ''}" onclick="HomeViewComponent.setTab('ALL')">
-              <i class="fa-solid fa-bars-staggered"></i> Overall Composite IQ
-            </button>
-            <button class="decision-tab-btn ${this.activeTab === 'START_SIT' ? 'active' : ''}" onclick="HomeViewComponent.setTab('START_SIT')">
-              <i class="fa-solid fa-user-check"></i> Start/Sit Lineup IQ
-            </button>
-            <button class="decision-tab-btn ${this.activeTab === 'WAIVER' ? 'active' : ''}" onclick="HomeViewComponent.setTab('WAIVER')">
-              <i class="fa-solid fa-hand-holding-dollar"></i> Waiver & FAAB ROI
-            </button>
-            <button class="decision-tab-btn ${this.activeTab === 'TRADE' ? 'active' : ''}" onclick="HomeViewComponent.setTab('TRADE')">
-              <i class="fa-solid fa-arrow-right-arrow-left"></i> Trade Net Impact
-            </button>
-            <button class="decision-tab-btn ${this.activeTab === 'DRAFT' ? 'active' : ''}" onclick="HomeViewComponent.setTab('DRAFT')">
-              <i class="fa-solid fa-list-check"></i> Draft VORP & Hit Rate
-            </button>
-            <button class="decision-tab-btn ${this.activeTab === 'FLEX' ? 'active' : ''}" onclick="HomeViewComponent.setTab('FLEX')">
-              <i class="fa-solid fa-sliders"></i> FLEX Efficiency
-            </button>
-          </div>
-
-          <!-- Leaderboard Table -->
-          <div class="analytics-table-wrapper" style="margin-bottom:1.5rem;">
+          <!-- Complete Power Rankings Table -->
+          <div class="analytics-table-wrapper">
             <table class="analytics-table">
               <thead>
                 <tr>
                   <th>Rank</th>
-                  <th>Manager & Team</th>
-                  <th>Persona</th>
-                  <th>Composite IQ</th>
-                  <th>Start IQ</th>
-                  <th>Points Sacrificed</th>
-                  <th>FAAB ROI</th>
-                  <th>FA Pickups (RB / WR)</th>
-                  <th>Trade Net Pts</th>
-                  <th>Draft VORP</th>
-                  <th>Decision Audit</th>
+                  <th>Team & Manager</th>
+                  <th>Record</th>
+                  <th>Points For</th>
+                  <th>Points Against</th>
+                  <th>Power Rating (ELO)</th>
+                  <th>Power Tier Status</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
-                ${sortedDecisionTeams.map((t, idx) => {
-                  const ds = t.decisionStats || {};
-                  const pa = ds.positionalAcquisitions || {};
+                ${powerRankings.map((t, idx) => {
+                  let tierBadge = '<span class="badge badge-gold"><i class="fa-solid fa-crown"></i> Heavyweight #1</span>';
+                  if (idx === 1 || idx === 2) tierBadge = '<span class="badge badge-green"><i class="fa-solid fa-shield"></i> Elite Contender</span>';
+                  else if (idx >= 3 && idx <= 5) tierBadge = '<span class="badge badge-blue"><i class="fa-solid fa-check"></i> Playoff Lock</span>';
+                  else if (idx >= 6 && idx <= 7) tierBadge = '<span class="badge badge-gold"><i class="fa-solid fa-compass"></i> In The Hunt</span>';
+                  else if (idx > 7) tierBadge = '<span class="badge badge-red"><i class="fa-solid fa-arrow-down"></i> Rebuilding</span>';
+
                   return `
                     <tr>
-                      <td style="font-weight:800; color:${idx < 3 ? 'var(--accent-gold)' : 'var(--text-secondary)'};">#${idx + 1}</td>
+                      <td style="font-weight:800; font-size:1.1rem; color:${idx === 0 ? 'var(--accent-gold)' : (idx < 3 ? 'var(--accent-sleeper)' : 'var(--text-secondary)')};">
+                        #${idx + 1}
+                      </td>
                       <td>
                         <div style="display:flex; align-items:center; gap:0.6rem;">
-                          <img src="${t.logoUrl}" style="width:28px; height:28px; border-radius:4px; object-fit:cover;">
+                          <img src="${t.logoUrl}" style="width:32px; height:32px; border-radius:6px; object-fit:cover;">
                           <div>
-                            <strong style="color:var(--text-primary); cursor:pointer;" onclick="store.setView('team', {teamId: '${t.teamId}'});">${t.managerName}</strong>
-                            <div style="font-size:0.75rem; color:var(--text-secondary);">${t.name}</div>
+                            <strong style="color:var(--text-primary); cursor:pointer;" onclick="store.setView('team', {teamId: '${t.teamId}'});">${t.name}</strong>
+                            <div style="font-size:0.75rem; color:var(--text-secondary);">${t.managerName} (${t.abbrev})</div>
                           </div>
                         </div>
                       </td>
-                      <td><span class="badge badge-gold" style="font-size:0.75rem;">${ds.persona || 'Manager'}</span></td>
+                      <td class="font-mono" style="font-weight:700;">${t.wins}-${t.losses}</td>
+                      <td class="font-mono text-green" style="font-weight:700;">${t.pointsFor}</td>
+                      <td class="font-mono text-muted">${t.pointsAgainst}</td>
+                      <td class="font-mono text-gold" style="font-weight:800; font-size:1.05rem;">${t.eloRating}</td>
+                      <td>${tierBadge}</td>
                       <td>
-                        <span class="composite-iq-badge">
-                          <i class="fa-solid fa-microchip"></i> ${ds.compositeIQ || 80.0}
-                        </span>
-                      </td>
-                      <td class="font-mono ${ds.startIQ > 88 ? 'text-green' : 'text-primary'}" style="font-weight:700;">${ds.startIQ}%</td>
-                      <td>
-                        <div style="width:90px;">
-                          <div style="display:flex; justify-content:space-between; font-size:0.75rem;" class="font-mono text-red">
-                            <span>-${ds.pointsSacrificed} Pts</span>
-                          </div>
-                          <div class="points-sacrificed-meter">
-                            <div class="points-sacrificed-fill" style="width:${Math.min(100, Math.round((ds.pointsSacrificed / 200) * 100))}%;"></div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="font-mono text-gold" style="font-weight:700;">${ds.faabRoi} pts/$</td>
-                      <td>
-                        <div style="font-size:0.8rem; font-weight:700;" class="font-mono">
-                          <span class="text-green">${pa.rbClaims || 4} RBs</span> • <span class="text-blue">${pa.wrClaims || 3} WRs</span>
-                        </div>
-                        <div style="font-size:0.72rem; color:var(--text-muted);">${pa.totalAdditions || 15} Moves Total</div>
-                      </td>
-                      <td class="font-mono ${ds.tradeNetValue >= 0 ? 'text-green' : 'text-red'}" style="font-weight:700;">
-                        ${ds.tradeNetValue >= 0 ? '+' : ''}${ds.tradeNetValue} Pts
-                      </td>
-                      <td class="font-mono text-blue" style="font-weight:700;">+${ds.draftVorp}</td>
-                      <td>
-                        <button class="btn btn-outline btn-sm" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="HomeViewComponent.openAuditModal('${t.teamId}')">
-                          <i class="fa-solid fa-clipboard-list"></i> Audit
+                        <button class="btn btn-outline btn-sm" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="store.setView('team', {teamId: '${t.teamId}'});">
+                          <i class="fa-solid fa-user text-blue"></i> View Team
                         </button>
                       </td>
                     </tr>
@@ -234,168 +193,129 @@ class HomeViewComponent {
               </tbody>
             </table>
           </div>
-
-          <!-- Interactive H2H Manager Decision Skillsets Radar Comparison -->
-          <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:1.25rem;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
-              <div>
-                <strong style="font-size:1.1rem; color:var(--text-primary);">
-                  <i class="fa-solid fa-radar text-green"></i> Manager Decision Skillsets Comparison
-                </strong>
-                <div class="text-secondary" style="font-size:0.8rem;">Compare 5 Decision Pillars across any two managers in real-time.</div>
-              </div>
-              <div style="display:flex; gap:0.75rem;">
-                <select id="compare-mgr-a" class="filter-select" onchange="HomeViewComponent.updateComparison()">
-                  ${teams.map(t => `<option value="${t.teamId}" ${t.teamId === this.compareTeamAId ? 'selected' : ''}>${t.managerName} (${t.abbrev})</option>`).join('')}
-                </select>
-                <span class="text-muted" style="align-self:center; font-weight:800;">VS</span>
-                <select id="compare-mgr-b" class="filter-select" onchange="HomeViewComponent.updateComparison()">
-                  ${teams.map(t => `<option value="${t.teamId}" ${t.teamId === this.compareTeamBId ? 'selected' : ''}>${t.managerName} (${t.abbrev})</option>`).join('')}
-                </select>
-              </div>
-            </div>
-
-            <div class="chart-container-card" style="height:260px;">
-              <canvas id="chart-manager-radar"></canvas>
-            </div>
-          </div>
-
         </div>
 
         <!-- ========================================================================= -->
         <!-- MAIN DASHBOARD 2-COLUMN GRID (STANDINGS & MATCHUPS) -->
         <!-- ========================================================================= -->
-        <div class="dashboard-grid">
-          <!-- Left Column: Standings & Live Scores -->
-          <div style="display:flex; flex-direction:column; gap:1.5rem;">
-            
-            <!-- Standings Table -->
-            <div class="analytics-card">
-              <div class="card-header">
-                <div class="card-title">
-                  <i class="fa-solid fa-list-ol"></i> Official League Standings
-                </div>
-                <span class="badge badge-blue">Top 4 Make Playoffs</span>
+        <div class="dashboard-grid" style="margin-bottom: 2rem;">
+          <!-- Left Column: Standings -->
+          <div class="analytics-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-list-ol"></i> Official League Standings
               </div>
-              <div class="analytics-table-wrapper">
-                <table class="analytics-table">
-                  <thead>
-                    <tr>
-                      <th>Rank</th>
-                      <th>Team & Manager</th>
-                      <th>W-L</th>
-                      <th>Total Pts</th>
-                      <th>PA</th>
-                      <th>Playoff %</th>
-                      <th>Playoff %</th>
-                      <th>Power Rating</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${sortedStandings.map((t, idx) => `
-                      <tr style="cursor:pointer;" onclick="store.setView('team', {teamId: '${t.teamId}'});">
-                        <td style="font-weight:800; color:${idx < 4 ? 'var(--accent-sleeper)' : 'var(--text-secondary)'};">#${idx + 1}</td>
-                        <td>
-                          <div style="display:flex; align-items:center; gap:0.6rem;">
-                            <img src="${t.logoUrl}" style="width:28px; height:28px; border-radius:4px; object-fit:cover;">
-                            <div>
-                              <strong style="color:var(--text-primary);">${t.name}</strong>
-                              <div style="font-size:0.75rem; color:var(--text-secondary);">${t.managerName}</div>
-                            </div>
+              <span class="badge badge-blue">Top 4 Make Playoffs</span>
+            </div>
+            <div class="analytics-table-wrapper">
+              <table class="analytics-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Team & Manager</th>
+                    <th>W-L</th>
+                    <th>Total Pts</th>
+                    <th>Playoff %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${sortedStandings.map((t, idx) => `
+                    <tr style="cursor:pointer;" onclick="store.setView('team', {teamId: '${t.teamId}'});">
+                      <td style="font-weight:800; color:${idx < 4 ? 'var(--accent-sleeper)' : 'var(--text-secondary)'};">#${idx + 1}</td>
+                      <td>
+                        <div style="display:flex; align-items:center; gap:0.6rem;">
+                          <img src="${t.logoUrl}" style="width:28px; height:28px; border-radius:4px; object-fit:cover;">
+                          <div>
+                            <strong style="color:var(--text-primary);">${t.name}</strong>
+                            <div style="font-size:0.75rem; color:var(--text-secondary);">${t.managerName}</div>
                           </div>
-                        </td>
-                        <td class="font-mono" style="font-weight:700;">${t.wins}-${t.losses}</td>
-                        <td class="font-mono text-green">${t.pointsFor}</td>
-                        <td class="font-mono text-muted">${t.pointsAgainst}</td>
-                        <td><span class="badge ${t.playoffOdds > 70 ? 'badge-green' : (t.playoffOdds > 30 ? 'badge-gold' : 'badge-red')}">${t.playoffOdds}%</span></td>
-                        <td class="font-mono" style="font-weight:700; color:var(--accent-blue);">${t.eloRating}</td>
-                      </tr>
-                    `).join('')}
-                  </tbody>
-                </table>
-              </div>
+                        </div>
+                      </td>
+                      <td class="font-mono" style="font-weight:700;">${t.wins}-${t.losses}</td>
+                      <td class="font-mono text-green">${t.pointsFor}</td>
+                      <td><span class="badge ${t.playoffOdds > 70 ? 'badge-green' : (t.playoffOdds > 30 ? 'badge-gold' : 'badge-red')}">${t.playoffOdds}%</span></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
             </div>
-
-            <!-- Live Matchups Preview -->
-            <div class="analytics-card">
-              <div class="card-header">
-                <div class="card-title">
-                  <i class="fa-solid fa-bolt"></i> Week ${league.currentWeek} Matchups & Win Probabilities
-                </div>
-              </div>
-              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem;">
-                ${matchups.map(m => `
-                  <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem; cursor:pointer;" onclick="store.setView('matchup');">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.8rem;" class="text-muted">
-                      <span>Matchup Hub</span>
-                      <span class="text-green">${m.weather}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                      <strong style="font-size:0.95rem;">Team #${m.homeTeamId.replace('team-', '')}</strong>
-                      <span class="font-mono text-green" style="font-size:1.25rem; font-weight:800;">${m.homeScore}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-                      <strong style="font-size:0.95rem;">Team #${m.awayTeamId.replace('team-', '')}</strong>
-                      <span class="font-mono text-muted" style="font-size:1.25rem; font-weight:800;">${m.awayScore}</span>
-                    </div>
-                    <div class="win-prob-bar-container">
-                      <div class="win-prob-fill-home" style="width: ${m.homeWinProb}%;"></div>
-                      <div class="win-prob-fill-away" style="width: ${100 - m.homeWinProb}%;"></div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; font-size:0.75rem;" class="text-muted">
-                      <span>Home Win: ${m.homeWinProb}%</span>
-                      <span>Away Win: ${(100 - m.homeWinProb).toFixed(1)}%</span>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-
           </div>
 
-          <!-- Right Column: Power Rankings & Activity Feed -->
+          <!-- Right Column: Live Matchups & Recent Activity -->
           <div style="display:flex; flex-direction:column; gap:1.5rem;">
-            
-            <!-- Power Rankings Widget -->
+            <!-- Live Matchups for ALL TEAMS in the League -->
             <div class="analytics-card">
               <div class="card-header">
                 <div class="card-title">
-                  <i class="fa-solid fa-ranking-star"></i> Team Power Rankings
+                  <i class="fa-solid fa-bolt text-gold"></i> Week ${league.currentWeek} All Matchups & Win Probabilities
                 </div>
+                <span class="badge badge-gold">${allLeagueMatchups.length} League Games</span>
               </div>
               <div style="display:flex; flex-direction:column; gap:0.75rem;">
-                ${powerRankings.slice(0, 5).map((t, idx) => `
-                  <div style="display:flex; align-items:center; justify-content:space-between; padding:0.6rem 0.8rem; background:var(--bg-surface); border-radius:var(--radius-md);">
-                    <div style="display:flex; align-items:center; gap:0.6rem;">
-                      <span class="font-mono" style="font-weight:800; width:20px; color:var(--accent-pff);">#${idx + 1}</span>
-                      <strong style="font-size:0.9rem;">${t.name}</strong>
+                ${allLeagueMatchups.map(m => `
+                  <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:0.85rem; cursor:pointer; transition:all var(--transition-fast);" onclick="store.setView('matchup');">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                      
+                      <!-- Home Team -->
+                      <div style="display:flex; align-items:center; gap:0.5rem; flex:1; min-width:0;">
+                        <img src="${m.homeTeam.logoUrl}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; background:var(--bg-card);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
+                        <div style="min-width:0; overflow:hidden;">
+                          <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.homeTeam.name}</div>
+                          <div style="font-size:0.72rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.homeTeam.managerName}</div>
+                        </div>
+                      </div>
+
+                      <!-- Scores -->
+                      <div style="text-align:center; padding:0 0.5rem; flex-shrink:0;">
+                        <div class="font-mono" style="font-size:1.05rem; font-weight:900; color:var(--text-primary);">
+                          <span class="${m.homeScore >= m.awayScore ? 'text-green' : 'text-muted'}">${m.homeScore}</span>
+                          <span style="color:var(--text-muted); font-size:0.8rem; margin:0 0.25rem;">-</span>
+                          <span class="${m.awayScore > m.homeScore ? 'text-green' : 'text-muted'}">${m.awayScore}</span>
+                        </div>
+                      </div>
+
+                      <!-- Away Team -->
+                      <div style="display:flex; align-items:center; justify-content:flex-end; gap:0.5rem; flex:1; text-align:right; min-width:0;">
+                        <div style="min-width:0; overflow:hidden;">
+                          <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.awayTeam.name}</div>
+                          <div style="font-size:0.72rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.awayTeam.managerName}</div>
+                        </div>
+                        <img src="${m.awayTeam.logoUrl}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; background:var(--bg-card);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
+                      </div>
+
                     </div>
-                    <span class="badge badge-gold">Power Rating ${t.eloRating}</span>
+
+                    <!-- Win Probability Dual Fill Bar -->
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                      <span class="font-mono text-green" style="font-size:0.72rem; font-weight:800;">${m.homeWinProb}%</span>
+                      <div style="flex:1; height:6px; background:var(--bg-card); border-radius:3px; overflow:hidden; display:flex;">
+                        <div style="width: ${m.homeWinProb}%; height:100%; background:var(--accent-sleeper);"></div>
+                        <div style="width: ${100 - m.homeWinProb}%; height:100%; background:var(--accent-blue);"></div>
+                      </div>
+                      <span class="font-mono text-blue" style="font-size:0.72rem; font-weight:800;">${100 - m.homeWinProb}%</span>
+                    </div>
+
                   </div>
                 `).join('')}
               </div>
             </div>
 
-            <!-- Recent Activity Feed -->
+            <!-- Recent Activity -->
             <div class="analytics-card">
               <div class="card-header">
                 <div class="card-title">
                   <i class="fa-solid fa-right-left"></i> Recent Activity Feed
                 </div>
               </div>
-              <div style="display:flex; flex-direction:column; gap:0.75rem;">
+              <div style="display:flex; flex-direction:column; gap:0.6rem;">
                 ${transactions.map(tx => `
-                  <div style="padding:0.75rem; background:var(--bg-surface); border-radius:var(--radius-md); border-left:3px solid var(--accent-sleeper);">
-                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:0.25rem;">
-                      <span class="badge badge-green">${tx.type}</span>
-                      <span class="text-muted">Week ${tx.week}</span>
-                    </div>
-                    <div style="font-size:0.85rem; color:var(--text-primary);">${tx.details}</div>
+                  <div style="padding:0.65rem; background:var(--bg-surface); border-radius:var(--radius-md); border-left:3px solid var(--accent-sleeper); font-size:0.85rem;">
+                    <span class="badge badge-green" style="font-size:0.7rem;">${tx.type} • Wk ${tx.week}</span>
+                    <div style="color:var(--text-primary); margin-top:0.2rem;">${tx.details}</div>
                   </div>
                 `).join('')}
               </div>
             </div>
-
           </div>
         </div>
 
@@ -405,16 +325,6 @@ class HomeViewComponent {
         ${this.activeAuditTeamId ? this.renderAuditModal(teams.find(t => t.teamId === this.activeAuditTeamId), decisionLogs) : ''}
       </div>
     `;
-
-    // Render Skillset Radar Chart
-    setTimeout(() => {
-      ChartManager.renderRadarChart('chart-manager-radar', [
-        'Start/Sit IQ', 'Waiver FAAB ROI', 'Trade Impact', 'Draft VORP', 'FLEX Efficiency'
-      ], [
-        { label: teamA.managerName, data: AnalyticsEngine.getManagerRadarData(teamA), color: '#00e676' },
-        { label: teamB.managerName, data: AnalyticsEngine.getManagerRadarData(teamB), color: '#38bdf8' }
-      ]);
-    }, 50);
   }
 
   static setTab(tabName) {
@@ -463,8 +373,8 @@ class HomeViewComponent {
               <div class="stat-widget-value text-green">${ds.startIQ}%</div>
             </div>
             <div class="stat-widget">
-              <div class="stat-widget-label">FAAB ROI</div>
-              <div class="stat-widget-value text-gold">${ds.faabRoi} pts/$</div>
+              <div class="stat-widget-label">Waiver Net</div>
+              <div class="stat-widget-value text-gold">+${ds.waiverNetPoints || 24.5} pts</div>
             </div>
             <div class="stat-widget">
               <div class="stat-widget-label">Trade Net</div>
@@ -491,6 +401,42 @@ class HomeViewComponent {
         </div>
       </div>
     `;
+  }
+
+  static getAllLeagueMatchups(teams, rawMatchups) {
+    if (rawMatchups && rawMatchups.length >= Math.floor(teams.length / 2)) {
+      return rawMatchups.map(m => {
+        const home = teams.find(t => t.teamId === m.homeTeamId) || { name: 'Home Team', managerName: 'Manager A', logoUrl: '' };
+        const away = teams.find(t => t.teamId === m.awayTeamId) || { name: 'Away Team', managerName: 'Manager B', logoUrl: '' };
+        return {
+          ...m,
+          homeTeam: home,
+          awayTeam: away
+        };
+      });
+    }
+
+    const matchupsList = [];
+    for (let i = 0; i < teams.length; i += 2) {
+      if (i + 1 < teams.length) {
+        const home = teams[i];
+        const away = teams[i + 1];
+        const homeScore = parseFloat((120 + Math.sin(i * 3 + 1) * 20 + (home.wins || 5) * 2).toFixed(1));
+        const awayScore = parseFloat((118 + Math.cos(i * 2 + 1) * 18 + (away.wins || 5) * 2).toFixed(1));
+        const homeWinProb = Math.round(50 + (homeScore - awayScore) * 1.5);
+
+        matchupsList.push({
+          homeTeamId: home.teamId,
+          awayTeamId: away.teamId,
+          homeTeam: home,
+          awayTeam: away,
+          homeScore,
+          awayScore,
+          homeWinProb: Math.min(95, Math.max(5, homeWinProb))
+        });
+      }
+    }
+    return matchupsList;
   }
 }
 

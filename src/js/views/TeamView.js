@@ -54,8 +54,8 @@ class TeamViewComponent {
             <div class="stat-widget-subtext">Total Season Bench Points Lost</div>
           </div>
           <div class="stat-widget">
-            <div class="stat-widget-label">FAAB ROI</div>
-            <div class="stat-widget-value text-blue">${team.decisionStats?.faabRoi || 2.5} pts/$</div>
+            <div class="stat-widget-label">Waiver Net Pts</div>
+            <div class="stat-widget-value text-blue">+${team.decisionStats?.waiverPoints || 150} Pts</div>
             <div class="stat-widget-subtext">${team.decisionStats?.waiverHitRate || 70}% Waiver Hit Rate</div>
           </div>
         </div>
@@ -64,7 +64,7 @@ class TeamViewComponent {
         <div class="analytics-card" style="margin-bottom:1.5rem;">
           <div class="card-header">
             <div class="card-title">
-              <i class="fa-solid fa-hand-holding-dollar text-gold"></i> Free Agency & Waiver Pickups by Position
+              <i class="fa-solid fa-list-check text-gold"></i> Free Agency & Waiver Pickups by Position
             </div>
             <span class="badge badge-green">${team.decisionStats?.positionalAcquisitions?.totalAdditions || 15} Total Free Agent Moves</span>
           </div>
@@ -112,9 +112,9 @@ class TeamViewComponent {
               <div class="text-secondary" style="font-size:0.75rem;">${team.decisionStats?.clutchWins || 2} Clutch Wins</div>
             </div>
             <div style="background:var(--bg-surface); padding:0.85rem; border-radius:var(--radius-md); border-left:3px solid var(--accent-gold);">
-              <div class="text-muted" style="font-size:0.75rem;">2. Waiver FAAB ROI</div>
-              <div class="font-mono text-gold" style="font-size:1.25rem; font-weight:800;">${team.decisionStats?.faabRoi || 2.5} pts/$</div>
-              <div class="text-secondary" style="font-size:0.75rem;">${team.decisionStats?.waiverPoints || 150} Waiver Pts</div>
+              <div class="text-muted" style="font-size:0.75rem;">2. Waiver Net Output</div>
+              <div class="font-mono text-gold" style="font-size:1.25rem; font-weight:800;">+${team.decisionStats?.waiverPoints || 150} Pts</div>
+              <div class="text-secondary" style="font-size:0.75rem;">${team.decisionStats?.positionalAcquisitions?.totalAdditions || 15} Moves Claimed</div>
             </div>
             <div style="background:var(--bg-surface); padding:0.85rem; border-radius:var(--radius-md); border-left:3px solid var(--accent-blue);">
               <div class="text-muted" style="font-size:0.75rem;">3. Trade Net Impact</div>

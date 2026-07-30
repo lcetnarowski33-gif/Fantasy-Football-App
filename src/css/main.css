@@ -24,7 +24,8 @@
 
   /* Text Colors */
   --text-primary: #f8fafc;      /* Pure white high-contrast text */
-  --text-secondary: #94a3b8;    /* Muted secondary text */
+  --text-secondary: #cbd5e1;    /* Bright secondary text */
+  --text-muted: #94a3b8;        /* Muted secondary text */
   --text-tertiary: #64748b;     /* Dimmed tertiary text */
   --text-inverse: #0f172a;      /* Dark text on bright badge backgrounds */
 

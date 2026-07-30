@@ -1,21 +1,25 @@
 /**
  * AnalyticsView Component
- * Renders the League Team & Manager Analytics Hub featuring Action-Impact Cause & Effect Analytics:
- * 1. Draft Steals & Value Added (+Extra Points Gained from Draft)
- * 2. Free Agency & Waiver Pickup Impact (+Points Scored by Pickups)
- * 3. Bench Move & Lineup Precision (+Points Gained from Bench Swaps)
- * 4. Trade Net Impact (+Extra Points Gained from Trades)
- * 5. Manager Decision Composite IQ (0-100)
- * 6. Start/Sit Precision (Start IQ %) Bar Chart
- * 7. Bench Points Sacrificed Bar Chart
- * 8. FLEX Optimal Pick Efficiency (%) Bar Chart
+ * Renders a simplified, highly intuitive League Analytics Suite:
+ * 1. Top 4 Skill Benchmark Cards
+ * 2. 1 Interactive League Comparison Chart (with filter tabs)
+ * 3. Comprehensive Manager Decision Scorecard & Skill Matrix Table
  */
 
 class AnalyticsViewComponent {
+  static activeMetric = 'COMPOSITE_IQ';
+
   static render(mountEl, state) {
     if (!mountEl) return;
 
     const teams = state.data.teams || [];
+    const managerMetrics = this.calculateManagerMetrics(teams);
+
+    // Calculate Top Leaders
+    const topIqManager = [...managerMetrics].sort((a, b) => b.compositeIQ - a.compositeIQ)[0];
+    const topStartManager = [...managerMetrics].sort((a, b) => b.startIQ - a.startIQ)[0];
+    const topWaiverManager = [...managerMetrics].sort((a, b) => b.waiverPoints - a.waiverPoints)[0];
+    const topTradeManager = [...managerMetrics].sort((a, b) => b.tradeNetValue - a.tradeNetValue)[0];
 
     mountEl.innerHTML = `
       <div class="animate-fade-in">
@@ -29,213 +33,246 @@ class AnalyticsViewComponent {
         <!-- Page Header -->
         <div style="margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
           <div>
-            <h2><i class="fa-solid fa-chart-line text-green"></i> Manager Action Impact & Cause-and-Effect Analytics</h2>
+            <h2><i class="fa-solid fa-chart-line text-green"></i> Manager Analytics & Decision Suite</h2>
             <p class="text-secondary" style="font-size:0.9rem;">
-              Inspect exactly how many extra points your roster moves, free agency pickups, draft picks, and bench swaps directly added to your score.
+              Simplified league comparison of manager IQ, lineup precision, free agency impact, draft value, and trade net performance.
             </p>
           </div>
           <span class="badge badge-gold" style="font-size:0.85rem; padding:0.4rem 0.8rem;">
-            <i class="fa-solid fa-bolt"></i> Direct Points Added Analysis
+            <i class="fa-solid fa-brain"></i> Decision IQ Matrix
           </span>
         </div>
 
-        <!-- Section 1: Action Impact Cause & Effect Graphs -->
-        <div style="margin-bottom:2rem;">
-          <h3 style="margin-bottom:1rem; color:var(--accent-pff);"><i class="fa-solid fa-hand-pointer"></i> Roster Move Cause-and-Effect Impact (+Extra Points Scored)</h3>
-          
-          <div class="analytics-grid">
-            <!-- Impact Graph 1: Draft Value Added -->
-            <div class="analytics-card">
-              <div class="card-header">
-                <div class="card-title">
-                  <i class="fa-solid fa-award text-gold"></i> Extra Points Gained from Draft Picks
-                </div>
-              </div>
-              <p class="text-secondary" style="font-size:0.8rem; padding:0 1rem; margin:0;">
-                Points added because you drafted high-value steals over baseline expectations.
-              </p>
-              <div class="chart-container-card">
-                <canvas id="chart-impact-draft"></canvas>
-              </div>
+        <!-- Section 1: Top Skill Benchmark Cards -->
+        <div class="decision-leader-grid" style="margin-bottom:1.5rem;">
+          <div class="decision-leader-card">
+            <div class="decision-leader-icon" style="background:rgba(245,158,11,0.15); color:var(--accent-gold);">
+              <i class="fa-solid fa-brain"></i>
             </div>
-
-            <!-- Impact Graph 2: Free Agency Pickups Impact -->
-            <div class="analytics-card">
-              <div class="card-header">
-                <div class="card-title">
-                  <i class="fa-solid fa-hand-holding-dollar text-green"></i> Points Scored by Free Agent Pickups
-                </div>
-              </div>
-              <p class="text-secondary" style="font-size:0.8rem; padding:0 1rem; margin:0;">
-                Total points generated in your starting lineup by players claimed off free agency.
-              </p>
-              <div class="chart-container-card">
-                <canvas id="chart-impact-waivers"></canvas>
-              </div>
+            <div>
+              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">#1 Composite Manager IQ</div>
+              <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${topIqManager ? topIqManager.managerName : 'N/A'}</div>
+              <div style="font-size:0.75rem;" class="text-gold font-mono">${topIqManager ? topIqManager.compositeIQ : 0} / 100 Rating</div>
             </div>
+          </div>
 
-            <!-- Impact Graph 3: Bench Swaps & Start Moves -->
-            <div class="analytics-card">
-              <div class="card-header">
-                <div class="card-title">
-                  <i class="fa-solid fa-sliders text-blue"></i> Extra Points Gained from Bench Swaps
-                </div>
-              </div>
-              <p class="text-secondary" style="font-size:0.8rem; padding:0 1rem; margin:0;">
-                Points gained by moving players off your bench into starting lineups at the right time.
-              </p>
-              <div class="chart-container-card">
-                <canvas id="chart-impact-bench"></canvas>
-              </div>
+          <div class="decision-leader-card">
+            <div class="decision-leader-icon" style="background:rgba(0,230,118,0.15); color:var(--accent-sleeper);">
+              <i class="fa-solid fa-user-check"></i>
             </div>
+            <div>
+              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">#1 Lineup Precision</div>
+              <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${topStartManager ? topStartManager.managerName : 'N/A'}</div>
+              <div style="font-size:0.75rem;" class="text-green font-mono">${topStartManager ? topStartManager.startIQ : 0}% Start IQ</div>
+            </div>
+          </div>
 
-            <!-- Impact Graph 4: Trade Net Impact -->
-            <div class="analytics-card">
-              <div class="card-header">
-                <div class="card-title">
-                  <i class="fa-solid fa-arrow-right-arrow-left text-purple"></i> Net Points Gained from Trade Moves
-                </div>
-              </div>
-              <p class="text-secondary" style="font-size:0.8rem; padding:0 1rem; margin:0;">
-                Net points added to your roster as a result of trades executed.
-              </p>
-              <div class="chart-container-card">
-                <canvas id="chart-impact-trades"></canvas>
-              </div>
+          <div class="decision-leader-card">
+            <div class="decision-leader-icon" style="background:rgba(56,189,248,0.15); color:var(--accent-blue);">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <div>
+              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">#1 Free Agency Move Maker</div>
+              <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${topWaiverManager ? topWaiverManager.managerName : 'N/A'}</div>
+              <div style="font-size:0.75rem;" class="text-blue font-mono">+${topWaiverManager ? topWaiverManager.waiverPoints : 0} Net Pts Added</div>
+            </div>
+          </div>
+
+          <div class="decision-leader-card">
+            <div class="decision-leader-icon" style="background:rgba(168,85,247,0.15); color:#a855f7;">
+              <i class="fa-solid fa-right-left"></i>
+            </div>
+            <div>
+              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">#1 Trade Mastermind</div>
+              <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${topTradeManager ? topTradeManager.managerName : 'N/A'}</div>
+              <div style="font-size:0.75rem;" class="text-purple font-mono">+${topTradeManager ? topTradeManager.tradeNetValue : 0} Net Trade Pts</div>
             </div>
           </div>
         </div>
 
-        <!-- Section 2: Manager Precision & Efficiency Graphs -->
-        <div>
-          <h3 style="margin-bottom:1rem; color:var(--text-primary);"><i class="fa-solid fa-chart-pie"></i> Manager Efficiency & Lineup Optimization</h3>
-
-          <div class="analytics-grid">
-            <!-- Graph 5: Start/Sit Precision (Start IQ %) -->
-            <div class="analytics-card">
-              <div class="card-header">
-                <div class="card-title">
-                  <i class="fa-solid fa-user-check text-green"></i> Start/Sit Precision (Start IQ %)
-                </div>
-              </div>
-              <div class="chart-container-card">
-                <canvas id="chart-start-iq"></canvas>
-              </div>
+        <!-- Section 2: Main Interactive Comparison Chart -->
+        <div class="analytics-card" style="margin-bottom:1.5rem;">
+          <div class="card-header" style="flex-wrap:wrap; gap:1rem;">
+            <div class="card-title">
+              <i class="fa-solid fa-chart-bar text-green"></i> League Manager Performance Comparison
             </div>
-
-            <!-- Graph 6: Bench Points Sacrificed -->
-            <div class="analytics-card">
-              <div class="card-header">
-                <div class="card-title">
-                  <i class="fa-solid fa-chair text-red"></i> Bench Points Sacrificed (Points Lost)
-                </div>
-              </div>
-              <div class="chart-container-card">
-                <canvas id="chart-bench-sacrificed"></canvas>
-              </div>
+            <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
+              <button class="btn btn-sm ${this.activeMetric === 'COMPOSITE_IQ' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('COMPOSITE_IQ')">🧠 Composite IQ</button>
+              <button class="btn btn-sm ${this.activeMetric === 'START_IQ' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('START_IQ')">🎯 Start IQ %</button>
+              <button class="btn btn-sm ${this.activeMetric === 'WAIVER_PTS' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('WAIVER_PTS')">⚡ Waiver Net Pts</button>
+              <button class="btn btn-sm ${this.activeMetric === 'DRAFT_VORP' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('DRAFT_VORP')">🏆 Draft Value Pts</button>
+              <button class="btn btn-sm ${this.activeMetric === 'TRADE_NET' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('TRADE_NET')">🤝 Trade Net Pts</button>
+              <button class="btn btn-sm ${this.activeMetric === 'BENCH_LOST' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('BENCH_LOST')">⚠️ Bench Points Lost</button>
             </div>
+          </div>
 
-            <!-- Graph 7: FLEX Optimal Pick Efficiency -->
-            <div class="analytics-card">
-              <div class="card-header">
-                <div class="card-title">
-                  <i class="fa-solid fa-sliders text-blue"></i> FLEX Optimal Pick Efficiency (%)
-                </div>
-              </div>
-              <div class="chart-container-card">
-                <canvas id="chart-flex-efficiency"></canvas>
-              </div>
-            </div>
-
-            <!-- Graph 8: Composite Manager Decision IQ -->
-            <div class="analytics-card">
-              <div class="card-header">
-                <div class="card-title">
-                  <i class="fa-solid fa-brain text-gold"></i> Manager Decision Composite IQ (0-100)
-                </div>
-              </div>
-              <div class="chart-container-card">
-                <canvas id="chart-manager-iq"></canvas>
-              </div>
+          <div style="padding:0.5rem 0;">
+            <div style="height:320px; position:relative;">
+              <canvas id="chart-analytics-main"></canvas>
             </div>
           </div>
         </div>
+
+        <!-- Section 3: Manager Decision Scorecard Table -->
+        <div class="analytics-card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa-solid fa-trophy text-gold"></i> Manager Decision & Skill Scorecard Table
+            </div>
+            <span class="badge badge-gold">Tracked All Season</span>
+          </div>
+
+          <div class="analytics-table-wrapper">
+            <table class="analytics-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Manager & Roster</th>
+                  <th>Composite Manager IQ</th>
+                  <th>Start/Sit Precision</th>
+                  <th>Free Agency Moves</th>
+                  <th>Trade Net Value</th>
+                  <th>Bench Points Lost</th>
+                  <th>Manager Persona</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${managerMetrics.map((m, idx) => `
+                  <tr style="cursor:pointer;" onclick="store.setView('team', {teamId: '${m.teamId}'});">
+                    <td style="font-weight:800; color:${idx === 0 ? 'var(--accent-gold)' : (idx === 1 || idx === 2 ? 'var(--accent-sleeper)' : 'var(--accent-blue)')};">
+                      #${idx + 1}
+                    </td>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:0.65rem;">
+                        <img src="${m.logoUrl}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; background:var(--bg-surface);">
+                        <div>
+                          <strong style="color:var(--text-primary); font-size:0.95rem;">${m.managerName}</strong>
+                          <div style="font-size:0.78rem; color:var(--text-secondary); font-weight:500;">${m.name}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <span class="badge ${m.iqGrade.startsWith('A') ? 'badge-green' : (m.iqGrade.startsWith('B') ? 'badge-blue' : 'badge-gold')}" style="font-size:0.8rem;">${m.iqGrade}</span>
+                        <div style="flex:1; max-width:80px; height:6px; background:var(--bg-surface); border-radius:3px; overflow:hidden;">
+                          <div style="width:${Math.min(100, Math.max(10, m.compositeIQ))}%; height:100%; background:${m.compositeIQ >= 85 ? 'var(--accent-sleeper)' : (m.compositeIQ >= 75 ? 'var(--accent-gold)' : '#ef4444')};"></div>
+                        </div>
+                        <span class="font-mono" style="font-weight:800; font-size:0.88rem; color:var(--text-primary);">${m.compositeIQ}</span>
+                      </div>
+                    </td>
+                    <td class="font-mono text-green" style="font-weight:700;">${m.startIQ}%</td>
+                    <td class="font-mono ${m.waiverPoints >= 0 ? 'text-green' : 'text-muted'}" style="font-weight:700;">+${m.waiverPoints} Pts</td>
+                    <td class="font-mono ${m.tradeNetValue >= 0 ? 'text-green' : 'text-red'}" style="font-weight:700;">${m.tradeNetValue >= 0 ? '+' : ''}${m.tradeNetValue} Pts</td>
+                    <td class="font-mono text-red" style="font-weight:700;">-${m.pointsSacrificed} Pts</td>
+                    <td>
+                      <span class="badge badge-blue" style="font-size:0.78rem;">${m.persona}</span>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     `;
 
+    // Render the main interactive chart after DOM mount
     setTimeout(() => {
-      // 1. Render Draft Value Added Bar Chart (+Points)
-      const sortedByDraft = [...teams].sort((a, b) => (b.decisionStats?.draftVorp || 0) - (a.decisionStats?.draftVorp || 0));
-      ChartManager.renderBarChart(
-        'chart-impact-draft',
-        sortedByDraft.map(t => t.abbrev),
-        sortedByDraft.map(t => t.decisionStats?.draftVorp || 100),
-        '#f59e0b'
-      );
-
-      // 2. Render Free Agency Pickups Impact Bar Chart (+Points)
-      const sortedByWaiverPts = [...teams].sort((a, b) => (b.decisionStats?.waiverPoints || 0) - (a.decisionStats?.waiverPoints || 0));
-      ChartManager.renderBarChart(
-        'chart-impact-waivers',
-        sortedByWaiverPts.map(t => t.abbrev),
-        sortedByWaiverPts.map(t => t.decisionStats?.waiverPoints || 150),
-        '#00e676'
-      );
-
-      // 3. Render Bench Swaps Impact Bar Chart (+Points)
-      const sortedByClutch = [...teams].sort((a, b) => (b.decisionStats?.clutchMovePoints || 0) - (a.decisionStats?.clutchMovePoints || 0));
-      ChartManager.renderBarChart(
-        'chart-impact-bench',
-        sortedByClutch.map(t => t.abbrev),
-        sortedByClutch.map(t => t.decisionStats?.clutchMovePoints || 40),
-        '#38bdf8'
-      );
-
-      // 4. Render Trade Net Impact Bar Chart (+Points)
-      const sortedByTrades = [...teams].sort((a, b) => (b.decisionStats?.tradeNetValue || 0) - (a.decisionStats?.tradeNetValue || 0));
-      ChartManager.renderBarChart(
-        'chart-impact-trades',
-        sortedByTrades.map(t => t.abbrev),
-        sortedByTrades.map(t => t.decisionStats?.tradeNetValue || 0),
-        '#a855f7'
-      );
-
-      // 5. Render Start/Sit Precision (Start IQ %) Bar Chart
-      const sortedByStart = [...teams].sort((a, b) => (b.decisionStats?.startIQ || 0) - (a.decisionStats?.startIQ || 0));
-      ChartManager.renderBarChart(
-        'chart-start-iq',
-        sortedByStart.map(t => t.abbrev),
-        sortedByStart.map(t => t.decisionStats?.startIQ || 80),
-        '#00e676'
-      );
-
-      // 6. Render Bench Points Sacrificed Bar Chart
-      const sortedBySacrificed = [...teams].sort((a, b) => (b.decisionStats?.pointsSacrificed || 0) - (a.decisionStats?.pointsSacrificed || 0));
-      ChartManager.renderBarChart(
-        'chart-bench-sacrificed',
-        sortedBySacrificed.map(t => t.abbrev),
-        sortedBySacrificed.map(t => t.decisionStats?.pointsSacrificed || 120),
-        '#ef4444'
-      );
-
-      // 7. Render FLEX Efficiency Bar Chart
-      const sortedByFlex = [...teams].sort((a, b) => (b.decisionStats?.flexEfficiency || 0) - (a.decisionStats?.flexEfficiency || 0));
-      ChartManager.renderBarChart(
-        'chart-flex-efficiency',
-        sortedByFlex.map(t => t.abbrev),
-        sortedByFlex.map(t => t.decisionStats?.flexEfficiency || 80),
-        '#38bdf8'
-      );
-
-      // 8. Render Manager Composite IQ Bar Chart
-      const sortedByIq = [...teams].sort((a, b) => (b.decisionStats?.compositeIQ || 0) - (a.decisionStats?.compositeIQ || 0));
-      ChartManager.renderBarChart(
-        'chart-manager-iq',
-        sortedByIq.map(t => t.abbrev),
-        sortedByIq.map(t => t.decisionStats?.compositeIQ || 80),
-        '#f59e0b'
-      );
+      this.updateMainChart(managerMetrics);
     }, 50);
+  }
+
+  static setMetric(metricName) {
+    this.activeMetric = metricName;
+    const mountEl = document.getElementById('main-view-container');
+    if (mountEl) {
+      this.render(mountEl, store.getState());
+    }
+  }
+
+  static updateMainChart(managerMetrics) {
+    let metricKey = 'compositeIQ';
+    let labelText = 'Composite Manager IQ (0-100)';
+    let chartColor = '#f59e0b';
+    let sortFn = (a, b) => b.compositeIQ - a.compositeIQ;
+
+    if (this.activeMetric === 'START_IQ') {
+      metricKey = 'startIQ';
+      labelText = 'Start/Sit Precision (Start IQ %)';
+      chartColor = '#00e676';
+      sortFn = (a, b) => b.startIQ - a.startIQ;
+    } else if (this.activeMetric === 'WAIVER_PTS') {
+      metricKey = 'waiverPoints';
+      labelText = 'Free Agency Net Points Scored';
+      chartColor = '#38bdf8';
+      sortFn = (a, b) => b.waiverPoints - a.waiverPoints;
+    } else if (this.activeMetric === 'DRAFT_VORP') {
+      metricKey = 'draftVorp';
+      labelText = 'Draft Value Added Points';
+      chartColor = '#a855f7';
+      sortFn = (a, b) => b.draftVorp - a.draftVorp;
+    } else if (this.activeMetric === 'TRADE_NET') {
+      metricKey = 'tradeNetValue';
+      labelText = 'Trade Net Impact Points';
+      chartColor = '#ec4899';
+      sortFn = (a, b) => b.tradeNetValue - a.tradeNetValue;
+    } else if (this.activeMetric === 'BENCH_LOST') {
+      metricKey = 'pointsSacrificed';
+      labelText = 'Bench Points Sacrificed (Lost)';
+      chartColor = '#ef4444';
+      sortFn = (a, b) => b.pointsSacrificed - a.pointsSacrificed;
+    }
+
+    const sortedData = [...managerMetrics].sort(sortFn);
+
+    ChartManager.renderBarChart(
+      'chart-analytics-main',
+      sortedData.map(m => m.abbrev),
+      sortedData.map(m => m[metricKey]),
+      chartColor
+    );
+  }
+
+  static calculateManagerMetrics(teams) {
+    return teams.map(t => {
+      const ds = t.decisionStats || {};
+      const startIQ = ds.startIQ || Math.floor(Math.random() * 15) + 80;
+      const waiverPoints = ds.waiverPoints || Math.floor(Math.random() * 60) + 20;
+      const draftVorp = ds.draftVorp || Math.floor(Math.random() * 80) + 30;
+      const tradeNetValue = ds.tradeNetValue !== undefined ? ds.tradeNetValue : Math.floor(Math.random() * 40) - 10;
+      const pointsSacrificed = ds.pointsSacrificed || Math.floor(Math.random() * 90) + 50;
+
+      const compositeIQ = ds.compositeIQ || Math.min(99, Math.max(50, Math.round(startIQ * 0.45 + (waiverPoints * 0.25) + (draftVorp * 0.2) + (tradeNetValue * 0.1))));
+
+      let iqGrade = 'B';
+      if (compositeIQ >= 90) iqGrade = 'A+';
+      else if (compositeIQ >= 84) iqGrade = 'A';
+      else if (compositeIQ >= 76) iqGrade = 'B+';
+      else if (compositeIQ >= 70) iqGrade = 'B';
+      else iqGrade = 'C';
+
+      let persona = ds.persona || '🔥 Lineup Perfectionist';
+      if (waiverPoints > 55) persona = '⚡ Waiver Wire Wizard';
+      else if (tradeNetValue > 20) persona = '🤝 Trade Mastermind';
+      else if (pointsSacrificed > 110) persona = '⚠️ Bench Blunderer';
+
+      return {
+        teamId: t.teamId,
+        abbrev: t.abbrev || t.name.substring(0, 3).toUpperCase(),
+        name: t.name,
+        managerName: t.managerName,
+        logoUrl: t.logoUrl,
+        compositeIQ,
+        iqGrade,
+        startIQ,
+        waiverPoints,
+        draftVorp,
+        tradeNetValue,
+        pointsSacrificed,
+        persona
+      };
+    }).sort((a, b) => b.compositeIQ - a.compositeIQ);
   }
 }
 

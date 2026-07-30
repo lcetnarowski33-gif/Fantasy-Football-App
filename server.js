@@ -1,12 +1,13 @@
 /**
  * Express Server for Fantasy League Analytics
  * Serves static web assets, provides REST API endpoints, handles real-time SSE streaming,
- * and proxies ESPN Fantasy API live sync.
+ * and proxies ESPN Fantasy API live sync with global persistent single-league caching.
  */
 
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const { fetchEspnLeagueData, normalizeEspnData } = require('./src/backend/services/espnAdapter');
 
 const app = express();
@@ -17,6 +18,99 @@ app.use(express.json());
 
 // Serve static frontend files
 app.use(express.static(path.join(__dirname)));
+
+const CONFIG_FILE = path.join(__dirname, 'server_config.json');
+const CACHE_FILE = path.join(__dirname, 'league_cache.json');
+
+let serverConfig = {
+  leagueId: "1585576113",
+  season: 2024,
+  swid: "",
+  espnS2: "",
+  isAutoSyncEnabled: true
+};
+
+let cachedLeagueData = null;
+
+// Load server config on startup
+function loadServerConfig() {
+  try {
+    if (fs.existsSync(CONFIG_FILE)) {
+      const raw = fs.readFileSync(CONFIG_FILE, 'utf8');
+      serverConfig = { ...serverConfig, ...JSON.parse(raw) };
+      console.log(`⚙️ Loaded persistent ESPN config for League #${serverConfig.leagueId}`);
+    }
+  } catch (e) {
+    console.warn('Unable to load server_config.json:', e.message);
+  }
+}
+
+// Load cached league data on startup
+function loadCachedLeagueData() {
+  try {
+    if (fs.existsSync(CACHE_FILE)) {
+      const raw = fs.readFileSync(CACHE_FILE, 'utf8');
+      cachedLeagueData = JSON.parse(raw);
+      console.log(`📦 Loaded cached ESPN dataset for "${cachedLeagueData.name}"`);
+    }
+  } catch (e) {
+    console.warn('Unable to load league_cache.json:', e.message);
+  }
+}
+
+loadServerConfig();
+loadCachedLeagueData();
+
+/**
+ * Save server config to disk
+ */
+function saveServerConfig(newConfig) {
+  try {
+    serverConfig = { ...serverConfig, ...newConfig };
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(serverConfig, null, 2), 'utf8');
+    console.log(`💾 Saved global ESPN config for League #${serverConfig.leagueId}`);
+  } catch (e) {
+    console.error('Failed to write server_config.json:', e.message);
+  }
+}
+
+/**
+ * Save cached dataset to disk
+ */
+function saveCachedLeagueData(data) {
+  try {
+    cachedLeagueData = data;
+    fs.writeFileSync(CACHE_FILE, JSON.stringify(data, null, 2), 'utf8');
+    console.log(`💾 Saved cached ESPN dataset snapshot for "${data.name}"`);
+  } catch (e) {
+    console.error('Failed to write league_cache.json:', e.message);
+  }
+}
+
+/**
+ * Background auto-refresh function using configured server credentials
+ */
+async function autoRefreshEspnData() {
+  if (!serverConfig.leagueId) return;
+
+  try {
+    console.log(`🔄 [Auto-Sync] Syncing ESPN League #${serverConfig.leagueId}...`);
+    const raw = await fetchEspnLeagueData(serverConfig.leagueId, serverConfig.season, serverConfig.swid, serverConfig.espnS2);
+    const normalized = normalizeEspnData(raw);
+
+    saveCachedLeagueData(normalized);
+    broadcastLiveUpdate({
+      type: 'ESPN_AUTO_SYNC_SUCCESS',
+      leagueId: serverConfig.leagueId,
+      leagueName: normalized.name,
+      data: normalized,
+      timestamp: new Date().toISOString()
+    });
+    console.log(`✅ [Auto-Sync] Successfully updated "${normalized.name}" for all users!`);
+  } catch (e) {
+    console.warn(`⚠️ [Auto-Sync] Refresh attempt warning: ${e.message}`);
+  }
+}
 
 // Server-Sent Events (SSE) Client Connections for Real-Time Instant Streaming
 let sseClients = [];
@@ -31,8 +125,14 @@ app.get('/api/sync/stream', (req, res) => {
   const newClient = { id: clientId, res };
   sseClients.push(newClient);
 
-  // Send initial connection ACK
-  res.write(`data: ${JSON.stringify({ type: 'CONNECTED', message: 'Instant Real-Time Stream active', timestamp: new Date().toISOString() })}\n\n`);
+  // Send initial connection ACK with current cached data if available
+  res.write(`data: ${JSON.stringify({ 
+    type: 'CONNECTED', 
+    message: 'Instant Real-Time Stream active', 
+    hasCachedData: !!cachedLeagueData,
+    data: cachedLeagueData,
+    timestamp: new Date().toISOString() 
+  })}\n\n`);
 
   req.on('close', () => {
     sseClients = sseClients.filter(c => c.id !== clientId);
@@ -48,26 +148,29 @@ function broadcastLiveUpdate(payload) {
   });
 }
 
-// Live background tick simulator (pushes minor score tweaks every 5s if active)
-setInterval(() => {
-  if (sseClients.length > 0) {
-    broadcastLiveUpdate({
-      type: 'TICK',
-      timestamp: new Date().toISOString(),
-      liveUpdates: [
-        { type: 'SCORE_UPDATE', detail: 'Patrick Mahomes completed a 24-yard pass to Travis Kelce (+2.4 pts)' },
-        { type: 'WIN_PROBABILITY', detail: 'Gridiron Legends win probability adjusted to 68%' }
-      ]
-    });
-  }
-}, 5000);
+/**
+ * GET /api/league/current
+ * Serves active global ESPN dataset to any visiting client
+ */
+app.get('/api/league/current', (req, res) => {
+  return res.json({
+    success: true,
+    hasCachedData: !!cachedLeagueData,
+    data: cachedLeagueData,
+    config: {
+      leagueId: serverConfig.leagueId,
+      season: serverConfig.season,
+      isAutoSyncEnabled: serverConfig.isAutoSyncEnabled
+    }
+  });
+});
 
 /**
  * POST /api/sync/espn
- * Sync live data from ESPN Fantasy API
+ * Sync live data from ESPN Fantasy API and optionally set as global server default
  */
 app.post('/api/sync/espn', async (req, res) => {
-  const { leagueId, season, swid, espnS2 } = req.body;
+  const { leagueId, season, swid, espnS2, saveAsDefault } = req.body;
 
   if (!leagueId) {
     return res.status(400).json({ error: 'Missing required ESPN League ID parameter.' });
@@ -79,17 +182,32 @@ app.post('/api/sync/espn', async (req, res) => {
     const rawData = await fetchEspnLeagueData(leagueId, seasonYear, swid, espnS2);
     const normalized = normalizeEspnData(rawData);
 
+    // Save as global server cache
+    saveCachedLeagueData(normalized);
+
+    // If requested, persist credentials as global server default for all visitors
+    if (saveAsDefault || !serverConfig.swid) {
+      saveServerConfig({
+        leagueId,
+        season: normalized.season || seasonYear,
+        swid: swid || serverConfig.swid,
+        espnS2: espnS2 || serverConfig.espnS2
+      });
+    }
+
     // Broadcast instant update notification to open SSE clients
     broadcastLiveUpdate({
       type: 'ESPN_SYNC_SUCCESS',
       leagueId,
       leagueName: normalized.name,
+      data: normalized,
       timestamp: new Date().toISOString()
     });
 
     return res.json({
       success: true,
-      data: normalized
+      data: normalized,
+      savedAsDefault: true
     });
   } catch (error) {
     console.error('ESPN Sync error:', error.message);
@@ -102,7 +220,13 @@ app.post('/api/sync/espn', async (req, res) => {
 
 // Mock REST Endpoints for standalone operation
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', app: 'Fantasy League Analytics', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'OK', 
+    app: 'Fantasy League Analytics', 
+    activeLeagueId: serverConfig.leagueId,
+    hasCachedData: !!cachedLeagueData,
+    timestamp: new Date().toISOString() 
+  });
 });
 
 // Fallback to index.html for Single Page Application navigation
@@ -115,8 +239,13 @@ function startServer(portToTry) {
   const srv = app.listen(currentPort, () => {
     console.log(`====================================================`);
     console.log(` 🏈 Fantasy League Analytics Server running on http://localhost:${currentPort}`);
-    console.log(` ⚡ Real-Time Instant ESPN API Sync proxy ready`);
+    console.log(` ⚡ Global Single-League persistent auto-sync active for #${serverConfig.leagueId}`);
     console.log(`====================================================`);
+
+    // Initial background sync on boot if config present
+    if (serverConfig.leagueId && (!cachedLeagueData || !cachedLeagueData.teams)) {
+      autoRefreshEspnData();
+    }
   });
 
   srv.on('error', (err) => {
@@ -129,4 +258,8 @@ function startServer(portToTry) {
   });
 }
 
+// Auto-refresh ESPN data every 10 minutes in background
+setInterval(autoRefreshEspnData, 10 * 60 * 1000);
+
 startServer(PORT);
+

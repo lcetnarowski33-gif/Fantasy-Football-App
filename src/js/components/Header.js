@@ -10,16 +10,13 @@ class HeaderComponent {
 
     const views = [
       { id: 'home', label: 'Dashboard', icon: 'fa-gauge-high' },
-      { id: 'efficiency', label: 'Moves & FLEX', icon: 'fa-sliders' },
       { id: 'league', label: 'League Matrix', icon: 'fa-trophy' },
       { id: 'team', label: 'Team Hub', icon: 'fa-users' },
-      { id: 'player', label: 'PFF Players', icon: 'fa-football' },
-      { id: 'analytics', label: 'Analytics Grid', icon: 'fa-chart-line' },
-      { id: 'h2h', label: 'Head 2 Head', icon: 'fa-handshake' },
-      { id: 'records', label: 'Record Book', icon: 'fa-book' },
+      { id: 'matchup', label: 'Matchups', icon: 'fa-bolt' },
       { id: 'trade', label: 'Trade Center', icon: 'fa-right-left' },
+      { id: 'waiver', label: 'Free Agency', icon: 'fa-list-check' },
       { id: 'draft', label: 'Draft Center', icon: 'fa-clipboard-list' },
-      { id: 'matchup', label: 'Matchups', icon: 'fa-bolt' }
+      { id: 'analytics', label: 'Analytics', icon: 'fa-chart-line' }
     ];
 
     const activeView = currentState.activeView || 'home';
@@ -34,12 +31,20 @@ class HeaderComponent {
           </div>
 
           <nav class="nav-links">
-            ${views.map(v => `
-              <button class="nav-link ${activeView === v.id ? 'active' : ''}" data-view="${v.id}">
-                <i class="fa-solid ${v.icon}"></i>
-                <span>${v.label}</span>
-              </button>
-            `).join('')}
+            ${views.map(v => {
+              const isActive = activeView === v.id || 
+                (v.id === 'matchup' && activeView === 'h2h') ||
+                (v.id === 'analytics' && activeView === 'efficiency') ||
+                (v.id === 'league' && activeView === 'records') ||
+                (v.id === 'team' && activeView === 'player');
+
+              return `
+                <button class="nav-link ${isActive ? 'active' : ''}" data-view="${v.id}">
+                  <i class="fa-solid ${v.icon}"></i>
+                  <span>${v.label}</span>
+                </button>
+              `;
+            }).join('')}
           </nav>
 
           <div class="header-actions">

@@ -903,7 +903,7 @@ const INITIAL_MOCK_DATA = {
 
   transactions: [
     { id: "tx-1", type: "TRADE", season: 2025, week: 11, teamId: "team-1", secondaryTeamId: "team-3", details: "Gridiron Legends traded Tyreek Hill for Christian McCaffrey & 2026 1st Pick", grade: "A+" },
-    { id: "tx-2", type: "WAIVER", season: 2025, week: 12, teamId: "team-2", details: "Mahomes & Co claimed WR Dontayvion Wicks ($14 FAAB)", grade: "B" }
+    { id: "tx-2", type: "WAIVER", season: 2025, week: 12, teamId: "team-2", details: "Mahomes & Co claimed WR Dontayvion Wicks via Waiver Priority", grade: "B" }
   ],
 
   leagueRecords: [
@@ -916,10 +916,10 @@ const INITIAL_MOCK_DATA = {
   managerDecisionLogs: [
     { id: "log-101", teamId: "team-1", week: 11, category: "TRADE", title: "Blockbuster Blockbuster Trade", outcome: "MASTERMIND", netPoints: +28.5, impact: "+18.4% Playoff Odds", description: "Traded Tyreek Hill for Christian McCaffrey & 2026 1st. CMC scored 34.2 pts on debut." },
     { id: "log-102", teamId: "team-1", week: 9, category: "START_SIT", title: "Perfect QB Choice", outcome: "CLUTCH", netPoints: +14.2, impact: "Secured 3.1 Pt Win", description: "Started Patrick Mahomes (28.4 pts) over bench QB (14.2 pts) in tight matchup." },
-    { id: "log-103", teamId: "team-2", week: 8, category: "WAIVER", title: "Steal Waiver Claim", outcome: "WIN", netPoints: +42.0, impact: "+3.8 FAAB ROI", description: "Spent $22 FAAB on WR Puka Nacua who produced 3 starting games averaging 18.5 PPG." },
+    { id: "log-103", teamId: "team-2", week: 8, category: "WAIVER", title: "Steal Waiver Claim", outcome: "WIN", netPoints: +42.0, impact: "Top Waiver Move", description: "Claimed WR Puka Nacua via Waiver Priority who produced 3 starting games averaging 18.5 PPG." },
     { id: "log-104", teamId: "team-3", week: 10, category: "TRADE", title: "Consolidation Trade", outcome: "MASTERMIND", netPoints: +31.2, impact: "+12.1% Win Prob", description: "Acquired CeeDee Lamb for two bench pieces prior to playoff push." },
     { id: "log-105", teamId: "team-6", week: 7, category: "START_SIT", title: "Disastrous Benching", outcome: "BLUNDER", netPoints: -22.4, impact: "Cost Week 7 Matchup", description: "Benched WR Rashee Rice (26.4 pts) for TE Flexibility (4.0 pts)." },
-    { id: "log-106", teamId: "team-10", week: 5, category: "FAAB", title: "Huge FAAB Overpay", outcome: "BUST", netPoints: -14.0, impact: "$45 FAAB Waste", description: "Spent $45 FAAB on RB who was dropped 2 weeks later after 3.2 avg PPG." }
+    { id: "log-106", teamId: "team-10", week: 5, category: "WAIVER", title: "Waiver Priority Waste", outcome: "BUST", netPoints: -14.0, impact: "Lost Priority #1", description: "Used #1 Waiver Priority on RB who was dropped 2 weeks later after 3.2 avg PPG." }
   ]
 };
 

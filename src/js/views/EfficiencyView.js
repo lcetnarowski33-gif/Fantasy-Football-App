@@ -114,7 +114,7 @@ class EfficiencyViewComponent {
             <i class="fa-solid fa-hand-holding-dollar"></i> Free Agency & Positional Pickups
           </button>
           <button class="decision-tab-btn ${this.activeFilter === 'FAAB' ? 'active' : ''}" onclick="EfficiencyViewComponent.setFilter('FAAB')">
-            <i class="fa-solid fa-coins"></i> FAAB Spend Efficiency
+            <i class="fa-solid fa-list-check"></i> Waiver Wire Move Efficiency
           </button>
           <button class="decision-tab-btn ${this.activeFilter === 'TRADES' ? 'active' : ''}" onclick="EfficiencyViewComponent.setFilter('TRADES')">
             <i class="fa-solid fa-arrow-right-arrow-left"></i> Trade Moves Net Value
