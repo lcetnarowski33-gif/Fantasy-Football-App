@@ -206,9 +206,10 @@
 /* --------------------------------------------------------------------------
    3. Data Tables & Leaderboards
    -------------------------------------------------------------------------- */
-.analytics-table-wrapper {
+.analytics-table-wrapper, .table-responsive, .draft-board-container {
   width: 100%;
-  overflow-x: auto;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
 }
