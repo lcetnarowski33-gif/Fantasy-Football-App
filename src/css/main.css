@@ -152,6 +152,12 @@ input:focus, select:focus, textarea:focus {
   padding: 1.5rem 1rem 3rem 1rem;
 }
 
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem 0.75rem 5.5rem 0.75rem;
+  }
+}
+
 /* --------------------------------------------------------------------------
    5. Utility Classes & Badges
    -------------------------------------------------------------------------- */

@@ -22,12 +22,22 @@ class HeaderComponent {
     const activeView = currentState.activeView || 'home';
     const isEspnSynced = currentState.isEspnSynced;
 
+    const mobileViews = [
+      { id: 'home', label: 'Home', icon: 'fa-gauge-high' },
+      { id: 'league', label: 'League', icon: 'fa-trophy' },
+      { id: 'team', label: 'Teams', icon: 'fa-users' },
+      { id: 'matchup', label: 'Matchups', icon: 'fa-bolt' },
+      { id: 'trade', label: 'Trades', icon: 'fa-right-left' },
+      { id: 'analytics', label: 'Stats', icon: 'fa-chart-line' }
+    ];
+
     mountEl.innerHTML = `
       <header class="app-header">
         <div class="header-container">
           <div class="brand-logo" id="header-brand-click">
             <i class="fa-solid fa-football"></i>
-            <span>Fantasy League Analytics</span>
+            <span class="brand-text-desktop">Fantasy League Analytics</span>
+            <span class="brand-text-mobile">Fantasy Analytics</span>
           </div>
 
           <nav class="nav-links">
@@ -50,7 +60,7 @@ class HeaderComponent {
           <div class="header-actions">
             <button class="btn-espn-sync" id="btn-open-espn-modal">
               <i class="fa-solid ${isEspnSynced ? 'fa-circle-check' : 'fa-rotate'}"></i>
-              <span>${isEspnSynced ? 'ESPN Live' : 'Sync ESPN'}</span>
+              <span class="btn-text-desktop">${isEspnSynced ? 'ESPN Live' : 'Sync ESPN'}</span>
             </button>
 
             <button class="btn-icon-search" id="btn-open-search-modal" title="Search Players, Teams, Managers">
@@ -59,9 +69,27 @@ class HeaderComponent {
           </div>
         </div>
       </header>
+
+      <!-- Native Mobile Bottom Tab Bar -->
+      <nav class="mobile-bottom-nav">
+        ${mobileViews.map(v => {
+          const isActive = activeView === v.id || 
+            (v.id === 'matchup' && activeView === 'h2h') ||
+            (v.id === 'analytics' && activeView === 'efficiency') ||
+            (v.id === 'league' && activeView === 'records') ||
+            (v.id === 'team' && activeView === 'player');
+
+          return `
+            <button class="mobile-nav-item ${isActive ? 'active' : ''}" data-view="${v.id}">
+              <i class="fa-solid ${v.icon}"></i>
+              <span>${v.label}</span>
+            </button>
+          `;
+        }).join('')}
+      </nav>
     `;
 
-    // Event Delegation
+    // Desktop Event Delegation
     mountEl.querySelectorAll('.nav-link').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const view = e.currentTarget.getAttribute('data-view');
@@ -70,6 +98,15 @@ class HeaderComponent {
         } else {
           store.setView(view);
         }
+      });
+    });
+
+    // Mobile Bottom Tab Bar Event Delegation
+    mountEl.querySelectorAll('.mobile-nav-item').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const view = e.currentTarget.getAttribute('data-view');
+        store.setView(view);
+        try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(err) {}
       });
     });
 
