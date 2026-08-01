@@ -210,11 +210,11 @@ class HomeViewComponent {
             <div class="card-title">
               <i class="fa-solid fa-brain text-green"></i> Manager Composite IQ & Performance Analytics
             </div>
-            <span class="badge badge-gold"><i class="fa-solid fa-chart-bar"></i> Full League Benchmark</span>
+            <span class="badge badge-gold"><i class="fa-solid fa-arrows-left-right"></i> Swipe Graph Left/Right</span>
           </div>
 
-          <div style="padding:0.5rem 0;">
-            <div style="height:300px; position:relative;">
+          <div class="graph-scroll-wrapper">
+            <div class="chart-scroll-area" style="height:300px; position:relative; min-width:620px;">
               <canvas id="chart-home-manager-iq"></canvas>
             </div>
           </div>
