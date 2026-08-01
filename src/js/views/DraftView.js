@@ -61,10 +61,10 @@ class DraftViewComponent {
             </p>
           </div>
           <div style="display:flex; align-items:center; gap:0.75rem;">
-            <div style="display:flex; gap:0.5rem;">
-              <button class="btn btn-outline btn-sm" style="font-weight:700;" onclick="store.setView('trade')"><i class="fa-solid fa-right-left"></i> Trade Center</button>
-              <button class="btn btn-outline btn-sm" style="font-weight:700;" onclick="store.setView('waiver')"><i class="fa-solid fa-coins"></i> Free Agency Center</button>
-              <button class="btn btn-primary btn-sm" style="font-weight:700;"><i class="fa-solid fa-clipboard-list"></i> Draft Center</button>
+            <div class="sub-nav-actions">
+              <button class="btn btn-outline btn-sm" style="font-weight:700;" onclick="store.setView('trade')"><i class="fa-solid fa-right-left"></i> Trade</button>
+              <button class="btn btn-outline btn-sm" style="font-weight:700;" onclick="store.setView('waiver')"><i class="fa-solid fa-coins"></i> Free Agency</button>
+              <button class="btn btn-primary btn-sm" style="font-weight:700;"><i class="fa-solid fa-clipboard-list"></i> Draft</button>
             </div>
             <span class="badge badge-gold" style="font-size:0.85rem; padding:0.4rem 0.8rem;">
               <i class="fa-solid fa-trophy"></i> ${fullDraftPicks.length} Total Draft Picks
