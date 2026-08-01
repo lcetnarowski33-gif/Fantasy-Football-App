@@ -162,6 +162,19 @@ input:focus, select:focus, textarea:focus {
   padding: 1.5rem 1rem 3rem 1rem;
 }
 
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .main-content {
+    padding: 0.75rem 0.75rem calc(5.5rem + env(safe-area-inset-bottom)) 0.75rem !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 /* --------------------------------------------------------------------------
    5. Utility Classes & Badges
    -------------------------------------------------------------------------- */
