@@ -162,46 +162,6 @@ input:focus, select:focus, textarea:focus {
   padding: 1.5rem 1rem 3rem 1rem;
 }
 
-/* Touch-Scrollable Graph Container for Mobile Phone Display */
-.graph-scroll-wrapper {
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
-  -webkit-overflow-scrolling: touch;
-  border-radius: var(--radius-md);
-  padding-bottom: 0.5rem;
-}
-
-@media (max-width: 768px) {
-  html, body, #app-root {
-    height: 100vh !important;
-    height: 100dvh !important;
-    overflow: hidden !important;
-  }
-
-  .main-content {
-    height: calc(100dvh - 110px) !important;
-    max-height: calc(100dvh - 110px) !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    padding: 0.75rem 0.6rem 2.5rem 0.6rem !important;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Make graphs scroll horizontally on mobile so full desktop chart is visible */
-  .graph-scroll-wrapper .chart-container,
-  .graph-scroll-wrapper .chart-wrapper,
-  .graph-scroll-wrapper [style*="height:300px"],
-  .graph-scroll-wrapper [style*="height:320px"],
-  .chart-scroll-area {
-    min-width: 620px !important;
-    width: 620px !important;
-    height: 300px !important;
-    position: relative !important;
-  }
-}
-
 /* --------------------------------------------------------------------------
    5. Utility Classes & Badges
    -------------------------------------------------------------------------- */

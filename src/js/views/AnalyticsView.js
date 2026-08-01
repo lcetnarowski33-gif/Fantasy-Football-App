@@ -107,8 +107,8 @@ class AnalyticsViewComponent {
             </div>
           </div>
 
-          <div class="graph-scroll-wrapper">
-            <div class="chart-scroll-area" style="height:320px; position:relative; min-width:620px;">
+          <div style="padding:0.5rem 0;">
+            <div style="height:320px; position:relative;">
               <canvas id="chart-analytics-main"></canvas>
             </div>
           </div>
