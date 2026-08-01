@@ -25,64 +25,85 @@ function bootApp() {
   // Main Render Function triggered on store state changes
   function renderApp(state) {
     try {
-      if (!state && typeof store !== 'undefined') state = store.getState();
-      if (!state) return;
+      if ((!state || !state.data || !state.data.teams) && typeof store !== 'undefined') {
+        state = store.getState();
+      }
+      if ((!state || !state.data || !state.data.teams || state.data.teams.length === 0) && typeof store !== 'undefined') {
+        store.resetToMockData();
+        state = store.getState();
+      }
+      if (!state || !state.data) return;
 
       // 1. Render Header
-      if (headerMount && typeof HeaderComponent !== 'undefined') {
-        HeaderComponent.render(headerMount, state);
+      try {
+        if (headerMount && typeof HeaderComponent !== 'undefined') {
+          HeaderComponent.render(headerMount, state);
+        }
+      } catch (e) {
+        console.warn('Header render warning:', e);
       }
 
       // 2. Render Ticker
-      if (tickerMount && typeof TickerComponent !== 'undefined') {
-        TickerComponent.render(tickerMount, state);
+      try {
+        if (tickerMount && typeof TickerComponent !== 'undefined') {
+          TickerComponent.render(tickerMount, state);
+        }
+      } catch (e) {
+        console.warn('Ticker render warning:', e);
       }
 
       // 3. Render Active Dynamic View Page
       if (mainViewContainer) {
         const activeView = state.activeView || 'home';
 
-        switch (activeView) {
-          case 'home':
-            if (typeof HomeViewComponent !== 'undefined') HomeViewComponent.render(mainViewContainer, state);
-            break;
-          case 'league':
-            if (typeof LeagueViewComponent !== 'undefined') LeagueViewComponent.render(mainViewContainer, state);
-            break;
-          case 'team':
-            if (typeof TeamViewComponent !== 'undefined') TeamViewComponent.render(mainViewContainer, state);
-            break;
-          case 'player':
-            if (typeof PlayerViewComponent !== 'undefined') PlayerViewComponent.render(mainViewContainer, state);
-            break;
-          case 'analytics':
-            if (typeof AnalyticsViewComponent !== 'undefined') AnalyticsViewComponent.render(mainViewContainer, state);
-            break;
-          case 'h2h':
-            if (typeof H2HViewComponent !== 'undefined') H2HViewComponent.render(mainViewContainer, state);
-            break;
-          case 'records':
-            if (typeof RecordsViewComponent !== 'undefined') RecordsViewComponent.render(mainViewContainer, state);
-            break;
-          case 'trade':
-            if (typeof TradeViewComponent !== 'undefined') TradeViewComponent.render(mainViewContainer, state);
-            break;
-          case 'waiver':
-          case 'freeagency':
-            if (typeof FreeAgencyViewComponent !== 'undefined') FreeAgencyViewComponent.render(mainViewContainer, state);
-            break;
-          case 'draft':
-            if (typeof DraftViewComponent !== 'undefined') DraftViewComponent.render(mainViewContainer, state);
-            break;
-          case 'matchup':
-            if (typeof MatchupViewComponent !== 'undefined') MatchupViewComponent.render(mainViewContainer, state);
-            break;
-          case 'efficiency':
-            if (typeof EfficiencyViewComponent !== 'undefined') EfficiencyViewComponent.render(mainViewContainer, state);
-            break;
-          default:
-            if (typeof HomeViewComponent !== 'undefined') HomeViewComponent.render(mainViewContainer, state);
-            break;
+        try {
+          switch (activeView) {
+            case 'home':
+              if (typeof HomeViewComponent !== 'undefined') HomeViewComponent.render(mainViewContainer, state);
+              break;
+            case 'league':
+              if (typeof LeagueViewComponent !== 'undefined') LeagueViewComponent.render(mainViewContainer, state);
+              break;
+            case 'team':
+              if (typeof TeamViewComponent !== 'undefined') TeamViewComponent.render(mainViewContainer, state);
+              break;
+            case 'player':
+              if (typeof PlayerViewComponent !== 'undefined') PlayerViewComponent.render(mainViewContainer, state);
+              break;
+            case 'analytics':
+              if (typeof AnalyticsViewComponent !== 'undefined') AnalyticsViewComponent.render(mainViewContainer, state);
+              break;
+            case 'h2h':
+              if (typeof H2HViewComponent !== 'undefined') H2HViewComponent.render(mainViewContainer, state);
+              break;
+            case 'records':
+              if (typeof RecordsViewComponent !== 'undefined') RecordsViewComponent.render(mainViewContainer, state);
+              break;
+            case 'trade':
+              if (typeof TradeViewComponent !== 'undefined') TradeViewComponent.render(mainViewContainer, state);
+              break;
+            case 'waiver':
+            case 'freeagency':
+              if (typeof FreeAgencyViewComponent !== 'undefined') FreeAgencyViewComponent.render(mainViewContainer, state);
+              break;
+            case 'draft':
+              if (typeof DraftViewComponent !== 'undefined') DraftViewComponent.render(mainViewContainer, state);
+              break;
+            case 'matchup':
+              if (typeof MatchupViewComponent !== 'undefined') MatchupViewComponent.render(mainViewContainer, state);
+              break;
+            case 'efficiency':
+              if (typeof EfficiencyViewComponent !== 'undefined') EfficiencyViewComponent.render(mainViewContainer, state);
+              break;
+            default:
+              if (typeof HomeViewComponent !== 'undefined') HomeViewComponent.render(mainViewContainer, state);
+              break;
+          }
+        } catch (viewErr) {
+          console.error(`View render error for "${activeView}":`, viewErr);
+          if (typeof HomeViewComponent !== 'undefined' && activeView !== 'home') {
+            HomeViewComponent.render(mainViewContainer, state);
+          }
         }
       }
     } catch (err) {

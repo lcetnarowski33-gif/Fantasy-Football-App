@@ -91,6 +91,10 @@ class AppStore {
    * Get current state snapshot
    */
   getState() {
+    if (!this.state.data || !this.state.data.teams || this.state.data.teams.length === 0) {
+      const fallback = (typeof INITIAL_MOCK_DATA !== 'undefined' ? INITIAL_MOCK_DATA : (typeof window !== 'undefined' && window.INITIAL_MOCK_DATA ? window.INITIAL_MOCK_DATA : null));
+      if (fallback) this.state.data = fallback;
+    }
     return this.state;
   }
 
