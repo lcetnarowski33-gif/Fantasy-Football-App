@@ -8,10 +8,11 @@ class TeamViewComponent {
   static render(mountEl, state) {
     if (!mountEl) return;
 
+    const defaultTeam = { teamId: 'default', name: 'Team', abbrev: 'T', managerName: 'Manager', division: 'N/A', eloRating: 1500, logoUrl: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150', wins: 0, losses: 0, ties: 0, pointsFor: 0, maxPoints: 0, benchPoints: 0, playoffOdds: 0, championshipOdds: 0, decisionStats: {} };
     const teamId = state.selectedTeamId || 'team-1';
-    const teams = state.data.teams || [];
-    const team = teams.find(t => t.teamId === teamId) || teams[0];
-    const players = (state.data.players || []).filter(p => p.teamId === team.teamId);
+    const teams = (state && state.data && state.data.teams) || [];
+    const team = teams.find(t => t.teamId === teamId) || teams[0] || defaultTeam;
+    const players = ((state && state.data && state.data.players) || []).filter(p => p.teamId === team.teamId);
 
     mountEl.innerHTML = `
       <div class="animate-fade-in">

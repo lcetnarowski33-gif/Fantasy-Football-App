@@ -250,11 +250,21 @@ function normalizeEspnData(raw) {
     };
   });
 
+  const seasonYear = raw._syncedSeason || raw.seasonId || new Date().getFullYear();
+
   return {
+    league: {
+      id: `espn-${raw.id}`,
+      name: leagueName,
+      season: seasonYear,
+      currentWeek,
+      totalTeams,
+      scoringType
+    },
     leagueId: `espn-${raw.id}`,
     espnLeagueId: raw.id,
     name: leagueName,
-    season: raw._syncedSeason || raw.seasonId || new Date().getFullYear(),
+    season: seasonYear,
     currentWeek,
     totalTeams,
     scoringType,

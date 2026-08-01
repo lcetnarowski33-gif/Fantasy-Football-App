@@ -30,8 +30,8 @@ class TradeViewComponent {
 
     // High level metrics
     const totalTrades = completedTrades.length;
-    const topManager = managerRankings[0];
-    const highestNetTrade = [...completedTrades].sort((a, b) => Math.max(b.teamANetPts, b.teamBNetPts) - Math.max(a.teamANetPts, a.teamBNetPts))[0];
+    const topManager = managerRankings[0] || { managerName: 'N/A', name: 'N/A', netScore: 0, netWins: 0, totalTrades: 0, grade: 'N/A' };
+    const highestNetTrade = [...completedTrades].sort((a, b) => Math.max(b.teamANetPts || 0, b.teamBNetPts || 0) - Math.max(a.teamANetPts || 0, a.teamBNetPts || 0))[0] || { teamAName: 'N/A', teamBName: 'N/A', teamANetPts: 0, teamBNetPts: 0, details: 'No trade history recorded yet.' };
     const avgScore = (completedTrades.reduce((acc, t) => acc + (t.score || 85), 0) / Math.max(1, totalTrades)).toFixed(1);
 
     mountEl.innerHTML = `

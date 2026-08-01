@@ -31,8 +31,8 @@ class FreeAgencyViewComponent {
     }
 
     const totalClaims = pickups.length;
-    const topManager = managerRankings[0];
-    const topSteal = [...pickups].sort((a, b) => b.netPoints - a.netPoints)[0];
+    const topManager = managerRankings[0] || { managerName: 'N/A', teamName: 'N/A', totalMoves: 0, netPoints: 0, faabRoi: 0 };
+    const topSteal = [...pickups].sort((a, b) => (b.netPoints || 0) - (a.netPoints || 0))[0] || { playerName: 'N/A', managerName: 'N/A', netPoints: 0, details: 'No moves recorded yet.' };
     const avgPickups = (pickups.length / Math.max(1, teams.length)).toFixed(1);
 
     mountEl.innerHTML = `

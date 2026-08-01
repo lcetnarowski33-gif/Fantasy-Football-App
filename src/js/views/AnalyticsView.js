@@ -16,10 +16,11 @@ class AnalyticsViewComponent {
     const managerMetrics = this.calculateManagerMetrics(teams);
 
     // Calculate Top Leaders
-    const topIqManager = [...managerMetrics].sort((a, b) => b.compositeIQ - a.compositeIQ)[0];
-    const topStartManager = [...managerMetrics].sort((a, b) => b.startIQ - a.startIQ)[0];
-    const topWaiverManager = [...managerMetrics].sort((a, b) => b.waiverPoints - a.waiverPoints)[0];
-    const topTradeManager = [...managerMetrics].sort((a, b) => b.tradeNetValue - a.tradeNetValue)[0];
+    const defaultMgr = { managerName: 'N/A', teamName: 'N/A', compositeIQ: 70, startIQ: 70, waiverPoints: 0, tradeNetValue: 0 };
+    const topIqManager = [...managerMetrics].sort((a, b) => (b.compositeIQ || 0) - (a.compositeIQ || 0))[0] || defaultMgr;
+    const topStartManager = [...managerMetrics].sort((a, b) => (b.startIQ || 0) - (a.startIQ || 0))[0] || defaultMgr;
+    const topWaiverManager = [...managerMetrics].sort((a, b) => (b.waiverPoints || 0) - (a.waiverPoints || 0))[0] || defaultMgr;
+    const topTradeManager = [...managerMetrics].sort((a, b) => (b.tradeNetValue || 0) - (a.tradeNetValue || 0))[0] || defaultMgr;
 
     mountEl.innerHTML = `
       <div class="animate-fade-in">

@@ -14,16 +14,22 @@ class HomeViewComponent {
   static render(mountEl, state) {
     if (!mountEl) return;
 
-    const league = state.data.league;
-    const teams = state.data.teams || [];
-    const matchups = state.data.weeklyMatchups || [];
+    const league = (state && state.data && state.data.league) ? state.data.league : {
+      name: (state && state.data && state.data.name) || "Fantasy League Analytics",
+      season: (state && state.data && state.data.season) || 2025,
+      currentWeek: (state && state.data && state.data.currentWeek) || 12,
+      totalTeams: (state && state.data && state.data.teams && state.data.teams.length) || 10,
+      scoringType: (state && state.data && state.data.scoringType) || "PPR"
+    };
+    const teams = (state && state.data && state.data.teams) || [];
+    const matchups = (state && state.data && state.data.weeklyMatchups) || [];
     const allLeagueMatchups = this.getAllLeagueMatchups(teams, matchups);
-    const transactions = state.data.transactions || [];
-    const decisionLogs = state.data.managerDecisionLogs || [];
+    const transactions = (state && state.data && state.data.transactions) || [];
+    const decisionLogs = (state && state.data && state.data.managerDecisionLogs) || [];
 
     // Sort teams by Wins desc, then PointsFor desc for Standings
     const sortedStandings = [...teams].sort((a, b) => (b.wins - a.wins) || (b.pointsFor - a.pointsFor));
-    const powerRankings = [...teams].sort((a, b) => (b.eloRating - a.eloRating));
+    const powerRankings = [...teams].sort((a, b) => ((b.eloRating || 1500) - (a.eloRating || 1500)));
 
     // Get Decision Leaders
     const decisionLeaders = AnalyticsEngine.getDecisionLeaders(teams);
@@ -44,8 +50,9 @@ class HomeViewComponent {
       sortedDecisionTeams.sort((a, b) => (b.decisionStats?.compositeIQ || 0) - (a.decisionStats?.compositeIQ || 0));
     }
 
-    const teamA = teams.find(t => t.teamId === this.compareTeamAId) || teams[0];
-    const teamB = teams.find(t => t.teamId === this.compareTeamBId) || teams[1];
+    const defaultTeam = { teamId: 'default', name: 'Team', managerName: 'Manager', logoUrl: '', wins: 0, losses: 0, pointsFor: 0, eloRating: 1500, decisionStats: {} };
+    const teamA = teams.find(t => t.teamId === this.compareTeamAId) || teams[0] || defaultTeam;
+    const teamB = teams.find(t => t.teamId === this.compareTeamBId) || teams[1] || teams[0] || defaultTeam;
 
     mountEl.innerHTML = `
       <div class="animate-fade-in">

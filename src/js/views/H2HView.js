@@ -9,11 +9,12 @@ class H2HViewComponent {
   static render(mountEl, state) {
     if (!mountEl) return;
 
-    const teams = state.data.teams || [];
+    const teams = (state && state.data && state.data.teams) || [];
     const compareIds = state.compareTeamIds || ['team-1', 'team-2'];
 
-    const teamA = teams.find(t => t.teamId === compareIds[0]) || teams[0];
-    const teamB = teams.find(t => t.teamId === compareIds[1]) || teams[1];
+    const defaultTeam = { teamId: 'default', name: 'Team', managerName: 'Manager', logoUrl: '', wins: 0, losses: 0, pointsFor: 0, avgScore: 100, eloRating: 1500 };
+    const teamA = teams.find(t => t.teamId === compareIds[0]) || teams[0] || defaultTeam;
+    const teamB = teams.find(t => t.teamId === compareIds[1]) || teams[1] || teams[0] || defaultTeam;
 
     // Run Monte Carlo simulation
     const simResult = AnalyticsEngine.runMatchupSimulation(teamA, teamB);
