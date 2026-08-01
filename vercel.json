@@ -1,28 +1,8 @@
 {
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "server.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": [
-          "server_config.json",
-          "league_cache.json"
-        ]
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "server.js"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/api/:path*",
+      "destination": "/api/index.js"
     }
   ]
 }
