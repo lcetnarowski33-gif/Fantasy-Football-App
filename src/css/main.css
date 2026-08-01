@@ -162,12 +162,6 @@ input:focus, select:focus, textarea:focus {
   padding: 1.5rem 1rem 3rem 1rem;
 }
 
-@media (max-width: 768px) {
-  .main-content {
-    padding: 0.75rem 0.75rem 5rem 0.75rem !important;
-  }
-}
-
 /* --------------------------------------------------------------------------
    5. Utility Classes & Badges
    -------------------------------------------------------------------------- */
@@ -214,16 +208,14 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
-/* Glassmorphism Card Wrapper with Touch Scrolling */
-.analytics-card, .card {
+/* Glassmorphism Card Wrapper */
+.analytics-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: 1.25rem;
   box-shadow: var(--shadow-md);
   transition: transform var(--transition-fast), border-color var(--transition-fast);
-  overflow-x: auto !important;
-  -webkit-overflow-scrolling: touch !important;
 }
 
 .analytics-card:hover {
