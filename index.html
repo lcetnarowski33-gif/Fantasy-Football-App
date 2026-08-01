@@ -18,8 +18,8 @@
   <!-- Font Awesome 6 Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <!-- Chart.js 4.4 CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Chart.js 4.4 CDN (Deferred so parsing is non-blocking) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
 
   <!-- Application Stylesheets -->
   <link rel="stylesheet" href="./src/css/main.css">
@@ -36,7 +36,15 @@
     <div id="ticker-mount"></div>
 
     <!-- Dynamic View Page Container -->
-    <main id="main-view-container" class="main-content"></main>
+    <main id="main-view-container" class="main-content">
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; text-align:center; color:#f8fafc;">
+        <i class="fa-solid fa-football" style="font-size:3.5rem; color:#00e676; margin-bottom:1.25rem; animation: pulseGlow 1.5s infinite alternate;"></i>
+        <h2 style="font-size:1.6rem; font-weight:800; letter-spacing:0.02em;">Loading Fantasy League Analytics...</h2>
+        <p style="color:#cbd5e1; font-size:0.95rem; margin-top:0.5rem; max-width:480px;">
+          Initializing ESPN Data Sync, Monte Carlo Simulations, and Manager Decision Command Center...
+        </p>
+      </div>
+    </main>
 
     <!-- Global Search Modal Mount -->
     <div id="search-modal-mount"></div>
