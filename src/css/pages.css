@@ -484,17 +484,64 @@
     white-space: nowrap !important;
   }
 
-  /* Responsive Data Tables for Mobile Phones - 100% Fit, Zero Cut-Off */
-  .table-responsive, table {
-    display: table !important;
+  /* Mobile Phone Card Transformation for ALL Data Tables */
+  .analytics-table, .standings-table, .power-rankings-table, .roster-table, table {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.6rem !important;
     width: 100% !important;
-    max-width: 100% !important;
-    table-layout: auto !important;
   }
 
-  th, td {
-    padding: 0.35rem 0.25rem !important;
-    font-size: 0.72rem !important;
+  .analytics-table thead, .standings-table thead, .power-rankings-table thead, .roster-table thead, thead {
+    display: none !important;
+  }
+
+  .analytics-table tbody, .standings-table tbody, .power-rankings-table tbody, .roster-table tbody, tbody {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.6rem !important;
+    width: 100% !important;
+  }
+
+  .analytics-table tr, .standings-table tr, .power-rankings-table tr, .roster-table tr, tbody tr {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.75rem 0.85rem !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .analytics-table td, .standings-table td, .power-rankings-table td, .roster-table td, td {
+    padding: 0 !important;
+    border: none !important;
+    font-size: 0.82rem !important;
+  }
+
+  /* Official 16-Round Draft Board Grid on Phone Display */
+  .draft-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+
+  .draft-board-container {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Matchup Cards on Phone Display */
+  .matchup-grid, .h2h-vs-header {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.85rem !important;
+    width: 100% !important;
   }
 
   .decision-pillar-tabs, .trade-filter-bar, .filter-bar, .tab-bar, .sub-nav-tabs {
@@ -511,17 +558,6 @@
     white-space: nowrap !important;
     font-size: 0.75rem !important;
     padding: 0.35rem 0.5rem !important;
-  }
-
-  /* Ensure card and modal elements wrap cleanly without clipping */
-  div, section, article, header, nav {
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-
-  /* Hide segmented tabs so all cards render vertically as you scroll up and down */
-  .mobile-segmented-bar, .mobile-hide {
-    display: flex !important;
   }
 
   /* Ensure card and modal elements wrap cleanly without clipping */
