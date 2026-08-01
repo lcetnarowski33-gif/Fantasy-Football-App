@@ -458,95 +458,35 @@
 }
 
 /* --------------------------------------------------------------------------
-   Native iOS iPhone Navigation & Responsive Adaptations
+   Responsive Header Navigation Adaptations
    -------------------------------------------------------------------------- */
-.brand-text-mobile {
-  display: none;
-}
-
-.mobile-bottom-nav {
-  display: none;
-}
-
 @media (max-width: 768px) {
   .app-header {
-    padding: 0.5rem 0.85rem;
-    padding-top: max(0.5rem, env(safe-area-inset-top));
+    padding: 0.6rem 0.85rem;
   }
 
-  .brand-text-desktop {
-    display: none;
-  }
-
-  .brand-text-mobile {
-    display: inline;
-    font-size: 0.95rem;
+  .header-container {
+    flex-wrap: wrap;
+    gap: 0.75rem;
   }
 
   .nav-links {
-    display: none !important;
+    order: 3;
+    width: 100%;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.35rem;
+    gap: 0.35rem;
   }
 
-  .btn-text-desktop {
-    display: none;
+  .nav-link {
+    flex-shrink: 0;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.8rem;
   }
 
-  .btn-espn-sync {
-    padding: 0.4rem 0.6rem;
-    font-size: 0.85rem;
-  }
-
-  .mobile-bottom-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    background: rgba(14, 19, 29, 0.96);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid var(--border-color);
-    padding: 0.4rem 0.2rem max(0.4rem, env(safe-area-inset-bottom)) 0.2rem;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
-  }
-
-  .mobile-nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.2rem;
-    color: var(--text-secondary);
-    font-size: 0.68rem;
-    font-weight: 600;
-    padding: 0.35rem 0.4rem;
-    border-radius: var(--radius-sm);
-    flex: 1;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    transition: color var(--transition-fast), transform var(--transition-fast);
-  }
-
-  .mobile-nav-item i {
-    font-size: 1.15rem;
-  }
-
-  .mobile-nav-item:active {
-    transform: scale(0.92);
-  }
-
-  .mobile-nav-item.active {
-    color: var(--accent-sleeper);
-    font-weight: 700;
-  }
-
-  .mobile-nav-item.active i {
-    filter: drop-shadow(0 0 6px rgba(0, 230, 118, 0.6));
+  .nav-link span {
+    display: inline !important;
   }
 }
