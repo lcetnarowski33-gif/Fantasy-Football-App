@@ -214,6 +214,30 @@
   border: 1px solid var(--border-color);
 }
 
+@media (max-width: 768px) {
+  .analytics-table-wrapper, .table-responsive {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .analytics-table, .standings-table, .power-rankings-table, .roster-table {
+    min-width: 660px !important;
+  }
+
+  .draft-board-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    max-height: 480px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .draft-grid {
+    min-width: 1250px !important;
+  }
+}
+
 .analytics-table {
   width: 100%;
   border-collapse: collapse;
