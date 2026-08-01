@@ -28,9 +28,11 @@ class TickerComponent {
         <div class="ticker-label">
           <i class="fa-solid fa-bolt"></i> Live Feed
         </div>
-        <div class="ticker-content">
-          ${tickerItems.join('')}
-          ${tickerItems.join('')} <!-- Duplicate for seamless loop -->
+        <div class="ticker-content-wrapper">
+          <div class="ticker-content">
+            ${tickerItems.join('')}
+            ${tickerItems.join('')} <!-- Duplicate for seamless loop -->
+          </div>
         </div>
       </div>
     `;
