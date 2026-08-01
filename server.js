@@ -10,6 +10,10 @@ const path = require('path');
 const fs = require('fs');
 const { fetchEspnLeagueData, normalizeEspnData } = require('./src/backend/services/espnAdapter');
 
+try {
+  require('dotenv').config();
+} catch (e) {}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -23,10 +27,10 @@ const CONFIG_FILE = path.join(__dirname, 'server_config.json');
 const CACHE_FILE = path.join(__dirname, 'league_cache.json');
 
 let serverConfig = {
-  leagueId: "1585576113",
-  season: 2024,
-  swid: "",
-  espnS2: "",
+  leagueId: process.env.ESPN_LEAGUE_ID || "1585576113",
+  season: process.env.ESPN_SEASON ? parseInt(process.env.ESPN_SEASON, 10) : 2024,
+  swid: process.env.ESPN_SWID || "",
+  espnS2: process.env.ESPN_S2 || "",
   isAutoSyncEnabled: true
 };
 
