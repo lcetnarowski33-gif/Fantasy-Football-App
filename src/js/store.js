@@ -101,13 +101,35 @@ class AppStore {
   /**
    * Navigate to a specific view
    * @param {string} viewName 
+   * @param {Object} [options]
    */
-  setView(viewName) {
-    if (this.state.activeView !== viewName) {
-      this.state.viewHistory.push(this.state.activeView);
+  setView(viewName, options = null) {
+    if (options && options.teamId) {
+      this.state.selectedTeamId = options.teamId;
+    }
+    if (options && options.playerId !== undefined) {
+      this.state.selectedPlayerId = options.playerId;
+    }
+    if (this.state.activeView !== viewName || options) {
+      if (this.state.activeView && this.state.activeView !== viewName) {
+        this.state.viewHistory.push(this.state.activeView);
+      }
       this.state.activeView = viewName;
       this.notify();
     }
+  }
+
+  /**
+   * Navigate back to previous view in view history
+   */
+  goBack() {
+    if (this.state.viewHistory && this.state.viewHistory.length > 0) {
+      const prevView = this.state.viewHistory.pop();
+      this.state.activeView = prevView || 'home';
+    } else {
+      this.state.activeView = 'home';
+    }
+    this.notify();
   }
 
   /**
@@ -173,7 +195,7 @@ class AppStore {
     }
 
     if (espnNormalizedData.teams.length > 0) {
-      this.state.selectedTeamId = espnNormalizedData.teams[0].id;
+      this.state.selectedTeamId = espnNormalizedData.teams[0].teamId || espnNormalizedData.teams[0].id || 'team-1';
     }
 
     console.log(`✅ Applied live ESPN API data for "${espnNormalizedData.name}"`);
