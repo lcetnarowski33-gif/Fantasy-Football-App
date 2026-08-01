@@ -518,5 +518,10 @@
     max-width: 100%;
     box-sizing: border-box;
   }
+
+  /* Mobile Single-Screen Section Toggling */
+  .mobile-hide {
+    display: none !important;
+  }
 }
 
