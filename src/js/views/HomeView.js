@@ -203,6 +203,24 @@ class HomeViewComponent {
         </div>
 
         <!-- ========================================================================= -->
+        <!-- MANAGER COMPOSITE IQ & PERFORMANCE GRAPH (MOVED TO DASHBOARD) -->
+        <!-- ========================================================================= -->
+        <div class="analytics-card" style="margin-bottom: 2rem;">
+          <div class="card-header" style="flex-wrap:wrap; gap:1rem;">
+            <div class="card-title">
+              <i class="fa-solid fa-brain text-green"></i> Manager Composite IQ & Performance Analytics
+            </div>
+            <span class="badge badge-gold"><i class="fa-solid fa-chart-bar"></i> Full League Benchmark</span>
+          </div>
+
+          <div style="padding:0.5rem 0;">
+            <div style="height:300px; position:relative;">
+              <canvas id="chart-home-manager-iq"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================================= -->
         <!-- MAIN DASHBOARD 2-COLUMN GRID (STANDINGS & MATCHUPS) -->
         <!-- ========================================================================= -->
         <div class="dashboard-grid" style="margin-bottom: 2rem;">
@@ -408,6 +426,18 @@ class HomeViewComponent {
         </div>
       </div>
     `;
+
+    setTimeout(() => {
+      HomeViewComponent.renderHomeCharts(teams);
+    }, 50);
+  }
+
+  static renderHomeCharts(teams) {
+    if (typeof ChartManager === 'undefined' || !teams || teams.length === 0) return;
+    const sorted = [...teams].sort((a, b) => (b.decisionStats?.compositeIQ || 0) - (a.decisionStats?.compositeIQ || 0));
+    const labels = sorted.map(t => t.managerName || t.name);
+    const data = sorted.map(t => t.decisionStats?.compositeIQ || 85);
+    ChartManager.renderBarChart('chart-home-manager-iq', labels, data, '#00e676');
   }
 
   static getAllLeagueMatchups(teams, rawMatchups) {
