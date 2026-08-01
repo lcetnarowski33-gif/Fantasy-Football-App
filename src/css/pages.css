@@ -519,9 +519,15 @@
     box-sizing: border-box;
   }
 
-  /* Mobile Single-Screen Section Toggling */
-  .mobile-hide {
-    display: none !important;
+  /* Hide segmented tabs so all cards render vertically as you scroll up and down */
+  .mobile-segmented-bar, .mobile-hide {
+    display: flex !important;
+  }
+
+  /* Ensure card and modal elements wrap cleanly without clipping */
+  div, section, article, header, nav {
+    max-width: 100%;
+    box-sizing: border-box;
   }
 }
 

@@ -61,15 +61,8 @@ class TradeViewComponent {
           </div>
         </div>
 
-        <!-- Mobile Single-Screen Segmented Sub-Tab Switcher -->
-        <div class="mobile-segmented-bar">
-          <button class="mobile-segmented-btn ${this.activeMobileTab === 'summary' ? 'active' : ''}" onclick="TradeViewComponent.setMobileTab('summary')">📊 Overview</button>
-          <button class="mobile-segmented-btn ${this.activeMobileTab === 'rankings' ? 'active' : ''}" onclick="TradeViewComponent.setMobileTab('rankings')">🏆 Rankings</button>
-          <button class="mobile-segmented-btn ${this.activeMobileTab === 'audits' ? 'active' : ''}" onclick="TradeViewComponent.setMobileTab('audits')">🤝 Trade Logs</button>
-        </div>
-
         <!-- Highlight Summary Stat Cards -->
-        <div class="decision-leader-grid ${this.activeMobileTab !== 'summary' ? 'mobile-hide' : ''}" style="margin-bottom:1.5rem;">
+        <div class="decision-leader-grid" style="margin-bottom:1.5rem;">
           <div class="decision-leader-card">
             <div class="decision-leader-icon" style="background:rgba(56,189,248,0.15); color:var(--accent-blue);">
               <i class="fa-solid fa-cube"></i>
@@ -118,7 +111,7 @@ class TradeViewComponent {
         <!-- ========================================================================= -->
         <!-- SECTION 1: MANAGER TRADE PERFORMANCE & EFFICIENCY RANKINGS TABLE -->
         <!-- ========================================================================= -->
-        <div class="analytics-card ${this.activeMobileTab !== 'rankings' ? 'mobile-hide' : ''}" style="margin-bottom:1.5rem;">
+        <div class="analytics-card" style="margin-bottom:1.5rem;">
           <div class="card-header">
             <div class="card-title">
               <i class="fa-solid fa-trophy text-gold"></i> Season Manager Trade Performance & Efficiency Rankings
@@ -188,7 +181,7 @@ class TradeViewComponent {
         <!-- ========================================================================= -->
         <!-- SECTION 2: DEDICATED TRADE HISTORY TIMELINE (THE CUBE SECTION 🧊) -->
         <!-- ========================================================================= -->
-        <div class="analytics-card ${this.activeMobileTab !== 'audits' ? 'mobile-hide' : ''}" style="margin-bottom:1.5rem;">
+        <div class="analytics-card" style="margin-bottom:1.5rem;">
           <div class="card-header">
             <div class="card-title">
               <i class="fa-solid fa-cube text-blue" style="font-size:1.2rem;"></i> Official League Trade History Feed

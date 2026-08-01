@@ -163,19 +163,19 @@ input:focus, select:focus, textarea:focus {
 }
 
 @media (max-width: 768px) {
-  html, body, #app-root {
-    height: 100vh !important;
-    height: 100dvh !important;
-    overflow: hidden !important;
+  html, body {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    min-height: 100vh;
+    height: auto !important;
   }
 
   .main-content {
-    height: calc(100dvh - 110px) !important;
-    max-height: calc(100dvh - 110px) !important;
-    padding: 0.5rem 0.5rem 0.5rem 0.5rem !important;
-    overflow: hidden !important;
-    display: flex;
-    flex-direction: column;
+    padding: 0.75rem 0.6rem 5.5rem 0.6rem !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
   }
 }
 
