@@ -140,10 +140,10 @@ class AnalyticsViewComponent {
               <tbody>
                 ${managerMetrics.map((m, idx) => `
                   <tr style="cursor:pointer;" onclick="store.setView('team', {teamId: '${m.teamId}'});">
-                    <td style="font-weight:800; color:${idx === 0 ? 'var(--accent-gold)' : (idx === 1 || idx === 2 ? 'var(--accent-sleeper)' : 'var(--accent-blue)')};">
+                    <td data-label="Rank" style="font-weight:800; color:${idx === 0 ? 'var(--accent-gold)' : (idx === 1 || idx === 2 ? 'var(--accent-sleeper)' : 'var(--accent-blue)')};">
                       #${idx + 1}
                     </td>
-                    <td>
+                    <td data-label="Manager & Roster">
                       <div style="display:flex; align-items:center; gap:0.65rem;">
                         <img src="${m.logoUrl}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; background:var(--bg-surface);">
                         <div>
@@ -152,8 +152,8 @@ class AnalyticsViewComponent {
                         </div>
                       </div>
                     </td>
-                    <td>
-                      <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <td data-label="Composite Manager IQ">
+                      <div style="display:flex; align-items:center; gap:0.5rem; justify-content:flex-end;">
                         <span class="badge ${m.iqGrade.startsWith('A') ? 'badge-green' : (m.iqGrade.startsWith('B') ? 'badge-blue' : 'badge-gold')}" style="font-size:0.8rem;">${m.iqGrade}</span>
                         <div style="flex:1; max-width:80px; height:6px; background:var(--bg-surface); border-radius:3px; overflow:hidden;">
                           <div style="width:${Math.min(100, Math.max(10, m.compositeIQ))}%; height:100%; background:${m.compositeIQ >= 85 ? 'var(--accent-sleeper)' : (m.compositeIQ >= 75 ? 'var(--accent-gold)' : '#ef4444')};"></div>
@@ -161,11 +161,11 @@ class AnalyticsViewComponent {
                         <span class="font-mono" style="font-weight:800; font-size:0.88rem; color:var(--text-primary);">${m.compositeIQ}</span>
                       </div>
                     </td>
-                    <td class="font-mono text-green" style="font-weight:700;">${m.startIQ}%</td>
-                    <td class="font-mono ${m.waiverPoints >= 0 ? 'text-green' : 'text-muted'}" style="font-weight:700;">+${m.waiverPoints} Pts</td>
-                    <td class="font-mono ${m.tradeNetValue >= 0 ? 'text-green' : 'text-red'}" style="font-weight:700;">${m.tradeNetValue >= 0 ? '+' : ''}${m.tradeNetValue} Pts</td>
-                    <td class="font-mono text-red" style="font-weight:700;">-${m.pointsSacrificed} Pts</td>
-                    <td>
+                    <td data-label="Start/Sit Precision" class="font-mono text-green" style="font-weight:700;">${m.startIQ}%</td>
+                    <td data-label="Free Agency Moves" class="font-mono ${m.waiverPoints >= 0 ? 'text-green' : 'text-muted'}" style="font-weight:700;">+${m.waiverPoints} Pts</td>
+                    <td data-label="Trade Net Value" class="font-mono ${m.tradeNetValue >= 0 ? 'text-green' : 'text-red'}" style="font-weight:700;">${m.tradeNetValue >= 0 ? '+' : ''}${m.tradeNetValue} Pts</td>
+                    <td data-label="Bench Points Lost" class="font-mono text-red" style="font-weight:700;">-${m.pointsSacrificed} Pts</td>
+                    <td data-label="Manager Persona">
                       <span class="badge badge-blue" style="font-size:0.78rem;">${m.persona}</span>
                     </td>
                   </tr>

@@ -144,8 +144,8 @@ class DraftViewComponent {
                   const ds = t.decisionStats || {};
                   return `
                     <tr>
-                      <td style="font-weight:800; color:${idx < 3 ? 'var(--accent-gold)' : 'var(--text-secondary)'};">#${idx + 1}</td>
-                      <td>
+                      <td data-label="Rank" style="font-weight:800; color:${idx < 3 ? 'var(--accent-gold)' : 'var(--text-secondary)'};">#${idx + 1}</td>
+                      <td data-label="Manager & Team">
                         <div style="display:flex; align-items:center; gap:0.6rem;">
                           <img src="${t.logoUrl}" style="width:28px; height:28px; border-radius:4px; object-fit:cover;">
                           <div>
@@ -154,11 +154,11 @@ class DraftViewComponent {
                           </div>
                         </div>
                       </td>
-                      <td class="font-mono text-green" style="font-weight:800; font-size:1rem;">+${ds.draftVorp || 45} VORP</td>
-                      <td class="font-mono text-blue" style="font-weight:700;">${ds.draftHitRate || 75}%</td>
-                      <td><span class="badge badge-green">${ds.bestDraftPick || 'Round 5 Gem (+28.4 Pts)'}</span></td>
-                      <td><span class="badge badge-red">${ds.worstDraftPick || 'Round 2 Reach (-12.1 Pts)'}</span></td>
-                      <td><span class="badge badge-gold" style="font-size:0.85rem; font-weight:800;">${idx < 2 ? 'A+' : (idx < 5 ? 'A' : 'B+')}</span></td>
+                      <td data-label="Draft VORP" class="font-mono text-green" style="font-weight:800; font-size:1rem;">+${ds.draftVorp || 45} VORP</td>
+                      <td data-label="Draft Hit Rate" class="font-mono text-blue" style="font-weight:700;">${ds.draftHitRate || 75}%</td>
+                      <td data-label="Best Pick"><span class="badge badge-green">${ds.bestDraftPick || 'Round 5 Gem (+28.4 Pts)'}</span></td>
+                      <td data-label="Worst Pick"><span class="badge badge-red">${ds.worstDraftPick || 'Round 2 Reach (-12.1 Pts)'}</span></td>
+                      <td data-label="Draft Grade"><span class="badge badge-gold" style="font-size:0.85rem; font-weight:800;">${idx < 2 ? 'A+' : (idx < 5 ? 'A' : 'B+')}</span></td>
                     </tr>
                   `;
                 }).join('')}
@@ -216,7 +216,7 @@ class DraftViewComponent {
             <div class="card-title">
               <i class="fa-solid fa-list-ol text-green"></i> Detailed Pick-by-Pick Draft Audit (All 160 Picks)
             </div>
-            <div style="display:flex; gap:0.4rem;">
+            <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
               <button class="btn btn-sm ${this.activeClassificationFilter === 'ALL' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="DraftViewComponent.setClassificationFilter('ALL')">All Picks</button>
               <button class="btn btn-sm ${this.activeClassificationFilter === 'STEAL' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="DraftViewComponent.setClassificationFilter('STEAL')">🔥 Steals Only</button>
               <button class="btn btn-sm ${this.activeClassificationFilter === 'REACH' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="DraftViewComponent.setClassificationFilter('REACH')">⚠️ Reaches Only</button>
@@ -241,24 +241,24 @@ class DraftViewComponent {
               <tbody>
                 ${filteredPicks.map(p => `
                   <tr>
-                    <td class="font-mono" style="font-weight:800; color:var(--accent-gold);">${p.pickStr}</td>
-                    <td>
+                    <td data-label="Pick #" class="font-mono" style="font-weight:800; color:var(--accent-gold);">${p.pickStr}</td>
+                    <td data-label="Manager & Team">
                       <strong style="color:var(--text-primary); cursor:pointer;" onclick="store.setView('team', {teamId: '${p.teamId}'});">${p.managerName}</strong>
                       <div style="font-size:0.72rem; color:var(--text-secondary);">${p.teamName}</div>
                     </td>
-                    <td>
+                    <td data-label="Player Drafted">
                       <strong style="color:var(--text-primary);">${p.player}</strong>
                       <span style="font-size:0.72rem; color:var(--text-muted);"> (${p.team})</span>
                     </td>
-                    <td><span class="badge badge-blue" style="font-size:0.75rem;">${p.position}</span></td>
-                    <td class="font-mono" style="font-size:0.85rem;">
+                    <td data-label="Position"><span class="badge badge-blue" style="font-size:0.75rem;">${p.position}</span></td>
+                    <td data-label="Draft vs ADP" class="font-mono" style="font-size:0.85rem;">
                       Drafted #${p.overallPick} vs ADP #${p.adp} <strong class="${p.adpDiff >= 0 ? 'text-green' : 'text-red'}">(${p.adpDiff >= 0 ? '+' : ''}${p.adpDiff} spots)</strong>
                     </td>
-                    <td class="font-mono text-green" style="font-weight:700;">${p.pointsScored} Pts</td>
-                    <td class="font-mono ${p.netPointsGained >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.95rem;">
+                    <td data-label="Season Pts" class="font-mono text-green" style="font-weight:700;">${p.pointsScored} Pts</td>
+                    <td data-label="Net Pts vs ADP" class="font-mono ${p.netPointsGained >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.95rem;">
                       ${p.netPointsGained >= 0 ? '+' : ''}${p.netPointsGained} Net Pts
                     </td>
-                    <td>
+                    <td data-label="Classification">
                       <span class="badge ${p.tag === 'STEAL' ? 'badge-green' : (p.tag === 'REACH' ? 'badge-red' : 'badge-gold')}" style="font-size:0.78rem; font-weight:800;">
                         ${p.tag === 'STEAL' ? '🔥 HUGE STEAL' : (p.tag === 'REACH' ? '⚠️ REACH' : '✅ FAIR VALUE')}
                       </span>

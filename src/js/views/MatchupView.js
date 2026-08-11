@@ -57,8 +57,7 @@ class MatchupViewComponent {
           </div>
         </div>
 
-        <!-- Matchup Hero Score Card -->
-        <div class="matchup-hero-card" style="margin-bottom:1.5rem; background:linear-gradient(135deg, rgba(20,25,35,0.95), rgba(15,20,30,0.98)); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:1.75rem; display:grid; grid-template-columns:1fr auto 1fr; gap:1.5rem; align-items:center; box-shadow:var(--shadow-lg);">
+        <div class="matchup-hero-card matchup-row-grid" style="margin-bottom:1.5rem; background:linear-gradient(135deg, rgba(20,25,35,0.95), rgba(15,20,30,0.98)); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:1.75rem; gap:1.5rem; align-items:center; box-shadow:var(--shadow-lg);">
           <!-- Home Team -->
           <div style="display:flex; align-items:center; gap:1.25rem;">
             <img src="${matchup.homeTeam.logoUrl}" style="width:64px; height:64px; border-radius:50%; object-fit:cover; background:var(--bg-surface); border:3px solid var(--accent-sleeper);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
@@ -153,7 +152,7 @@ class MatchupViewComponent {
 
           <div style="display:flex; flex-direction:column; gap:0.85rem;">
             ${matchup.starters.map(s => `
-              <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem 1.25rem; display:grid; grid-template-columns:1fr auto 1fr; gap:1rem; align-items:center; box-shadow:var(--shadow-sm);">
+              <div class="matchup-row-grid" style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem 1.25rem; gap:1rem; box-shadow:var(--shadow-sm);">
                 
                 <!-- Home Player Info & Draft Badge -->
                 <div style="display:flex; align-items:center; gap:0.85rem;">
@@ -171,7 +170,7 @@ class MatchupViewComponent {
                 </div>
 
                 <!-- Center Position Battle & Net Gain/Loss Badge -->
-                <div style="text-align:center; min-width:180px;">
+                <div style="text-align:center;">
                   <div style="display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; margin-bottom:0.25rem;">
                     <span class="font-mono ${s.homePts >= s.awayPts ? 'text-green' : 'text-muted'}" style="font-size:1.15rem; font-weight:900;">${s.homePts.toFixed(1)}</span>
                     <span class="badge badge-blue" style="font-weight:900; font-size:0.8rem;">${s.pos}</span>
@@ -221,7 +220,7 @@ class MatchupViewComponent {
 
           <div style="display:flex; flex-direction:column; gap:0.65rem;">
             ${matchup.bench.map(b => `
-              <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:0.75rem 1rem; display:grid; grid-template-columns:1fr auto 1fr; gap:1rem; align-items:center;">
+              <div class="matchup-row-grid" style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:0.75rem 1rem;">
                 <!-- Home Bench -->
                 <div style="display:flex; align-items:center; gap:0.65rem;">
                   <strong style="color:var(--text-primary); font-size:0.85rem;">${b.homePlayer.name}</strong>

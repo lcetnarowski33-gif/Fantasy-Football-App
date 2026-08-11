@@ -172,10 +172,10 @@ class HomeViewComponent {
 
                   return `
                     <tr>
-                      <td style="font-weight:800; font-size:1.1rem; color:${idx === 0 ? 'var(--accent-gold)' : (idx < 3 ? 'var(--accent-sleeper)' : 'var(--text-secondary)')};">
+                      <td data-label="Rank" style="font-weight:800; font-size:1.1rem; color:${idx === 0 ? 'var(--accent-gold)' : (idx < 3 ? 'var(--accent-sleeper)' : 'var(--text-secondary)')};">
                         #${idx + 1}
                       </td>
-                      <td>
+                      <td data-label="Team & Manager">
                         <div style="display:flex; align-items:center; gap:0.6rem;">
                           <img src="${t.logoUrl}" style="width:32px; height:32px; border-radius:6px; object-fit:cover;">
                           <div>
@@ -184,12 +184,12 @@ class HomeViewComponent {
                           </div>
                         </div>
                       </td>
-                      <td class="font-mono" style="font-weight:700;">${t.wins}-${t.losses}</td>
-                      <td class="font-mono text-green" style="font-weight:700;">${t.pointsFor}</td>
-                      <td class="font-mono text-muted">${t.pointsAgainst}</td>
-                      <td class="font-mono text-gold" style="font-weight:800; font-size:1.05rem;">${t.eloRating}</td>
-                      <td>${tierBadge}</td>
-                      <td>
+                      <td data-label="Record" class="font-mono" style="font-weight:700;">${t.wins}-${t.losses}</td>
+                      <td data-label="Points For" class="font-mono text-green" style="font-weight:700;">${t.pointsFor}</td>
+                      <td data-label="Points Against" class="font-mono text-muted">${t.pointsAgainst}</td>
+                      <td data-label="Power Rating" class="font-mono text-gold" style="font-weight:800; font-size:1.05rem;">${t.eloRating}</td>
+                      <td data-label="Status">${tierBadge}</td>
+                      <td data-label="Action">
                         <button class="btn btn-outline btn-sm" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="store.setView('team', {teamId: '${t.teamId}'});">
                           <i class="fa-solid fa-user text-blue"></i> View Team
                         </button>
@@ -228,8 +228,8 @@ class HomeViewComponent {
                 <tbody>
                   ${sortedStandings.map((t, idx) => `
                     <tr style="cursor:pointer;" onclick="store.setView('team', {teamId: '${t.teamId}'});">
-                      <td style="font-weight:800; color:${idx < 4 ? 'var(--accent-sleeper)' : 'var(--text-secondary)'};">#${idx + 1}</td>
-                      <td>
+                      <td data-label="Rank" style="font-weight:800; color:${idx < 4 ? 'var(--accent-sleeper)' : 'var(--text-secondary)'};">#${idx + 1}</td>
+                      <td data-label="Team & Manager">
                         <div style="display:flex; align-items:center; gap:0.6rem;">
                           <img src="${t.logoUrl}" style="width:28px; height:28px; border-radius:4px; object-fit:cover;">
                           <div>
@@ -238,9 +238,9 @@ class HomeViewComponent {
                           </div>
                         </div>
                       </td>
-                      <td class="font-mono" style="font-weight:700;">${t.wins}-${t.losses}</td>
-                      <td class="font-mono text-green">${t.pointsFor}</td>
-                      <td><span class="badge ${t.playoffOdds > 70 ? 'badge-green' : (t.playoffOdds > 30 ? 'badge-gold' : 'badge-red')}">${t.playoffOdds}%</span></td>
+                      <td data-label="W-L" class="font-mono" style="font-weight:700;">${t.wins}-${t.losses}</td>
+                      <td data-label="Total Pts" class="font-mono text-green">${t.pointsFor}</td>
+                      <td data-label="Playoff %"><span class="badge ${t.playoffOdds > 70 ? 'badge-green' : (t.playoffOdds > 30 ? 'badge-gold' : 'badge-red')}">${t.playoffOdds}%</span></td>
                     </tr>
                   `).join('')}
                 </tbody>
@@ -374,7 +374,7 @@ class HomeViewComponent {
             <button class="btn btn-outline btn-sm" onclick="HomeViewComponent.closeAuditModal()"><i class="fa-solid fa-xmark"></i> Close</button>
           </div>
 
-          <div class="stat-widget-grid" style="grid-template-columns:repeat(3, 1fr); margin-bottom:1.25rem;">
+          <div class="responsive-grid-3" style="margin-bottom:1.25rem;">
             <div class="stat-widget">
               <div class="stat-widget-label">Start IQ</div>
               <div class="stat-widget-value text-green">${ds.startIQ}%</div>

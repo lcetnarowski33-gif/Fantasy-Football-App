@@ -262,7 +262,7 @@ class TradeViewComponent {
                 </div>
 
                 <!-- Side-by-Side Trade Details -->
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; align-items:stretch;">
+                <div class="responsive-grid-2" style="align-items:stretch;">
                   <!-- Side A -->
                   <div style="background:var(--bg-surface); padding:1.1rem; border-radius:var(--radius-md); border-left:4px solid ${t.teamANetPts >= 0 ? 'var(--accent-sleeper)' : '#ef4444'}; border-top:1px solid var(--border-color); border-right:1px solid var(--border-color); border-bottom:1px solid var(--border-color); display:flex; flex-direction:column; justify-content:space-between;">
                     <div>

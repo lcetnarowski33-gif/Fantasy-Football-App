@@ -167,11 +167,15 @@ input:focus, select:focus, textarea:focus {
     overflow-x: hidden !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .main-content {
-    padding: 0.75rem 0.75rem calc(5.5rem + env(safe-area-inset-bottom)) 0.75rem !important;
-    -webkit-overflow-scrolling: touch;
+    padding: 0.75rem 0.75rem calc(3.5rem + env(safe-area-inset-bottom)) 0.75rem;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 }
 
@@ -219,6 +223,65 @@ input:focus, select:focus, textarea:focus {
   background: rgba(56, 189, 248, 0.15);
   color: var(--accent-blue);
   border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Grid Utilities
+   -------------------------------------------------------------------------- */
+.responsive-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.responsive-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.responsive-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.responsive-grid-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+}
+
+.matchup-row-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .responsive-grid-2,
+  .responsive-grid-3,
+  .responsive-grid-4,
+  .responsive-grid-5 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .matchup-row-grid {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .responsive-grid-3,
+  .responsive-grid-4,
+  .responsive-grid-5 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem;
+  }
 }
 
 /* Glassmorphism Card Wrapper */
@@ -276,8 +339,10 @@ canvas {
 }
 
 @media (max-width: 768px) {
-  .chart-container, .chart-wrapper, [style*="height:320px"], [style*="height:300px"] {
-    min-height: 260px !important;
+  .chart-container, .chart-wrapper, .chart-container-card, [style*="height:320px"], [style*="height:300px"], [style*="height:380px"] {
+    height: 250px !important;
+    min-height: 240px !important;
+    max-height: none !important;
   }
 }
 

@@ -33,7 +33,7 @@ class LeagueViewComponent {
                 </div>
               </div>
 
-              <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.5rem; text-align:center; background:var(--bg-surface); padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1rem;">
+              <div class="responsive-grid-3" style="gap:0.5rem; text-align:center; background:var(--bg-surface); padding:0.75rem; border-radius:var(--radius-md); margin-bottom:1rem;">
                 <div>
                   <div class="stat-widget-label">Record</div>
                   <div class="font-mono text-green" style="font-weight:800; font-size:1.1rem;">${t.wins}-${t.losses}</div>

@@ -124,10 +124,10 @@ class FreeAgencyViewComponent {
               <tbody>
                 ${managerRankings.map((m, idx) => `
                   <tr style="cursor:pointer;" onclick="store.setView('team', {teamId: '${m.teamId}'});">
-                    <td style="font-weight:800; color:${idx === 0 ? 'var(--accent-gold)' : (idx === 1 || idx === 2 ? 'var(--accent-sleeper)' : 'var(--accent-blue)')};">
+                    <td data-label="Rank" style="font-weight:800; color:${idx === 0 ? 'var(--accent-gold)' : (idx === 1 || idx === 2 ? 'var(--accent-sleeper)' : 'var(--accent-blue)')};">
                       #${idx + 1}
                     </td>
-                    <td>
+                    <td data-label="Manager & Roster">
                       <div style="display:flex; align-items:center; gap:0.65rem;">
                         <img src="${m.logoUrl}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; background:var(--bg-surface);">
                         <div>
@@ -136,15 +136,15 @@ class FreeAgencyViewComponent {
                         </div>
                       </div>
                     </td>
-                    <td class="font-mono" style="font-weight:700; color:var(--text-primary);">${m.claimsCount} Moves</td>
-                    <td class="font-mono text-gold" style="font-weight:800;">Priority #${idx + 1}</td>
-                    <td class="font-mono ${m.netPoints >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.95rem;">
+                    <td data-label="Total Moves" class="font-mono" style="font-weight:700; color:var(--text-primary);">${m.claimsCount} Moves</td>
+                    <td data-label="Waiver Priority" class="font-mono text-gold" style="font-weight:800;">Priority #${idx + 1}</td>
+                    <td data-label="Season Net Pts Added" class="font-mono ${m.netPoints >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.95rem;">
                       ${m.netPoints >= 0 ? '+' : ''}${m.netPoints} Pts
                     </td>
-                    <td style="font-size:0.82rem; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                    <td data-label="Top Waiver Pickup" style="font-size:0.82rem;">
                       <span style="font-weight:600; color:var(--text-secondary);">${m.topPickup}</span>
                     </td>
-                    <td>
+                    <td data-label="Waiver Grade">
                       <span class="badge ${m.grade.startsWith('A') ? 'badge-green' : (m.grade.startsWith('B') ? 'badge-blue' : (m.grade.startsWith('C') ? 'badge-gold' : 'badge-red'))}">
                         ${m.grade}
                       </span>

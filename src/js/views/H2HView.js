@@ -60,7 +60,7 @@ class H2HViewComponent {
             <div class="win-prob-fill-away" style="width:${simResult.awayWinProb}%;"></div>
           </div>
 
-          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; text-align:center; margin-top:1.25rem; background:var(--bg-surface); padding:1rem; border-radius:var(--radius-md);">
+          <div class="responsive-grid-4" style="text-align:center; margin-top:1.25rem; background:var(--bg-surface); padding:1rem; border-radius:var(--radius-md);">
             <div>
               <div class="stat-widget-label">${teamA.abbrev} Median</div>
               <div class="font-mono text-green" style="font-weight:800; font-size:1.2rem;">${simResult.homeMedian}</div>

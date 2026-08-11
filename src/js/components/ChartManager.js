@@ -169,14 +169,19 @@ class ChartManager {
    * Default Chart.js Options customized for Dark Theme PFF UI
    */
   static getDefaultDarkOptions() {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+
     return {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
         legend: {
+          position: isMobile ? 'bottom' : 'top',
           labels: {
             color: '#f8fafc',
-            font: { family: 'Outfit', size: 12, weight: '600' }
+            font: { family: 'Outfit', size: isMobile ? 10 : 12, weight: '600' },
+            boxWidth: isMobile ? 10 : 14,
+            padding: isMobile ? 6 : 10
           }
         },
         tooltip: {
@@ -185,17 +190,25 @@ class ChartManager {
           bodyColor: '#00e676',
           borderColor: '#2a3447',
           borderWidth: 1,
-          padding: 10,
+          padding: 8,
           displayColors: false
         }
       },
       scales: {
         x: {
-          ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } },
+          ticks: {
+            color: '#94a3b8',
+            font: { family: 'Inter', size: isMobile ? 9 : 11 },
+            autoSkip: true,
+            maxRotation: isMobile ? 45 : 0
+          },
           grid: { color: '#1e2638' }
         },
         y: {
-          ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } },
+          ticks: {
+            color: '#94a3b8',
+            font: { family: 'Inter', size: isMobile ? 9 : 11 }
+          },
           grid: { color: '#1e2638' }
         }
       }

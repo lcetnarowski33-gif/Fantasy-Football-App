@@ -69,7 +69,7 @@ class TeamViewComponent {
             </div>
             <span class="badge badge-green">${team.decisionStats?.positionalAcquisitions?.totalAdditions || 15} Total Free Agent Moves</span>
           </div>
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:1rem; padding:0.5rem 0;">
+          <div class="responsive-grid-5" style="padding:0.5rem 0;">
             <div style="background:var(--bg-surface); padding:0.75rem 1rem; border-radius:var(--radius-md); text-align:center;">
               <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase;">Running Backs (RB)</div>
               <div class="font-mono text-green" style="font-size:1.5rem; font-weight:900;">${team.decisionStats?.positionalAcquisitions?.rbClaims || 4}</div>
@@ -106,7 +106,7 @@ class TeamViewComponent {
             </div>
             <span class="badge badge-gold">${team.decisionStats?.persona || 'Active Manager'}</span>
           </div>
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; padding:0.5rem 0;">
+          <div class="responsive-grid-5" style="padding:0.5rem 0;">
             <div style="background:var(--bg-surface); padding:0.85rem; border-radius:var(--radius-md); border-left:3px solid var(--accent-sleeper);">
               <div class="text-muted" style="font-size:0.75rem;">1. Start/Sit Lineup IQ</div>
               <div class="font-mono text-green" style="font-size:1.25rem; font-weight:800;">${team.decisionStats?.startIQ || 85}%</div>
@@ -163,23 +163,23 @@ class TeamViewComponent {
               <tbody>
                 ${players.length > 0 ? players.map(p => `
                   <tr style="cursor:pointer;" onclick="store.setView('player', {playerId: '${p.id}'});">
-                    <td>
+                    <td data-label="Player">
                       <div style="display:flex; align-items:center; gap:0.6rem;">
                         <img src="${p.photo}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color); background:var(--bg-surface);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
                         <strong style="color:var(--text-primary); font-size:0.92rem;">${p.name}</strong>
                       </div>
                     </td>
-                    <td><span class="badge badge-blue">${p.position}</span></td>
-                    <td class="font-mono">${p.nflTeam}</td>
-                    <td><span class="badge ${p.status === 'HEALTHY' ? 'badge-green' : 'badge-gold'}">${p.status}</span></td>
-                    <td class="font-mono text-green" style="font-weight:700;">${p.seasonPts}</td>
-                    <td class="font-mono text-primary">${p.avgPts}</td>
-                    <td class="font-mono text-muted">${p.pff ? p.pff.xFP : 'N/A'}</td>
-                    <td class="font-mono ${p.pff && p.pff.FPOE >= 0 ? 'text-green' : 'text-red'}" style="font-weight:700;">
+                    <td data-label="Pos"><span class="badge badge-blue">${p.position}</span></td>
+                    <td data-label="NFL" class="font-mono">${p.nflTeam}</td>
+                    <td data-label="Status"><span class="badge ${p.status === 'HEALTHY' ? 'badge-green' : 'badge-gold'}">${p.status}</span></td>
+                    <td data-label="Season Pts" class="font-mono text-green" style="font-weight:700;">${p.seasonPts}</td>
+                    <td data-label="Avg Pts" class="font-mono text-primary">${p.avgPts}</td>
+                    <td data-label="xFP" class="font-mono text-muted">${p.pff ? p.pff.xFP : 'N/A'}</td>
+                    <td data-label="FPOE" class="font-mono ${p.pff && p.pff.FPOE >= 0 ? 'text-green' : 'text-red'}" style="font-weight:700;">
                       ${p.pff ? (p.pff.FPOE >= 0 ? '+' : '') + p.pff.FPOE : '0.0'}
                     </td>
-                    <td class="font-mono">${p.pff ? p.pff.targetShare + '%' : 'N/A'}</td>
-                    <td class="font-mono">${p.pff ? p.pff.snapShare + '%' : 'N/A'}</td>
+                    <td data-label="Target %" class="font-mono">${p.pff ? p.pff.targetShare + '%' : 'N/A'}</td>
+                    <td data-label="Snap %" class="font-mono">${p.pff ? p.pff.snapShare + '%' : 'N/A'}</td>
                   </tr>
                 `).join('') : `
                   <tr>

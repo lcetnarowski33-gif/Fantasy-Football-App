@@ -78,7 +78,7 @@ class PlayerViewComponent {
             </div>
 
             <!-- Search Input -->
-            <div style="display:flex; align-items:center; gap:0.5rem; background:var(--bg-surface); padding:0.4rem 0.8rem; border-radius:var(--radius-md); border:1px solid var(--border-color); width:280px;">
+            <div style="display:flex; align-items:center; gap:0.5rem; background:var(--bg-surface); padding:0.4rem 0.8rem; border-radius:var(--radius-md); border:1px solid var(--border-color); width:100%; max-width:280px;">
               <i class="fa-solid fa-magnifying-glass text-muted"></i>
               <input type="text" id="player-dir-search" placeholder="Search player name or team..." value="${this.searchQuery}" style="border:none; background:transparent; color:var(--text-primary); width:100%; font-size:0.9rem;">
             </div>
@@ -115,25 +115,25 @@ class PlayerViewComponent {
                   const pff = p.pff || { xFP: 'N/A', FPOE: 0, targetShare: 0, snapShare: 0 };
                   return `
                     <tr style="cursor:pointer;" onclick="store.setView('player', {playerId: '${p.id}'});">
-                      <td style="font-weight:800; color:${idx < 3 ? 'var(--accent-gold)' : 'var(--text-secondary)'};">#${idx + 1}</td>
-                      <td>
+                      <td data-label="Rank" style="font-weight:800; color:${idx < 3 ? 'var(--accent-gold)' : 'var(--text-secondary)'};">#${idx + 1}</td>
+                      <td data-label="Player Name">
                         <div style="display:flex; align-items:center; gap:0.6rem;">
                           <img src="${p.photo}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color); background:var(--bg-surface);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
                           <strong style="color:var(--text-primary); font-size:0.92rem;">${p.name}</strong>
                         </div>
                       </td>
-                      <td><span class="badge badge-blue">${p.position}</span></td>
-                      <td class="font-mono">${p.nflTeam}</td>
-                      <td><span class="badge ${p.status === 'HEALTHY' ? 'badge-green' : 'badge-gold'}">${p.status}</span></td>
-                      <td class="font-mono text-green" style="font-weight:700;">${p.seasonPts}</td>
-                      <td class="font-mono text-primary">${p.avgPts}</td>
-                      <td class="font-mono text-gold" style="font-weight:700;">${pff.xFP}</td>
-                      <td class="font-mono ${pff.FPOE >= 0 ? 'text-green' : 'text-red'}" style="font-weight:700;">
+                      <td data-label="Position"><span class="badge badge-blue">${p.position}</span></td>
+                      <td data-label="NFL Team" class="font-mono">${p.nflTeam}</td>
+                      <td data-label="Status"><span class="badge ${p.status === 'HEALTHY' ? 'badge-green' : 'badge-gold'}">${p.status}</span></td>
+                      <td data-label="Season Pts" class="font-mono text-green" style="font-weight:700;">${p.seasonPts}</td>
+                      <td data-label="Avg PPG" class="font-mono text-primary">${p.avgPts}</td>
+                      <td data-label="xFP" class="font-mono text-gold" style="font-weight:700;">${pff.xFP}</td>
+                      <td data-label="FPOE" class="font-mono ${pff.FPOE >= 0 ? 'text-green' : 'text-red'}" style="font-weight:700;">
                         ${pff.FPOE >= 0 ? '+' : ''}${pff.FPOE}
                       </td>
-                      <td class="font-mono">${pff.targetShare ? pff.targetShare + '%' : 'N/A'}</td>
-                      <td class="font-mono">${pff.snapShare ? pff.snapShare + '%' : 'N/A'}</td>
-                      <td>
+                      <td data-label="Target %" class="font-mono">${pff.targetShare ? pff.targetShare + '%' : 'N/A'}</td>
+                      <td data-label="Snap %" class="font-mono">${pff.snapShare ? pff.snapShare + '%' : 'N/A'}</td>
+                      <td data-label="Inspect Profile">
                         <button class="btn btn-outline btn-sm" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="event.stopPropagation(); store.setView('player', {playerId: '${p.id}'});">
                           <i class="fa-solid fa-chart-pie"></i> Profile
                         </button>

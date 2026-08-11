@@ -153,8 +153,8 @@ class EfficiencyViewComponent {
                   const pa = ds.positionalAcquisitions || {};
                   return `
                     <tr>
-                      <td style="font-weight:800; color:${idx < 3 ? 'var(--accent-gold)' : 'var(--text-secondary)'};">#${idx + 1}</td>
-                      <td>
+                      <td data-label="Rank" style="font-weight:800; color:${idx < 3 ? 'var(--accent-gold)' : 'var(--text-secondary)'};">#${idx + 1}</td>
+                      <td data-label="Manager & Team">
                         <div style="display:flex; align-items:center; gap:0.6rem;">
                           <img src="${t.logoUrl}" style="width:28px; height:28px; border-radius:4px; object-fit:cover;">
                           <div>
@@ -163,19 +163,19 @@ class EfficiencyViewComponent {
                           </div>
                         </div>
                       </td>
-                      <td><span class="badge badge-gold" style="font-size:0.75rem;">${ds.persona || 'Manager'}</span></td>
-                      <td class="font-mono text-green" style="font-weight:700;">${ds.flexEfficiency || 80}%</td>
-                      <td class="font-mono text-primary" style="font-weight:700;">${ds.flexPpg || 14.0} Pts</td>
-                      <td class="font-mono text-green" style="font-weight:700;">${pa.rbClaims || 4} RBs</td>
-                      <td class="font-mono text-blue" style="font-weight:700;">${pa.wrClaims || 3} WRs</td>
-                      <td class="font-mono text-gold">${pa.qbClaims || 1} QB / ${pa.teClaims || 1} TE</td>
-                      <td class="font-mono" style="font-weight:700; color:var(--text-primary);">${pa.totalAdditions || 15} Moves</td>
-                      <td class="font-mono text-gold" style="font-weight:700;">${ds.faabRoi} pts/$</td>
-                      <td class="font-mono text-primary">${ds.startIQ}%</td>
-                      <td class="font-mono ${ds.tradeNetValue >= 0 ? 'text-green' : 'text-red'}" style="font-weight:700;">
+                      <td data-label="Persona"><span class="badge badge-gold" style="font-size:0.75rem;">${ds.persona || 'Manager'}</span></td>
+                      <td data-label="FLEX Efficiency" class="font-mono text-green" style="font-weight:700;">${ds.flexEfficiency || 80}%</td>
+                      <td data-label="FLEX PPG" class="font-mono text-primary" style="font-weight:700;">${ds.flexPpg || 14.0} Pts</td>
+                      <td data-label="RBs Claimed" class="font-mono text-green" style="font-weight:700;">${pa.rbClaims || 4} RBs</td>
+                      <td data-label="WRs Claimed" class="font-mono text-blue" style="font-weight:700;">${pa.wrClaims || 3} WRs</td>
+                      <td data-label="QBs/TEs Claimed" class="font-mono text-gold">${pa.qbClaims || 1} QB / ${pa.teClaims || 1} TE</td>
+                      <td data-label="Total FA Moves" class="font-mono" style="font-weight:700; color:var(--text-primary);">${pa.totalAdditions || 15} Moves</td>
+                      <td data-label="FAAB ROI" class="font-mono text-gold" style="font-weight:700;">${ds.faabRoi} pts/$</td>
+                      <td data-label="Start IQ" class="font-mono text-primary">${ds.startIQ}%</td>
+                      <td data-label="Trade Net Pts" class="font-mono ${ds.tradeNetValue >= 0 ? 'text-green' : 'text-red'}" style="font-weight:700;">
                         ${ds.tradeNetValue >= 0 ? '+' : ''}${ds.tradeNetValue} Pts
                       </td>
-                      <td>
+                      <td data-label="Audit Moves">
                         <button class="btn btn-outline btn-sm" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="HomeViewComponent.openAuditModal('${t.teamId}')">
                           <i class="fa-solid fa-clipboard-list"></i> Audit
                         </button>
