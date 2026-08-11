@@ -287,6 +287,16 @@
     text-align: right !important;
     font-size: 0.85rem !important;
     white-space: normal !important;
+    gap: 0.5rem !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .analytics-table td > * {
+    max-width: 65% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 
   .analytics-table td:last-child {
