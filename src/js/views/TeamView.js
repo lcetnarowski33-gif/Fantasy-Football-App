@@ -230,7 +230,7 @@ class TeamViewComponent {
                       <td style="text-align:center; font-weight:800; font-size:0.75rem;" class="font-mono text-gold">${p.pickStr}</td>
                       <td>
                         <strong style="color:var(--text-primary); font-size:0.78rem;">${p.player}</strong>
-                        <div style="font-size:0.65rem; color:var(--text-secondary);">${p.team}</div>
+                        <div style="font-size:0.65rem; color:var(--text-secondary);">${p.team || p.nflTeam || 'NFL'}</div>
                       </td>
                       <td style="text-align:center;"><span class="badge badge-blue" style="font-size:0.62rem;">${p.position}</span></td>
                       <td style="text-align:center; font-size:0.75rem;" class="font-mono text-secondary">${p.adp}</td>

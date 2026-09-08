@@ -108,7 +108,7 @@ class FreeAgencyViewComponent {
             <div>
               <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Most Active</div>
               <div style="font-size:0.88rem; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                ${topManager.teamName}
+                ${topManager.teamName || topManager.name || 'Active Team'}
               </div>
               <div style="font-size:0.72rem;" class="text-green font-mono">${topManager.claimsCount} Moves (+${topManager.netPoints} Pts)</div>
             </div>
@@ -287,6 +287,7 @@ class FreeAgencyViewComponent {
       return {
         teamId: t.teamId,
         name: t.name,
+        teamName: t.name,
         managerName: t.managerName,
         logoUrl: t.logoUrl,
         claimsCount,

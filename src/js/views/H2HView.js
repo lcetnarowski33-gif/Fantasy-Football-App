@@ -18,6 +18,8 @@ class H2HViewComponent {
 
     // Run Monte Carlo simulation
     const simResult = AnalyticsEngine.runMatchupSimulation(teamA, teamB);
+    const abbrevA = teamA.abbrev || teamA.name.substring(0, 3).toUpperCase();
+    const abbrevB = teamB.abbrev || teamB.name.substring(0, 3).toUpperCase();
 
     mountEl.innerHTML = `
       <div class="animate-fade-in">
@@ -62,19 +64,19 @@ class H2HViewComponent {
 
           <div class="responsive-grid-4" style="text-align:center; margin-top:1rem; background:var(--bg-surface); padding:0.85rem; border-radius:var(--radius-md);">
             <div>
-              <div class="stat-widget-label">${teamA.abbrev} Median</div>
+              <div class="stat-widget-label">${abbrevA} Median</div>
               <div class="font-mono text-green" style="font-weight:800; font-size:1.15rem;">${simResult.homeMedian}</div>
             </div>
             <div>
-              <div class="stat-widget-label">${teamA.abbrev} Range</div>
+              <div class="stat-widget-label">${abbrevA} Range</div>
               <div class="font-mono text-muted" style="font-size:0.85rem;">${simResult.homeFloor} - ${simResult.homeCeiling}</div>
             </div>
             <div>
-              <div class="stat-widget-label">${teamB.abbrev} Median</div>
+              <div class="stat-widget-label">${abbrevB} Median</div>
               <div class="font-mono text-blue" style="font-weight:800; font-size:1.15rem;">${simResult.awayMedian}</div>
             </div>
             <div>
-              <div class="stat-widget-label">${teamB.abbrev} Range</div>
+              <div class="stat-widget-label">${abbrevB} Range</div>
               <div class="font-mono text-muted" style="font-size:0.85rem;">${simResult.awayFloor} - ${simResult.awayCeiling}</div>
             </div>
           </div>

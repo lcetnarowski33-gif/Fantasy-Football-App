@@ -83,6 +83,13 @@ const NFL_PRO_TEAMS = {
   25: 'SF', 26: 'SEA', 27: 'TB', 28: 'WSH', 29: 'CAR', 30: 'JAX', 33: 'BAL', 34: 'HOU'
 };
 
+const NFL_BYE_WEEKS = {
+  'ARI': 11, 'ATL': 12, 'BAL': 14, 'BUF': 12, 'CAR': 11, 'CHI': 7, 'CIN': 12, 'CLE': 10,
+  'DAL': 7, 'DEN': 14, 'DET': 5, 'GB': 10, 'HOU': 14, 'IND': 14, 'JAX': 12, 'KC': 6,
+  'LV': 10, 'LAC': 5, 'LAR': 6, 'MIA': 6, 'MIN': 6, 'NE': 14, 'NO': 12, 'NYG': 11,
+  'NYJ': 12, 'PHI': 5, 'PIT': 9, 'SF': 9, 'SEA': 10, 'TB': 11, 'TEN': 5, 'WAS': 14, 'WSH': 14
+};
+
 const NFL_DST_MAP = {
   '-16001': { name: 'Falcons D/ST', pos: 'D/ST', nflTeam: 'ATL' }, '16001': { name: 'Falcons D/ST', pos: 'D/ST', nflTeam: 'ATL' },
   '-16002': { name: 'Bills D/ST', pos: 'D/ST', nflTeam: 'BUF' }, '16002': { name: 'Bills D/ST', pos: 'D/ST', nflTeam: 'BUF' },
@@ -405,6 +412,8 @@ function normalizeEspnData(raw) {
           name: pInfo.name,
           position: pInfo.position,
           nflTeam: pInfo.nflTeam,
+          team: pInfo.nflTeam,
+          byeWeek: NFL_BYE_WEEKS[pInfo.nflTeam] || 8,
           teamId: teamObj ? teamObj.teamId : `espn-${t.id}`,
           teamName: teamObj ? teamObj.name : `Team ${t.id}`,
           lineupSlotId: slotId,
@@ -416,7 +425,14 @@ function normalizeEspnData(raw) {
           photo: pInfo.photo,
           projPts: pInfo.projPts || 14.5,
           seasonPts: pInfo.seasonPts || 0,
-          avgPts: pInfo.seasonPts ? parseFloat((pInfo.seasonPts / Math.max(1, currentWeek - 1)).toFixed(1)) : pInfo.projPts
+          avgPts: pInfo.seasonPts ? parseFloat((pInfo.seasonPts / Math.max(1, currentWeek - 1)).toFixed(1)) : pInfo.projPts,
+          pff: {
+            xFP: (pInfo.projPts * 1.05).toFixed(1),
+            FPOE: parseFloat(((pInfo.projPts || 12) - 11.5).toFixed(1)),
+            targetShare: pInfo.position === 'WR' ? 22 : (pInfo.position === 'TE' ? 16 : 8),
+            snapShare: slotConfig.isStarter ? 82 : 35,
+            hvt: pInfo.position === 'RB' ? 14 : 6
+          }
         });
       }
     });
@@ -700,7 +716,17 @@ function normalizeEspnData(raw) {
       draftVorp,
       tradeNetValue,
       pointsSacrificed,
-      persona
+      persona,
+      flexEfficiency: 82 + (t.draftSteals * 2) - t.draftReaches,
+      flexPpg: parseFloat((13.5 + (t.draftSteals * 0.4)).toFixed(1)),
+      faabRoi: parseFloat((1.5 + (waiverMoves * 0.2)).toFixed(1)),
+      positionalAcquisitions: {
+        totalAdditions: waiverMoves,
+        rbClaims: Math.round(waiverMoves * 0.5),
+        wrClaims: Math.round(waiverMoves * 0.35),
+        qbClaims: Math.round(waiverMoves * 0.1),
+        teClaims: Math.round(waiverMoves * 0.05)
+      }
     };
   });
 

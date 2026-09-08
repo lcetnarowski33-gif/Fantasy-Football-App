@@ -166,6 +166,9 @@ class PlayerViewComponent {
    */
   static renderPlayerProfile(mountEl, player, state) {
     const pff = player.pff || { xFP: 200, FPOE: 10, targetShare: 25, snapShare: 88, airYards: 1200, rzTouchPct: 30, hvt: 25 };
+    const fantasyTeam = (state && state.data && state.data.teams && state.data.teams.find(t => t.teamId === player.teamId));
+    const teamLabel = fantasyTeam ? fantasyTeam.name : (player.teamName || 'Free Agent');
+    const byeLabel = player.byeWeek ? ` · Bye ${player.byeWeek}` : '';
 
     mountEl.innerHTML = `
       <div class="animate-fade-in">
@@ -185,10 +188,10 @@ class PlayerViewComponent {
           <div>
             <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
               <h2>${player.name}</h2>
-              <span class="badge badge-blue">${player.position} · ${player.nflTeam}</span>
+              <span class="badge badge-blue">${player.position} · ${player.nflTeam || player.team || 'NFL'}</span>
             </div>
             <div class="text-secondary" style="font-size:0.82rem;">
-              Team #${player.teamId ? player.teamId.replace('team-', '') : 'FA'} · Bye ${player.byeWeek} · <span class="text-green">${player.status}</span>
+              ${teamLabel}${byeLabel} · <span class="${player.status === 'HEALTHY' ? 'text-green' : 'text-gold'}">${player.status || 'Active'}</span>
             </div>
             <div class="pff-badge-container" style="margin-top:0.45rem;">
               <span class="badge badge-gold">xFP: ${pff.xFP}</span>
