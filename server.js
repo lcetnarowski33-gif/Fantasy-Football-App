@@ -31,8 +31,8 @@ const CONFIG_FILE = path.join(storageDir, 'server_config.json');
 const CACHE_FILE = path.join(storageDir, 'league_cache.json');
 
 let serverConfig = {
-  leagueId: process.env.ESPN_LEAGUE_ID || "1585576113",
-  season: process.env.ESPN_SEASON ? parseInt(process.env.ESPN_SEASON, 10) : 2024,
+  leagueId: process.env.ESPN_LEAGUE_ID || "1990371748",
+  season: process.env.ESPN_SEASON ? parseInt(process.env.ESPN_SEASON, 10) : 2025,
   swid: process.env.ESPN_SWID || "",
   espnS2: process.env.ESPN_S2 || "",
   isAutoSyncEnabled: true

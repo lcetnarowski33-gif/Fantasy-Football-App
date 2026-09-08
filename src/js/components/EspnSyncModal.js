@@ -190,7 +190,7 @@ class EspnSyncModalComponent {
       if (s2El && (creds.espnS2 || creds.espn_s2)) s2El.value = creds.espnS2 || creds.espn_s2;
     } else {
       const idEl = document.getElementById('espn-input-league-id');
-      if (idEl && !idEl.value) idEl.value = '1585576113';
+      if (idEl && !idEl.value) idEl.value = '1990371748';
     }
   }
 
@@ -201,8 +201,8 @@ class EspnSyncModalComponent {
       const swidEl = document.getElementById('espn-input-swid');
       const s2El = document.getElementById('espn-input-s2');
 
-      const leagueId = (idEl && idEl.value.trim()) || '1585576113';
-      const season = (seasonEl && seasonEl.value) || 2024;
+      const leagueId = (idEl && idEl.value.trim()) || '1990371748';
+      const season = (seasonEl && seasonEl.value) || 2025;
       const swid = (swidEl && swidEl.value.trim()) || '';
       const espnS2 = (s2El && s2El.value.trim()) || '';
 
