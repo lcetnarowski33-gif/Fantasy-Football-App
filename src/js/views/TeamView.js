@@ -1,241 +1,307 @@
 /**
- * TeamView Component
- * Renders the Team Deep-Dive page with tabbed sub-views:
- * Overview, Roster, Bench, IR, History, Transactions, Advanced Statistics, and Graphs.
+ * TeamView Component - 2026 Season Architecture
+ * Renders the Team Deep-Dive page with clean team selection,
+ * clearly partitioned Starters, Bench, and IR sections,
+ * and an authentic 2026 activity log (Draft Picks, Waivers, Trades).
  */
 
 class TeamViewComponent {
-  static activeSubTab = 'roster'; // 'roster' | 'scorecard' | 'waivers' | 'all'
+  static activeSubTab = 'roster'; // 'roster' | 'activity' | 'scorecard'
 
   static setSubTab(tab) {
     this.activeSubTab = tab;
     store.notify();
   }
 
+  static selectTeam(teamId) {
+    if (typeof store !== 'undefined') {
+      store.setSelectedTeam(teamId);
+    }
+  }
+
   static render(mountEl, state) {
     if (!mountEl) return;
 
-    const defaultTeam = { teamId: 'default', name: 'Team', abbrev: 'T', managerName: 'Manager', division: 'N/A', eloRating: 1500, logoUrl: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150', wins: 0, losses: 0, ties: 0, pointsFor: 0, maxPoints: 0, benchPoints: 0, playoffOdds: 0, championshipOdds: 0, decisionStats: {} };
-    const teamId = state.selectedTeamId || 'team-1';
     const teams = (state && state.data && state.data.teams) || [];
-    const team = teams.find(t => t.teamId === teamId) || teams[0] || defaultTeam;
-    const players = ((state && state.data && state.data.players) || []).filter(p => p.teamId === team.teamId);
+    const teamId = state.selectedTeamId || (teams[0] ? teams[0].teamId : 'team-1');
+    const team = teams.find(t => t.teamId === teamId) || teams[0] || {
+      teamId: 'default', name: 'Team', managerName: 'Manager', logoUrl: '', wins: 0, losses: 0, pointsFor: 0, eloRating: 1500
+    };
+
+    const teamPlayers = (state && state.data && state.data.players && state.data.players.filter(p => p.teamId === team.teamId)) || [];
+    const starters = teamPlayers.filter(p => p.isStarter);
+    const bench = teamPlayers.filter(p => p.isBench || (!p.isStarter && !p.isIR));
+    const ir = teamPlayers.filter(p => p.isIR);
+
+    // Filter authentic team draft picks and transactions
+    const teamDraftPicks = (state && state.data && state.data.draftPicks && state.data.draftPicks.filter(p => p.teamId === team.teamId)) || [];
+    const teamTransactions = (state && state.data && state.data.transactions && state.data.transactions.filter(tx => tx.teamId === team.teamId || tx.teamName === team.name)) || [];
+
+    const renderPlayerRow = (p, roleBadge) => `
+      <tr style="cursor:pointer;" onclick="store.setView('player', {playerId: '${p.id}'});">
+        <td style="width:55px; text-align:center; padding:0.3rem 0.2rem;">
+          <span class="badge ${p.isStarter ? 'badge-green' : (p.isIR ? 'badge-red' : 'badge-blue')}" style="font-size:0.65rem; padding:0.1rem 0.3rem; font-weight:800;">
+            ${p.slotName || p.position}
+          </span>
+        </td>
+        <td style="text-align:left; min-width:0; padding:0.3rem 0.35rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem; min-width:0;">
+            <img src="${p.photo}" style="width:26px; height:26px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color); background:var(--bg-surface); flex-shrink:0;" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
+            <div style="min-width:0; overflow:hidden;">
+              <strong style="color:var(--text-primary); font-size:0.8rem; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">${p.name}</strong>
+              <div style="font-size:0.65rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                ${p.nflTeam} • <span class="${p.status === 'HEALTHY' ? 'text-green' : 'text-gold'}">${p.status}</span>
+              </div>
+            </div>
+          </div>
+        </td>
+        <td class="desktop-only font-mono" style="padding:0.3rem 0.3rem; text-align:center;">${p.position}</td>
+        <td class="desktop-only font-mono" style="padding:0.3rem 0.3rem; text-align:center;">${p.nflTeam}</td>
+        <td style="text-align:right; font-weight:700; font-size:0.8rem; padding:0.3rem 0.35rem;" class="font-mono text-green">
+          ${p.projPts || p.avgPts || 12.0}
+        </td>
+      </tr>
+    `;
 
     mountEl.innerHTML = `
       <div class="animate-fade-in">
-        <!-- Top Navigation Back Button -->
-        <div style="margin-bottom:0.5rem; display:flex; justify-content:space-between; align-items:center;">
+        <!-- Top Navigation Bar & 12-Team Dropdown -->
+        <div style="margin-bottom:0.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem;">
           <button class="btn btn-outline btn-sm" onclick="store.goBack()" style="display:inline-flex; align-items:center; gap:0.4rem; font-weight:700; font-size:0.72rem; padding:0.25rem 0.5rem;">
             <i class="fa-solid fa-arrow-left"></i> Back
           </button>
-          <div class="font-mono text-green" style="font-size:0.75rem; font-weight:700;">
-            ${team.wins}-${team.losses} • ${team.pointsFor} PF
+          
+          <!-- Team Switcher Dropdown -->
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <span class="text-secondary" style="font-size:0.72rem; font-weight:700;">Switch Team:</span>
+            <select class="form-control" style="padding:0.25rem 0.5rem; font-size:0.78rem; font-weight:700; background:var(--bg-surface); color:var(--text-primary); border:1px solid var(--border-color); border-radius:var(--radius-sm); max-width:210px;" onchange="TeamViewComponent.selectTeam(this.value)">
+              ${teams.map(t => `
+                <option value="${t.teamId}" ${t.teamId === team.teamId ? 'selected' : ''}>
+                  ${t.name}
+                </option>
+              `).join('')}
+            </select>
           </div>
         </div>
 
         <!-- Compact Team Profile Header -->
         <div class="team-profile-header" style="padding:0.55rem 0.75rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.6rem;">
-          <img src="${team.logoUrl}" style="width:36px; height:36px; border-radius:6px; object-fit:cover; border:2px solid var(--accent-sleeper);">
+          <img src="${team.logoUrl}" style="width:38px; height:38px; border-radius:6px; object-fit:cover; border:2px solid var(--accent-sleeper); background:var(--bg-surface);" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=150';">
           <div style="flex:1; min-width:0;">
             <div style="display:flex; align-items:center; gap:0.4rem;">
               <h2 style="font-size:1.05rem; margin:0; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${team.name}</h2>
-              <span class="badge badge-gold" style="font-size:0.65rem; padding:0.1rem 0.35rem;">${team.abbrev}</span>
+              <span class="badge badge-gold" style="font-size:0.65rem; padding:0.1rem 0.35rem;">Draft Grade: ${team.draftGrade || 'B'}</span>
             </div>
             <div class="text-secondary" style="font-size:0.72rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-              ${team.managerName} · ${team.division} · ELO ${team.eloRating}
+              Manager: <strong>${team.managerName}</strong> • ${team.wins}-${team.losses} • 2026 Season
             </div>
           </div>
         </div>
 
-        <!-- ESPN-Style Segmented Sub-Tab Switcher -->
+        <!-- Segmented Sub-Tab Switcher -->
         <div class="segmented-tab-bar" style="margin-bottom:0.6rem;">
           <button class="segmented-tab-btn ${this.activeSubTab === 'roster' ? 'active' : ''}" onclick="TeamViewComponent.setSubTab('roster')">
-            <i class="fa-solid fa-users"></i> Roster
+            <i class="fa-solid fa-users"></i> Roster (${teamPlayers.length})
+          </button>
+          <button class="segmented-tab-btn ${this.activeSubTab === 'activity' ? 'active' : ''}" onclick="TeamViewComponent.setSubTab('activity')">
+            <i class="fa-solid fa-list-check"></i> Draft & Moves (${teamDraftPicks.length + teamTransactions.length})
           </button>
           <button class="segmented-tab-btn ${this.activeSubTab === 'scorecard' ? 'active' : ''}" onclick="TeamViewComponent.setSubTab('scorecard')">
             <i class="fa-solid fa-brain"></i> Scorecard
           </button>
-          <button class="segmented-tab-btn ${this.activeSubTab === 'waivers' ? 'active' : ''}" onclick="TeamViewComponent.setSubTab('waivers')">
-            <i class="fa-solid fa-list-check"></i> Waivers
-          </button>
-          <button class="segmented-tab-btn ${this.activeSubTab === 'all' ? 'active' : ''}" onclick="TeamViewComponent.setSubTab('all')">
-            <i class="fa-solid fa-table-cells-large"></i> All
-          </button>
         </div>
 
-        <!-- 1. ACTIVE ROSTER (SHOWN IMMEDIATELY ON TOP) -->
-        ${(this.activeSubTab === 'roster' || this.activeSubTab === 'all') ? `
-          <div class="analytics-card" style="margin-bottom:0.65rem;">
-            <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.3rem;">
-              <div class="card-title">
-                <i class="fa-solid fa-users text-green"></i> Roster (${players.length})
+        <!-- ========================================================================= -->
+        <!-- SUB-TAB 1: PARTITIONED ROSTER (STARTERS, BENCH, IR) -->
+        <!-- ========================================================================= -->
+        ${this.activeSubTab === 'roster' ? `
+          <!-- 1. STARTERS TABLE -->
+          <div class="analytics-card" style="margin-bottom:0.65rem; padding:0.45rem 0.6rem;">
+            <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.25rem;">
+              <div class="card-title" style="font-size:0.85rem;">
+                <i class="fa-solid fa-star text-green"></i> Starting Lineup (${starters.length})
               </div>
+              <span class="badge badge-green" style="font-size:0.65rem; padding:0.1rem 0.35rem;">9 Starters</span>
             </div>
-            <div class="roster-table-wrapper" style="width:100%; max-width:100%; overflow:hidden;">
+            <div class="table-responsive">
               <table class="roster-table">
-                <colgroup class="mobile-only">
-                  <col style="width:36px;">
-                  <col>
-                  <col style="width:44px;">
-                  <col style="width:52px;">
-                </colgroup>
                 <thead>
                   <tr>
-                    <th style="width:36px; text-align:center;">Pos</th>
+                    <th style="width:55px; text-align:center;">Slot</th>
                     <th style="text-align:left;">Player</th>
-                    <th class="desktop-only" style="width:50px;">NFL</th>
-                    <th class="desktop-only" style="width:70px;">Status</th>
-                    <th style="width:44px; text-align:right;">Avg</th>
-                    <th style="width:52px; text-align:right;">Pts</th>
-                    <th class="desktop-only" style="width:50px;">xFP</th>
-                    <th class="desktop-only" style="width:50px;">FPOE</th>
-                    <th class="desktop-only" style="width:60px;">Target %</th>
-                    <th class="desktop-only" style="width:60px;">Snap %</th>
+                    <th class="desktop-only" style="width:50px; text-align:center;">Pos</th>
+                    <th class="desktop-only" style="width:50px; text-align:center;">NFL</th>
+                    <th style="width:55px; text-align:right;">Proj</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${players.length > 0 ? players.map(p => `
-                    <tr style="cursor:pointer;" onclick="store.setView('player', {playerId: '${p.id}'});">
-                      <td style="width:36px; text-align:center; padding:0.25rem 0.15rem;">
-                        <span class="badge badge-blue" style="font-size:0.65rem; padding:0.1rem 0.3rem; font-weight:800;">${p.position}</span>
-                      </td>
-                      <td style="text-align:left; min-width:0; max-width:0; overflow:hidden; padding:0.25rem 0.3rem;">
-                        <div style="display:flex; align-items:center; gap:0.4rem; min-width:0; overflow:hidden;">
-                          <img src="${p.photo}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color); background:var(--bg-surface); flex-shrink:0;" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
-                          <div style="min-width:0; overflow:hidden; flex:1 1 auto;">
-                            <strong style="color:var(--text-primary); font-size:0.78rem; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">${p.name}</strong>
-                            <div class="mobile-only text-secondary" style="font-size:0.62rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.1;">
-                              ${p.nflTeam} • <span class="${p.status === 'HEALTHY' ? 'text-green' : 'text-gold'}">${p.status}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="desktop-only font-mono" style="padding:0.25rem 0.3rem;">${p.nflTeam}</td>
-                      <td class="desktop-only" style="padding:0.25rem 0.3rem;"><span class="badge ${p.status === 'HEALTHY' ? 'badge-green' : 'badge-gold'}" style="font-size:0.65rem;">${p.status}</span></td>
-                      <td style="text-align:right; font-weight:600; font-size:0.74rem; padding:0.25rem 0.25rem;" class="font-mono text-secondary">${p.avgPts}</td>
-                      <td style="text-align:right; font-weight:800; font-size:0.76rem; padding:0.25rem 0.3rem;" class="font-mono text-green">${p.seasonPts}</td>
-                      <td class="desktop-only font-mono text-muted" style="padding:0.25rem 0.3rem;">${p.pff ? p.pff.xFP : 'N/A'}</td>
-                      <td class="desktop-only font-mono ${p.pff && p.pff.FPOE >= 0 ? 'text-green' : 'text-red'}" style="font-weight:700; padding:0.25rem 0.3rem;">
-                        ${p.pff ? (p.pff.FPOE >= 0 ? '+' : '') + p.pff.FPOE : '0.0'}
-                      </td>
-                      <td class="desktop-only font-mono" style="padding:0.25rem 0.3rem;">${p.pff ? p.pff.targetShare + '%' : 'N/A'}</td>
-                      <td class="desktop-only font-mono" style="padding:0.25rem 0.3rem;">${p.pff ? p.pff.snapShare + '%' : 'N/A'}</td>
-                    </tr>
-                  `).join('') : `
-                    <tr>
-                      <td colspan="10" class="text-muted" style="text-align:center; padding:1rem;">No players assigned to this roster.</td>
-                    </tr>
+                  ${starters.length > 0 ? starters.map(p => renderPlayerRow(p, 'START')).join('') : `
+                    <tr><td colspan="5" class="text-muted" style="text-align:center; padding:0.75rem;">No starters assigned.</td></tr>
                   `}
                 </tbody>
               </table>
             </div>
           </div>
+
+          <!-- 2. BENCH TABLE -->
+          <div class="analytics-card" style="margin-bottom:0.65rem; padding:0.45rem 0.6rem;">
+            <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.25rem;">
+              <div class="card-title" style="font-size:0.85rem;">
+                <i class="fa-solid fa-couch text-blue"></i> Bench (${bench.length})
+              </div>
+              <span class="badge badge-blue" style="font-size:0.65rem; padding:0.1rem 0.35rem;">Reserves</span>
+            </div>
+            <div class="table-responsive">
+              <table class="roster-table">
+                <thead>
+                  <tr>
+                    <th style="width:55px; text-align:center;">Slot</th>
+                    <th style="text-align:left;">Player</th>
+                    <th class="desktop-only" style="width:50px; text-align:center;">Pos</th>
+                    <th class="desktop-only" style="width:50px; text-align:center;">NFL</th>
+                    <th style="width:55px; text-align:right;">Proj</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${bench.length > 0 ? bench.map(p => renderPlayerRow(p, 'BENCH')).join('') : `
+                    <tr><td colspan="5" class="text-muted" style="text-align:center; padding:0.75rem;">No bench players.</td></tr>
+                  `}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 3. INJURED RESERVE (IR) TABLE -->
+          ${ir.length > 0 ? `
+            <div class="analytics-card" style="margin-bottom:0.65rem; padding:0.45rem 0.6rem;">
+              <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.25rem;">
+                <div class="card-title" style="font-size:0.85rem;">
+                  <i class="fa-solid fa-crosshairs text-red"></i> Injured Reserve (IR) (${ir.length})
+                </div>
+                <span class="badge badge-red" style="font-size:0.65rem; padding:0.1rem 0.35rem;">IR Stash</span>
+              </div>
+              <div class="table-responsive">
+                <table class="roster-table">
+                  <thead>
+                    <tr>
+                      <th style="width:55px; text-align:center;">Slot</th>
+                      <th style="text-align:left;">Player</th>
+                      <th class="desktop-only" style="width:50px; text-align:center;">Pos</th>
+                      <th class="desktop-only" style="width:50px; text-align:center;">NFL</th>
+                      <th style="width:55px; text-align:right;">Proj</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${ir.map(p => renderPlayerRow(p, 'IR')).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ` : ''}
         ` : ''}
 
-        <!-- 2. DECISION SCORECARD SUB-TAB -->
-        ${(this.activeSubTab === 'scorecard' || this.activeSubTab === 'all') ? `
-          <!-- Team Stat Widgets -->
+        <!-- ========================================================================= -->
+        <!-- SUB-TAB 2: TEAM 2026 DRAFT PICKS & TRANSACTIONS ACTIVITY -->
+        <!-- ========================================================================= -->
+        ${this.activeSubTab === 'activity' ? `
+          <!-- 2026 Draft Picks Made By This Team -->
+          <div class="analytics-card" style="margin-bottom:0.65rem; padding:0.45rem 0.6rem;">
+            <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.25rem;">
+              <div class="card-title" style="font-size:0.85rem;">
+                <i class="fa-solid fa-clipboard-list text-gold"></i> 2026 Draft Picks (${teamDraftPicks.length})
+              </div>
+              <span class="badge badge-gold" style="font-size:0.65rem;">Class Grade: ${team.draftGrade || 'B'}</span>
+            </div>
+            <div class="table-responsive">
+              <table class="standings-table">
+                <thead>
+                  <tr>
+                    <th style="width:40px; text-align:center;">Pick</th>
+                    <th>Player</th>
+                    <th style="width:40px; text-align:center;">Pos</th>
+                    <th style="text-align:center;">ADP</th>
+                    <th style="text-align:center;">Value</th>
+                    <th style="text-align:center;">Evaluation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${teamDraftPicks.map(p => `
+                    <tr>
+                      <td style="text-align:center; font-weight:800; font-size:0.75rem;" class="font-mono text-gold">${p.pickStr}</td>
+                      <td>
+                        <strong style="color:var(--text-primary); font-size:0.78rem;">${p.player}</strong>
+                        <div style="font-size:0.65rem; color:var(--text-secondary);">${p.team}</div>
+                      </td>
+                      <td style="text-align:center;"><span class="badge badge-blue" style="font-size:0.62rem;">${p.position}</span></td>
+                      <td style="text-align:center; font-size:0.75rem;" class="font-mono text-secondary">${p.adp}</td>
+                      <td style="text-align:center; font-size:0.75rem; font-weight:800;" class="font-mono ${p.adpDiff >= 0 ? 'text-green' : 'text-red'}">
+                        ${p.adpDiff >= 0 ? '+' : ''}${p.adpDiff}
+                      </td>
+                      <td style="text-align:center;">
+                        <span class="badge ${p.tag === 'Excellent value' ? 'badge-green' : (p.tag === 'Reach' || p.tag === 'Significant reach' ? 'badge-red' : 'badge-gold')}" style="font-size:0.62rem;">
+                          ${p.tag}
+                        </span>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Free Agent & Waiver Moves -->
+          <div class="analytics-card" style="margin-bottom:0.65rem; padding:0.45rem 0.6rem;">
+            <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.25rem;">
+              <div class="card-title" style="font-size:0.85rem;">
+                <i class="fa-solid fa-list-check text-blue"></i> 2026 Transactions (${teamTransactions.length})
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.35rem;">
+              ${teamTransactions.length > 0 ? teamTransactions.map(tx => `
+                <div style="background:var(--bg-surface); padding:0.45rem 0.6rem; border-radius:var(--radius-sm); border:1px solid var(--border-color); font-size:0.75rem;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.15rem;">
+                    <span class="badge ${tx.type === 'Waiver Claim' ? 'badge-blue' : 'badge-green'}" style="font-size:0.6rem;">${tx.type}</span>
+                    <span class="text-secondary" style="font-size:0.68rem;">${tx.date}</span>
+                  </div>
+                  <div style="color:var(--text-primary); font-weight:600;">${tx.details}</div>
+                </div>
+              `).join('') : `
+                <div class="text-muted" style="text-align:center; padding:1rem; font-size:0.8rem;">
+                  No transactions executed yet for this team in 2026.
+                </div>
+              `}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- ========================================================================= -->
+        <!-- SUB-TAB 3: SCORECARD -->
+        <!-- ========================================================================= -->
+        ${this.activeSubTab === 'scorecard' ? `
           <div class="stat-widget-grid" style="margin-bottom:0.65rem;">
             <div class="stat-widget">
               <div class="stat-widget-label">Record</div>
               <div class="stat-widget-value text-green">${team.wins}-${team.losses}</div>
-              <div class="stat-widget-subtext">ELO ${team.eloRating}</div>
+              <div class="stat-widget-subtext">2026 Season</div>
             </div>
             <div class="stat-widget">
-              <div class="stat-widget-label">Decision IQ</div>
-              <div class="stat-widget-value text-gold">${team.decisionStats?.compositeIQ || team.managerEfficiency || 85.0}</div>
-              <div class="stat-widget-subtext">${team.decisionStats?.persona || 'Manager'}</div>
+              <div class="stat-widget-label">Draft Grade</div>
+              <div class="stat-widget-value text-gold">${team.draftGrade || 'B'}</div>
+              <div class="stat-widget-subtext">${team.draftNetValue >= 0 ? '+' : ''}${team.draftNetValue || 0} Net Val</div>
             </div>
             <div class="stat-widget">
-              <div class="stat-widget-label">Bench Lost</div>
-              <div class="stat-widget-value text-red">-${team.decisionStats?.pointsSacrificed || team.benchPoints} Pts</div>
-              <div class="stat-widget-subtext">Sacrificed</div>
+              <div class="stat-widget-label">Draft Steals</div>
+              <div class="stat-widget-value text-green">${team.draftSteals || 0}</div>
+              <div class="stat-widget-subtext">Excellent Value</div>
             </div>
             <div class="stat-widget">
-              <div class="stat-widget-label">Waiver Net</div>
-              <div class="stat-widget-value text-blue">+${team.decisionStats?.waiverPoints || 150} Pts</div>
-              <div class="stat-widget-subtext">${team.decisionStats?.waiverHitRate || 70}% Hit Rate</div>
-            </div>
-          </div>
-
-          <!-- Manager Decision 5-Pillar Scorecard Card -->
-          <div class="analytics-card" style="margin-bottom:0.65rem;">
-            <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.3rem;">
-              <div class="card-title">
-                <i class="fa-solid fa-brain text-green"></i> Decision Profile
-              </div>
-              <span class="badge badge-gold">${team.decisionStats?.persona || 'Manager'}</span>
-            </div>
-            <div class="responsive-grid-5" style="padding:0.25rem 0;">
-              <div style="background:var(--bg-surface); padding:0.45rem 0.6rem; border-radius:var(--radius-md); border-left:3px solid var(--accent-sleeper);">
-                <div class="text-muted" style="font-size:0.68rem;">1. Start/Sit</div>
-                <div class="font-mono text-green" style="font-size:1.05rem; font-weight:800;">${team.decisionStats?.startIQ || 85}%</div>
-                <div class="text-secondary" style="font-size:0.65rem;">${team.decisionStats?.clutchWins || 2} Clutch</div>
-              </div>
-              <div style="background:var(--bg-surface); padding:0.45rem 0.6rem; border-radius:var(--radius-md); border-left:3px solid var(--accent-gold);">
-                <div class="text-muted" style="font-size:0.68rem;">2. Waivers</div>
-                <div class="font-mono text-gold" style="font-size:1.05rem; font-weight:800;">+${team.decisionStats?.waiverPoints || 150} Pts</div>
-                <div class="text-secondary" style="font-size:0.65rem;">${team.decisionStats?.positionalAcquisitions?.totalAdditions || 15} Claims</div>
-              </div>
-              <div style="background:var(--bg-surface); padding:0.45rem 0.6rem; border-radius:var(--radius-md); border-left:3px solid var(--accent-blue);">
-                <div class="text-muted" style="font-size:0.68rem;">3. Trades</div>
-                <div class="font-mono ${team.decisionStats?.tradeNetValue >= 0 ? 'text-green' : 'text-red'}" style="font-size:1.05rem; font-weight:800;">
-                  ${team.decisionStats?.tradeNetValue >= 0 ? '+' : ''}${team.decisionStats?.tradeNetValue || 0} Pts
-                </div>
-                <div class="text-secondary" style="font-size:0.65rem;">${team.decisionStats?.tradesCount || 0} Trades</div>
-              </div>
-              <div style="background:var(--bg-surface); padding:0.45rem 0.6rem; border-radius:var(--radius-md); border-left:3px solid #a855f7;">
-                <div class="text-muted" style="font-size:0.68rem;">4. Draft VORP</div>
-                <div class="font-mono text-primary" style="font-size:1.05rem; font-weight:800;">+${team.decisionStats?.draftVorp || 100}</div>
-                <div class="text-secondary" style="font-size:0.65rem;">${team.decisionStats?.draftSteals || 1} Steals</div>
-              </div>
-              <div style="background:var(--bg-surface); padding:0.45rem 0.6rem; border-radius:var(--radius-md); border-left:3px solid #ec4899;">
-                <div class="text-muted" style="font-size:0.68rem;">5. FLEX %</div>
-                <div class="font-mono text-gold" style="font-size:1.05rem; font-weight:800;">${team.decisionStats?.flexEfficiency || 80}%</div>
-                <div class="text-secondary" style="font-size:0.65rem;">${team.decisionStats?.flexPpg || 14.0} PPG</div>
-              </div>
+              <div class="stat-widget-label">Draft Reaches</div>
+              <div class="stat-widget-value text-red">${team.draftReaches || 0}</div>
+              <div class="stat-widget-subtext">Over Market</div>
             </div>
           </div>
         ` : ''}
 
-        <!-- 3. FREE AGENCY SUB-TAB -->
-        ${(this.activeSubTab === 'waivers' || this.activeSubTab === 'all') ? `
-          <div class="analytics-card" style="margin-bottom:0.65rem;">
-            <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.3rem;">
-              <div class="card-title">
-                <i class="fa-solid fa-list-check text-gold"></i> Free Agency by Position
-              </div>
-              <span class="badge badge-green">${team.decisionStats?.positionalAcquisitions?.totalAdditions || 15} Moves</span>
-            </div>
-            <div class="responsive-grid-5" style="padding:0.25rem 0;">
-              <div style="background:var(--bg-surface); padding:0.45rem 0.6rem; border-radius:var(--radius-md); text-align:center;">
-                <div class="text-muted" style="font-size:0.68rem;">RBs</div>
-                <div class="font-mono text-green" style="font-size:1.15rem; font-weight:800;">${team.decisionStats?.positionalAcquisitions?.rbClaims || 4}</div>
-                <div class="text-secondary" style="font-size:0.65rem;">Claims</div>
-              </div>
-              <div style="background:var(--bg-surface); padding:0.45rem 0.6rem; border-radius:var(--radius-md); text-align:center;">
-                <div class="text-muted" style="font-size:0.68rem;">WRs</div>
-                <div class="font-mono text-blue" style="font-size:1.15rem; font-weight:800;">${team.decisionStats?.positionalAcquisitions?.wrClaims || 3}</div>
-                <div class="text-secondary" style="font-size:0.65rem;">Claims</div>
-              </div>
-              <div style="background:var(--bg-surface); padding:0.45rem 0.6rem; border-radius:var(--radius-md); text-align:center;">
-                <div class="text-muted" style="font-size:0.68rem;">QBs</div>
-                <div class="font-mono text-gold" style="font-size:1.15rem; font-weight:800;">${team.decisionStats?.positionalAcquisitions?.qbClaims || 1}</div>
-                <div class="text-secondary" style="font-size:0.65rem;">Claims</div>
-              </div>
-              <div style="background:var(--bg-surface); padding:0.45rem 0.6rem; border-radius:var(--radius-md); text-align:center;">
-                <div class="text-muted" style="font-size:0.68rem;">TEs</div>
-                <div class="font-mono text-primary" style="font-size:1.15rem; font-weight:800;">${team.decisionStats?.positionalAcquisitions?.teClaims || 1}</div>
-                <div class="text-secondary" style="font-size:0.65rem;">Claims</div>
-              </div>
-              <div style="background:var(--bg-surface); padding:0.45rem 0.6rem; border-radius:var(--radius-md); text-align:center;">
-                <div class="text-muted" style="font-size:0.68rem;">Top Pickup</div>
-                <div style="font-size:0.8rem; font-weight:800; color:var(--accent-gold); margin-top:0.15rem;">${team.decisionStats?.positionalAcquisitions?.topWaiverPickup || 'Waiver Gem'}</div>
-                <div class="text-secondary" style="font-size:0.65rem;">Best Move</div>
-              </div>
-            </div>
-          </div>
-        ` : ''}
       </div>
     `;
   }

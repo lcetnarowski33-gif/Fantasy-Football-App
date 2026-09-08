@@ -32,7 +32,7 @@ const CACHE_FILE = path.join(storageDir, 'league_cache.json');
 
 let serverConfig = {
   leagueId: process.env.ESPN_LEAGUE_ID || "1990371748",
-  season: process.env.ESPN_SEASON ? parseInt(process.env.ESPN_SEASON, 10) : 2025,
+  season: process.env.ESPN_SEASON ? parseInt(process.env.ESPN_SEASON, 10) : 2026,
   swid: process.env.ESPN_SWID || "",
   espnS2: process.env.ESPN_S2 || "",
   isAutoSyncEnabled: true
@@ -218,7 +218,7 @@ app.post('/api/sync/espn', async (req, res) => {
     return res.status(400).json({ error: 'League 1585576113 is deprecated. Active league is 1990371748.' });
   }
 
-  const seasonYear = season ? parseInt(season, 10) : 2025;
+  const seasonYear = season ? parseInt(season, 10) : 2026;
 
   try {
     const rawData = await fetchEspnLeagueData(leagueId, seasonYear, swid, espnS2);

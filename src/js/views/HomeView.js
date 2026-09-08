@@ -391,35 +391,43 @@ class HomeViewComponent {
   }
 
   static getAllLeagueMatchups(teams, rawMatchups) {
-    if (rawMatchups && rawMatchups.length >= Math.floor(teams.length / 2)) {
-      return rawMatchups.map(m => {
-        const home = teams.find(t => t.teamId === m.homeTeamId) || { name: 'Home Team', managerName: 'Manager A', logoUrl: '' };
-        const away = teams.find(t => t.teamId === m.awayTeamId) || { name: 'Away Team', managerName: 'Manager B', logoUrl: '' };
+    if (rawMatchups && rawMatchups.length > 0) {
+      const curWeek = (typeof store !== 'undefined' && store.getState().filters?.week) || 1;
+      const weekMatchups = rawMatchups.filter(m => m.week === curWeek);
+      const listToUse = weekMatchups.length > 0 ? weekMatchups : rawMatchups.slice(0, 6);
+
+      return listToUse.map(m => {
+        const home = teams.find(t => t.teamId === m.homeTeamId) || m.homeTeam || { name: 'Home Team', managerName: 'Manager A', logoUrl: '' };
+        const away = teams.find(t => t.teamId === m.awayTeamId) || m.awayTeam || { name: 'Away Team', managerName: 'Manager B', logoUrl: '' };
+        const homeScore = Number(m.homeScore || m.homeProjected || 118).toFixed(1);
+        const awayScore = Number(m.awayScore || m.awayProjected || 115).toFixed(1);
+        const homeWinProb = Math.min(95, Math.max(5, Math.round(50 + (homeScore - awayScore) * 1.5)));
+
         return {
           ...m,
           homeTeam: home,
-          awayTeam: away
+          awayTeam: away,
+          homeScore,
+          awayScore,
+          homeWinProb
         };
       });
     }
 
+    // Fallback: Pair up teams cleanly without synthetic trigonometry
     const matchupsList = [];
     for (let i = 0; i < teams.length; i += 2) {
       if (i + 1 < teams.length) {
         const home = teams[i];
         const away = teams[i + 1];
-        const homeScore = parseFloat((120 + Math.sin(i * 3 + 1) * 20 + (home.wins || 5) * 2).toFixed(1));
-        const awayScore = parseFloat((118 + Math.cos(i * 2 + 1) * 18 + (away.wins || 5) * 2).toFixed(1));
-        const homeWinProb = Math.round(50 + (homeScore - awayScore) * 1.5);
-
         matchupsList.push({
           homeTeamId: home.teamId,
           awayTeamId: away.teamId,
           homeTeam: home,
           awayTeam: away,
-          homeScore,
-          awayScore,
-          homeWinProb: Math.min(95, Math.max(5, homeWinProb))
+          homeScore: 118.0,
+          awayScore: 115.0,
+          homeWinProb: 52
         });
       }
     }

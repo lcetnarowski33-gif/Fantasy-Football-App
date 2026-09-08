@@ -97,33 +97,7 @@ class TradeViewComponent {
       return [];
     }
 
-    // 2. Pure un-synced mock mode: show sample demo trades clearly labeled as demo
-    return [
-      {
-        id: "demo-trade-101",
-        isDemo: true,
-        week: 11,
-        date: "Nov 14, 2025",
-        teamAId: "team-1",
-        teamAName: "Gridiron Legends",
-        teamAManager: "Alex Rivera",
-        teamAGives: ["Tyreek Hill (WR - MIA)"],
-        teamAGains: ["Christian McCaffrey (RB - SF)"],
-        teamANetPts: +28.5,
-        teamAPlayoffShift: "+18.4%",
-        teamBId: "team-3",
-        teamBName: "Touchdown Titans",
-        teamBManager: "Marcus Vance",
-        teamBGives: ["Christian McCaffrey (RB - SF)"],
-        teamBGains: ["Tyreek Hill (WR - MIA)"],
-        teamBNetPts: -14.2,
-        teamBPlayoffShift: "-8.5%",
-        grade: "A+",
-        score: 96.5,
-        outcome: "MASTERMIND",
-        recap: `[Sample Demo Trade] Alex Rivera acquired Christian McCaffrey to solidify RB1 output. Connect your ESPN league to view your official trades.`
-      }
-    ];
+    return (state && state.data && Array.isArray(state.data.completedTrades)) ? state.data.completedTrades : [];
   }
 
   static calculateManagerRankings(teams, completedTrades) {

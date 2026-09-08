@@ -25,8 +25,8 @@ class AppStore {
       compareTeamIds: ['team-1', 'team-2'],
 
       filters: {
-        season: 2025,
-        week: 12,
+        season: 2026,
+        week: 1,
         position: 'ALL',
         nflTeam: 'ALL',
         managerId: 'ALL',
@@ -276,7 +276,7 @@ class AppStore {
     const storage = this.getLocalStorage();
     if (storage && this.state.data && (this.state.data.league || this.state.data.teams)) {
       try {
-        storage.setItem('fantasy_league_data_2025', JSON.stringify(this.state.data));
+        storage.setItem('fantasy_league_data_2026', JSON.stringify(this.state.data));
         storage.setItem('espn_is_synced', this.state.isEspnSynced ? 'true' : 'false');
       } catch (e) {
         console.warn('Unable to write to localStorage for league data persistence.');
@@ -291,15 +291,16 @@ class AppStore {
     const storage = this.getLocalStorage();
     if (!storage) return;
     try {
-      const saved = storage.getItem('fantasy_league_data_2025');
+      // Clean up deprecated 2025 cache key if present
+      storage.removeItem('fantasy_league_data_2025');
+      const saved = storage.getItem('fantasy_league_data_2026');
       const isSynced = storage.getItem('espn_is_synced') === 'true';
       if (saved) {
         const parsed = JSON.parse(saved);
         const leagueIdStr = String(parsed.espnLeagueId || parsed.leagueId || parsed.league?.id || '');
-        // If stored data belongs to another league (e.g. 1585576113), discard it immediately
-        if (leagueIdStr.includes('1585576113') || (leagueIdStr && !leagueIdStr.includes('1990371748'))) {
-          console.warn('Scrubbing outdated league data from localStorage:', leagueIdStr);
-          storage.removeItem('fantasy_league_data_2025');
+        if (leagueIdStr.includes('1585576113') || (leagueIdStr && !leagueIdStr.includes('1990371748')) || (parsed.season && parsed.season !== 2026)) {
+          console.warn('Scrubbing outdated league data from localStorage:', leagueIdStr, parsed.season);
+          storage.removeItem('fantasy_league_data_2026');
           storage.removeItem('espn_is_synced');
           storage.removeItem('espn_sync_creds');
           return;
@@ -308,7 +309,7 @@ class AppStore {
         if (parsed && parsed.teams && (parsed.league || parsed.name)) {
           this.state.data = parsed;
           this.state.isEspnSynced = isSynced;
-          console.log(`📦 Successfully restored saved league data from localStorage! Synced: ${isSynced}`);
+          console.log(`📦 Successfully restored saved 2026 league data from localStorage! Synced: ${isSynced}`);
         }
       }
     } catch (e) {

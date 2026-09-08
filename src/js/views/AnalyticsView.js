@@ -231,34 +231,31 @@ class AnalyticsViewComponent {
     );
   }
 
+  static cleanManagerName(name, fallback) {
+    if (!name || name.toLowerCase().startsWith('espnfan') || name.startsWith('{')) {
+      return fallback || 'Manager';
+    }
+    return name;
+  }
+
   static calculateManagerMetrics(teams) {
     return teams.map(t => {
+      const cleanMgr = this.cleanManagerName(t.managerName, t.name);
       const ds = t.decisionStats || {};
-      const startIQ = ds.startIQ || Math.floor(Math.random() * 15) + 80;
-      const waiverPoints = ds.waiverPoints || Math.floor(Math.random() * 60) + 20;
-      const draftVorp = ds.draftVorp || Math.floor(Math.random() * 80) + 30;
-      const tradeNetValue = ds.tradeNetValue !== undefined ? ds.tradeNetValue : Math.floor(Math.random() * 40) - 10;
-      const pointsSacrificed = ds.pointsSacrificed || Math.floor(Math.random() * 90) + 50;
-
-      const compositeIQ = ds.compositeIQ || Math.min(99, Math.max(50, Math.round(startIQ * 0.45 + (waiverPoints * 0.25) + (draftVorp * 0.2) + (tradeNetValue * 0.1))));
-
-      let iqGrade = 'B';
-      if (compositeIQ >= 90) iqGrade = 'A+';
-      else if (compositeIQ >= 84) iqGrade = 'A';
-      else if (compositeIQ >= 76) iqGrade = 'B+';
-      else if (compositeIQ >= 70) iqGrade = 'B';
-      else iqGrade = 'C';
-
-      let persona = ds.persona || '🔥 Lineup Perfectionist';
-      if (waiverPoints > 55) persona = '⚡ Waiver Wire Wizard';
-      else if (tradeNetValue > 20) persona = '🤝 Trade Mastermind';
-      else if (pointsSacrificed > 110) persona = '⚠️ Bench Blunderer';
+      const startIQ = ds.startIQ !== undefined ? ds.startIQ : 86;
+      const waiverPoints = ds.waiverPoints !== undefined ? ds.waiverPoints : 0;
+      const draftVorp = ds.draftVorp !== undefined ? ds.draftVorp : Math.round(t.draftNetValue || 0);
+      const tradeNetValue = ds.tradeNetValue !== undefined ? ds.tradeNetValue : 0;
+      const pointsSacrificed = ds.pointsSacrificed !== undefined ? ds.pointsSacrificed : Math.round(t.benchPoints || 0);
+      const compositeIQ = ds.compositeIQ !== undefined ? ds.compositeIQ : 82;
+      const iqGrade = ds.iqGrade || 'B+';
+      const persona = ds.persona || '🔥 Balanced Competitor';
 
       return {
         teamId: t.teamId,
         abbrev: t.abbrev || t.name.substring(0, 3).toUpperCase(),
         name: t.name,
-        managerName: t.managerName,
+        managerName: cleanMgr,
         logoUrl: t.logoUrl,
         compositeIQ,
         iqGrade,
@@ -271,6 +268,7 @@ class AnalyticsViewComponent {
       };
     }).sort((a, b) => b.compositeIQ - a.compositeIQ);
   }
+
 }
 
 if (typeof window !== 'undefined') {
