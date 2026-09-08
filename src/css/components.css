@@ -13,7 +13,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  padding: 0.65rem 1.25rem;
+  padding: calc(0.65rem + env(safe-area-inset-top, 0px)) 1.25rem 0.65rem;
 }
 
 .header-container {
@@ -663,7 +663,7 @@
    -------------------------------------------------------------------------- */
 @media (max-width: 768px) {
   .app-header {
-    padding: 0.4rem 0.65rem;
+    padding: calc(0.4rem + env(safe-area-inset-top, 0px)) 0.65rem 0.4rem;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -727,6 +727,10 @@
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
+  }
+
+  #header-btn-pwa-install {
+    display: none !important;
   }
 
   .btn-mobile-menu {
@@ -1062,7 +1066,7 @@
 /* Extra Compact Phones (iPhone SE, Galaxy Fold outer screen: <= 360px) */
 @media (max-width: 360px) {
   .app-header {
-    padding: 0.35rem 0.5rem !important;
+    padding: calc(0.35rem + env(safe-area-inset-top, 0px)) 0.5rem 0.35rem !important;
   }
 
   .header-container {

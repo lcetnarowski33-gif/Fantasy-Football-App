@@ -1,0 +1,61 @@
+{
+  "name": "Fantasy League Analytics",
+  "short_name": "Fantasy App",
+  "description": "Professional ESPN & Sleeper Fantasy Football Analytics, Live Scores & Decision Hub",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b0e14",
+  "theme_color": "#0b0e14",
+  "categories": ["sports", "analytics", "entertainment"],
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live Matchups",
+      "short_name": "Matchups",
+      "description": "View live scores and win probabilities",
+      "url": "/#matchup",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Trade Center",
+      "short_name": "Trades",
+      "description": "Analyze trades and evaluate offers",
+      "url": "/#trade",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Decision Analytics",
+      "short_name": "Analytics",
+      "description": "Manager IQ scores and ELO ratings",
+      "url": "/#analytics",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

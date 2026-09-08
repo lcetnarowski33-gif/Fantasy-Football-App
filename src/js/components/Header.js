@@ -82,6 +82,10 @@ class HeaderComponent {
               <i class="fa-solid fa-magnifying-glass"></i>
             </button>
 
+            <button class="btn-icon-search btn-pwa-install desktop-only" id="header-btn-pwa-install" title="Install Fantasy League Analytics App" onclick="if(window.PWA) window.PWA.promptInstall();">
+              <i class="fa-solid fa-download text-gold"></i>
+            </button>
+
             <!-- Mobile Hamburger Button -->
             <button class="btn-mobile-menu" id="btn-mobile-menu-toggle" aria-label="Open Navigation Menu">
               <i class="fa-solid fa-bars"></i>
@@ -108,23 +112,23 @@ class HeaderComponent {
           <i class="fa-solid fa-right-left"></i>
           <span>Trade</span>
         </button>
-        <button class="mobile-nav-item" id="btn-bottom-nav-more">
+        <button class="mobile-nav-item" id="mobile-nav-more-btn" aria-label="More Navigation Pages">
           <i class="fa-solid fa-ellipsis"></i>
           <span>More</span>
         </button>
       </nav>
 
       <!-- Mobile Drawer Backdrop Overlay -->
-      <div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
+      <div class="mobile-drawer-overlay" id="mobile-drawer-overlay" onclick="HeaderComponent.toggleDrawer(false)"></div>
 
       <!-- Slide-Over Mobile Navigation Drawer -->
-      <aside class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Mobile Navigation Drawer">
+      <aside class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Navigation Drawer">
         <div class="mobile-drawer-header">
-          <div style="display:flex; align-items:center; gap:0.5rem;">
-            <i class="fa-solid fa-football text-green" style="font-size:1.25rem;"></i>
-            <strong style="font-size:1.05rem; color:var(--text-primary); font-family:var(--font-display);">League Menu</strong>
+          <div class="brand-logo" onclick="store.setView('home'); HeaderComponent.toggleDrawer(false);">
+            <i class="fa-solid fa-football"></i>
+            <span>Fantasy Analytics</span>
           </div>
-          <button class="btn-drawer-close" id="btn-drawer-close" aria-label="Close Menu">
+          <button class="btn-drawer-close" id="btn-drawer-close" aria-label="Close Menu" onclick="HeaderComponent.toggleDrawer(false)">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
@@ -154,7 +158,11 @@ class HeaderComponent {
           </div>
         </div>
 
-        <div class="mobile-drawer-footer">
+        <div class="mobile-drawer-footer" style="display:flex; flex-direction:column; gap:0.45rem;">
+          <button class="btn btn-outline btn-block btn-pwa-install" id="drawer-btn-pwa-install" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; width:100%; padding:0.6rem; font-size:0.82rem;" onclick="if(window.PWA) window.PWA.promptInstall();">
+            <i class="fa-solid fa-mobile-screen-button text-gold"></i>
+            <span>Install App</span>
+          </button>
           <button class="btn btn-primary btn-block" id="drawer-btn-espn-sync" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; width:100%; padding:0.65rem;">
             <i class="fa-solid fa-rotate"></i>
             <span>${isEspnSynced ? 'Re-Sync ESPN League' : 'Connect ESPN League'}</span>
@@ -231,7 +239,7 @@ class HeaderComponent {
     }
 
     // Bottom Nav "More" Button
-    const bottomNavMore = mountEl.querySelector('#btn-bottom-nav-more');
+    const bottomNavMore = mountEl.querySelector('#mobile-nav-more-btn, #btn-bottom-nav-more');
     if (bottomNavMore) {
       bottomNavMore.addEventListener('click', () => {
         HeaderComponent.toggleDrawer(true);
@@ -252,6 +260,11 @@ class HeaderComponent {
       drawerOverlay.addEventListener('click', () => {
         HeaderComponent.toggleDrawer(false);
       });
+    }
+
+    // Update PWA install button state if PWA controller is ready
+    if (typeof window !== 'undefined' && window.PWA) {
+      window.PWA.updateInstallButtons();
     }
   }
 }
