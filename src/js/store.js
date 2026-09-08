@@ -192,6 +192,7 @@ class AppStore {
     if (credentials) {
       this.state.espnCredentials = credentials;
       this.saveEspnCredentials(credentials);
+      this.updateUrlSyncToken(credentials);
     }
 
     if (espnNormalizedData.teams.length > 0) {
@@ -199,7 +200,29 @@ class AppStore {
     }
 
     console.log(`✅ Applied live ESPN API data for "${espnNormalizedData.name}"`);
+    this.saveLeagueData();
     this.notify();
+  }
+
+  /**
+   * Update browser URL with a compact sync token so adding to Home Screen retains the league
+   */
+  updateUrlSyncToken(credentials) {
+    try {
+      if (typeof window === 'undefined' || !credentials || !credentials.leagueId) return;
+      const payload = {
+        id: credentials.leagueId,
+        yr: credentials.season || 2024,
+        sw: credentials.swid || '',
+        s2: credentials.espnS2 || ''
+      };
+      const token = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('sync', token);
+      window.history.replaceState({}, '', currentUrl.toString());
+    } catch (e) {
+      console.warn('Unable to set sync URL token:', e);
+    }
   }
 
   /**
@@ -209,6 +232,14 @@ class AppStore {
     this.state.data = (typeof INITIAL_MOCK_DATA !== 'undefined' ? INITIAL_MOCK_DATA : (typeof window !== 'undefined' && window.INITIAL_MOCK_DATA ? window.INITIAL_MOCK_DATA : {}));
     this.state.isEspnSynced = false;
     this.state.espnCredentials = null;
+
+    try {
+      if (typeof window !== 'undefined') {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.delete('sync');
+        window.history.replaceState({}, '', currentUrl.toString());
+      }
+    } catch (e) {}
 
     const storage = this.getLocalStorage();
     if (storage) {
@@ -227,6 +258,7 @@ class AppStore {
    * Persist ESPN sync credentials to browser localStorage
    */
   saveEspnCredentials(credentials) {
+    this.state.espnCredentials = credentials;
     const storage = this.getLocalStorage();
     if (storage) {
       try {

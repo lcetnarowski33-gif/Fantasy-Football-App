@@ -25,6 +25,22 @@ class EspnSyncModalComponent {
             </p>
 
             <div style="display:flex; flex-direction:column; gap:0.85rem;">
+              <!-- Mobile / PWA Sync Transfer Box -->
+              <div style="background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); border-radius:var(--radius-md); padding:0.65rem 0.75rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                  <span style="font-size:0.75rem; font-weight:800; color:var(--accent-blue);">
+                    <i class="fa-solid fa-mobile-screen"></i> Mobile PWA / Safari Sync Transfer
+                  </span>
+                  <button type="button" class="btn btn-outline btn-sm" id="btn-copy-sync-link" style="font-size:0.68rem; padding:0.15rem 0.45rem;" onclick="EspnSyncModalComponent.copySyncLink()">
+                    <i class="fa-solid fa-link"></i> Copy Sync Link
+                  </button>
+                </div>
+                <input type="text" id="espn-input-quick-token" placeholder="Paste Sync Link or Token to auto-fill..." style="width:100%; font-size:0.75rem; padding:0.35rem 0.5rem;" oninput="EspnSyncModalComponent.handleTokenPaste(this.value)">
+                <div class="text-muted" style="font-size:0.68rem; margin-top:0.25rem;">
+                  If synced in Safari, click <strong>Copy Sync Link</strong> and open it in your Home Screen app to sync automatically with zero typing!
+                </div>
+              </div>
+
               <div>
                 <label style="display:block; font-size:0.75rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; margin-bottom:0.25rem;">ESPN League ID or URL *</label>
                 <input type="text" id="espn-input-league-id" placeholder="e.g. 123456789 or https://fantasy.espn.com/..." style="width:100%;">
@@ -172,7 +188,72 @@ class EspnSyncModalComponent {
       if (seasonEl && creds.season && !seasonEl.value) seasonEl.value = creds.season;
       if (swidEl && (creds.swid || creds.SWID)) swidEl.value = creds.swid || creds.SWID;
       if (s2El && (creds.espnS2 || creds.espn_s2)) s2El.value = creds.espnS2 || creds.espn_s2;
+    } else {
+      const idEl = document.getElementById('espn-input-league-id');
+      if (idEl && !idEl.value) idEl.value = '1585576113';
     }
+  }
+
+  static copySyncLink() {
+    try {
+      const idEl = document.getElementById('espn-input-league-id');
+      const seasonEl = document.getElementById('espn-input-season');
+      const swidEl = document.getElementById('espn-input-swid');
+      const s2El = document.getElementById('espn-input-s2');
+
+      const leagueId = (idEl && idEl.value.trim()) || '1585576113';
+      const season = (seasonEl && seasonEl.value) || 2024;
+      const swid = (swidEl && swidEl.value.trim()) || '';
+      const espnS2 = (s2El && s2El.value.trim()) || '';
+
+      const payload = { id: leagueId, yr: parseInt(season, 10), sw: swid, s2: espnS2 };
+      const token = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+      const syncUrl = `${window.location.origin}/?sync=${token}`;
+
+      navigator.clipboard.writeText(syncUrl).then(() => {
+        const btn = document.getElementById('btn-copy-sync-link');
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-check text-green"></i> Copied Link!';
+        setTimeout(() => {
+          if (btn) btn.innerHTML = '<i class="fa-solid fa-link"></i> Copy Sync Link';
+        }, 2500);
+      }).catch(() => {
+        prompt('Copy your Mobile Sync Link below:', syncUrl);
+      });
+    } catch (e) {
+      alert('Unable to copy sync link.');
+    }
+  }
+
+  static handleTokenPaste(val) {
+    if (!val) return;
+    try {
+      let token = val.trim();
+      if (token.includes('sync=')) {
+        const match = token.match(/sync=([A-Za-z0-9+/=]+)/);
+        if (match) token = match[1];
+      }
+
+      const payload = JSON.parse(decodeURIComponent(escape(atob(token))));
+      if (payload && (payload.id || payload.leagueId)) {
+        const idEl = document.getElementById('espn-input-league-id');
+        const seasonEl = document.getElementById('espn-input-season');
+        const swidEl = document.getElementById('espn-input-swid');
+        const s2El = document.getElementById('espn-input-s2');
+
+        if (idEl) idEl.value = payload.id || payload.leagueId;
+        if (seasonEl) seasonEl.value = payload.yr || payload.season || 2024;
+        if (swidEl) swidEl.value = payload.sw || payload.swid || '';
+        if (s2El) s2El.value = payload.s2 || payload.espnS2 || '';
+
+        const statusMsg = document.getElementById('espn-sync-status-msg');
+        if (statusMsg) {
+          statusMsg.style.display = 'block';
+          statusMsg.style.background = 'rgba(0,230,118,0.15)';
+          statusMsg.style.color = '#00e676';
+          statusMsg.innerText = `Loaded credentials for League #${payload.id || payload.leagueId}! Click "Sync Now".`;
+        }
+      }
+    } catch (e) {}
   }
 
   static close() {

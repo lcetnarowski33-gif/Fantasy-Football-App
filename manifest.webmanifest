@@ -2,7 +2,7 @@
   "name": "Fantasy League Analytics",
   "short_name": "Fantasy App",
   "description": "Professional ESPN & Sleeper Fantasy Football Analytics, Live Scores & Decision Hub",
-  "start_url": "/",
+  "start_url": "./",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",

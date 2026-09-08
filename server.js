@@ -8,6 +8,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const { fetchEspnLeagueData, normalizeEspnData } = require('./src/backend/services/espnAdapter');
 
 try {
@@ -23,8 +24,11 @@ app.use(express.json());
 // Serve static frontend files
 app.use(express.static(path.join(__dirname)));
 
-const CONFIG_FILE = path.join(__dirname, 'server_config.json');
-const CACHE_FILE = path.join(__dirname, 'league_cache.json');
+const isVercel = process.env.VERCEL === '1';
+const storageDir = isVercel ? os.tmpdir() : __dirname;
+const BASE_CONFIG_FILE = path.join(__dirname, 'server_config.json');
+const CONFIG_FILE = path.join(storageDir, 'server_config.json');
+const CACHE_FILE = path.join(storageDir, 'league_cache.json');
 
 let serverConfig = {
   leagueId: process.env.ESPN_LEAGUE_ID || "1585576113",
@@ -39,13 +43,22 @@ let cachedLeagueData = null;
 // Load server config on startup
 function loadServerConfig() {
   try {
-    if (fs.existsSync(CONFIG_FILE)) {
+    if (fs.existsSync(BASE_CONFIG_FILE)) {
+      const raw = fs.readFileSync(BASE_CONFIG_FILE, 'utf8');
+      serverConfig = { ...serverConfig, ...JSON.parse(raw) };
+    }
+    if (isVercel && fs.existsSync(CONFIG_FILE)) {
       const raw = fs.readFileSync(CONFIG_FILE, 'utf8');
       serverConfig = { ...serverConfig, ...JSON.parse(raw) };
-      console.log(`⚙️ Loaded persistent ESPN config for League #${serverConfig.leagueId}`);
     }
+    // Environment variables take highest precedence
+    if (process.env.ESPN_LEAGUE_ID) serverConfig.leagueId = process.env.ESPN_LEAGUE_ID;
+    if (process.env.ESPN_SEASON) serverConfig.season = parseInt(process.env.ESPN_SEASON, 10);
+    if (process.env.ESPN_SWID) serverConfig.swid = process.env.ESPN_SWID;
+    if (process.env.ESPN_S2) serverConfig.espnS2 = process.env.ESPN_S2;
+    console.log(`⚙️ Loaded persistent ESPN config for League #${serverConfig.leagueId}`);
   } catch (e) {
-    console.warn('Unable to load server_config.json:', e.message);
+    console.warn('Unable to load server config:', e.message);
   }
 }
 
@@ -58,7 +71,7 @@ function loadCachedLeagueData() {
       console.log(`📦 Loaded cached ESPN dataset for "${cachedLeagueData.name}"`);
     }
   } catch (e) {
-    console.warn('Unable to load league_cache.json:', e.message);
+    console.warn('Unable to load league cache:', e.message);
   }
 }
 
@@ -74,7 +87,7 @@ function saveServerConfig(newConfig) {
     fs.writeFileSync(CONFIG_FILE, JSON.stringify(serverConfig, null, 2), 'utf8');
     console.log(`💾 Saved global ESPN config for League #${serverConfig.leagueId}`);
   } catch (e) {
-    console.error('Failed to write server_config.json:', e.message);
+    console.error('Failed to write server config:', e.message);
   }
 }
 
@@ -87,7 +100,7 @@ function saveCachedLeagueData(data) {
     fs.writeFileSync(CACHE_FILE, JSON.stringify(data, null, 2), 'utf8');
     console.log(`💾 Saved cached ESPN dataset snapshot for "${data.name}"`);
   } catch (e) {
-    console.error('Failed to write league_cache.json:', e.message);
+    console.error('Failed to write league cache:', e.message);
   }
 }
 
@@ -156,7 +169,24 @@ function broadcastLiveUpdate(payload) {
  * GET /api/league/current
  * Serves active global ESPN dataset to any visiting client
  */
-app.get('/api/league/current', (req, res) => {
+app.get('/api/league/current', async (req, res) => {
+  // If memory cache is empty, check disk cache
+  if (!cachedLeagueData) {
+    loadCachedLeagueData();
+  }
+
+  // If still empty and we have leagueId + credentials, attempt on-demand fetch
+  if (!cachedLeagueData && serverConfig.leagueId && (serverConfig.swid || process.env.ESPN_SWID)) {
+    try {
+      console.log(`🔄 [On-Demand] Syncing ESPN League #${serverConfig.leagueId}...`);
+      const raw = await fetchEspnLeagueData(serverConfig.leagueId, serverConfig.season, serverConfig.swid, serverConfig.espnS2);
+      cachedLeagueData = normalizeEspnData(raw);
+      saveCachedLeagueData(cachedLeagueData);
+    } catch (e) {
+      console.warn(`⚠️ [On-Demand] Fetch failed: ${e.message}`);
+    }
+  }
+
   return res.json({
     success: true,
     hasCachedData: !!cachedLeagueData,

@@ -131,8 +131,56 @@ function bootApp() {
     } catch (e) {}
   }
 
-  window.addEventListener('hashchange', handleHashRoute);
-  handleHashRoute();
+  // Auto-detect sync token in URL query or hash (e.g. when launching from iOS Home Screen PWA)
+  async function checkUrlSyncParam() {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      let token = urlParams.get('sync');
+      if (!token && window.location.hash.includes('sync=')) {
+        const match = window.location.hash.match(/sync=([A-Za-z0-9+/=]+)/);
+        if (match) token = match[1];
+      }
+
+      if (token) {
+        const payload = JSON.parse(decodeURIComponent(escape(atob(token))));
+        if (payload && (payload.id || payload.leagueId)) {
+          const creds = {
+            leagueId: payload.id || payload.leagueId,
+            season: payload.yr || payload.season || 2024,
+            swid: payload.sw || payload.swid || '',
+            espnS2: payload.s2 || payload.espnS2 || ''
+          };
+          console.log(`🔗 Detected ESPN sync token in URL for League #${creds.leagueId}`);
+          if (typeof store !== 'undefined') {
+            store.saveEspnCredentials(creds);
+            try {
+              const syncRes = await fetch('/api/sync/espn', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  leagueId: creds.leagueId,
+                  season: creds.season,
+                  swid: creds.swid,
+                  espnS2: creds.espnS2,
+                  saveAsDefault: true
+                })
+              });
+              const syncData = await syncRes.json();
+              if (syncData.success && syncData.data) {
+                store.applyEspnSync(syncData.data, creds);
+              }
+            } catch (err) {
+              console.warn('Sync token auto-sync failed:', err);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('URL sync check warning:', e);
+    }
+  }
+
+  checkUrlSyncParam();
 
   // Fetch Global Persistent Server League Data on Startup
   async function initGlobalLeagueData() {
