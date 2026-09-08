@@ -30,14 +30,14 @@ class HeaderComponent {
     if (!mountEl) return;
 
     const views = [
-      { id: 'home', label: 'Dashboard', icon: 'fa-gauge-high', sub: 'Standings & Live Feed' },
-      { id: 'analytics', label: 'Analytics', icon: 'fa-chart-line', sub: 'Decision IQ & ELO Leaderboard' },
-      { id: 'league', label: 'League Matrix', icon: 'fa-trophy', sub: 'Odds, ELO & Record Book' },
-      { id: 'trade', label: 'Trade Center', icon: 'fa-right-left', sub: 'Executed Deals & Audits' },
-      { id: 'matchup', label: 'Matchups', icon: 'fa-bolt', sub: 'Weekly H2H & Net Draft' },
-      { id: 'team', label: 'Team Hub', icon: 'fa-users', sub: 'Active Rosters & Metrics' },
-      { id: 'waiver', label: 'Free Agency', icon: 'fa-list-check', sub: 'Waiver Wire & Moves Log' },
-      { id: 'draft', label: 'Draft Center', icon: 'fa-clipboard-list', sub: '160 Picks & VORP Matrix' }
+      { id: 'home', label: 'Dashboard', icon: 'fa-gauge-high' },
+      { id: 'analytics', label: 'Analytics', icon: 'fa-chart-line' },
+      { id: 'league', label: 'League', icon: 'fa-trophy' },
+      { id: 'trade', label: 'Trade', icon: 'fa-right-left' },
+      { id: 'matchup', label: 'Matchups', icon: 'fa-bolt' },
+      { id: 'team', label: 'Teams', icon: 'fa-users' },
+      { id: 'waiver', label: 'Free Agency', icon: 'fa-list-check' },
+      { id: 'draft', label: 'Draft', icon: 'fa-clipboard-list' }
     ];
 
     const activeView = currentState.activeView || 'home';
@@ -149,7 +149,6 @@ class HeaderComponent {
                   </div>
                   <div class="drawer-item-info">
                     <div class="drawer-item-title">${v.label}</div>
-                    <div class="drawer-item-sub">${v.sub}</div>
                   </div>
                   ${isActive ? '<span class="badge badge-green" style="font-size:0.65rem; margin-left:auto;">ACTIVE</span>' : '<i class="fa-solid fa-chevron-right text-muted" style="font-size:0.75rem; margin-left:auto;"></i>'}
                 </button>

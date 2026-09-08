@@ -13,10 +13,10 @@ class RecordsViewComponent {
 
     mountEl.innerHTML = `
       <div class="animate-fade-in">
-        <div style="margin-bottom:1.5rem;">
-          <h2><i class="fa-solid fa-book text-gold"></i> All-Time League Record Book</h2>
-          <p class="text-secondary" style="font-size:0.9rem;">
-            Historic milestones, scoring records, championship titles, and draft class rankings.
+        <div style="margin-bottom:1.25rem;">
+          <h2><i class="fa-solid fa-book text-gold"></i> League Records</h2>
+          <p class="text-secondary" style="font-size:0.85rem; margin-top:0.2rem;">
+            Historic milestones, scoring records, and championships.
           </p>
         </div>
 

@@ -42,7 +42,7 @@ class TeamViewComponent {
               <span class="badge badge-gold" style="font-size:0.65rem; padding:0.1rem 0.35rem;">${team.abbrev}</span>
             </div>
             <div class="text-secondary" style="font-size:0.72rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-              ${team.managerName} • Div: ${team.division} • ELO: ${team.eloRating}
+              ${team.managerName} · ${team.division} · ELO ${team.eloRating}
             </div>
           </div>
         </div>
@@ -56,7 +56,7 @@ class TeamViewComponent {
             <i class="fa-solid fa-brain"></i> Scorecard
           </button>
           <button class="segmented-tab-btn ${this.activeSubTab === 'waivers' ? 'active' : ''}" onclick="TeamViewComponent.setSubTab('waivers')">
-            <i class="fa-solid fa-list-check"></i> Free Agency
+            <i class="fa-solid fa-list-check"></i> Waivers
           </button>
           <button class="segmented-tab-btn ${this.activeSubTab === 'all' ? 'active' : ''}" onclick="TeamViewComponent.setSubTab('all')">
             <i class="fa-solid fa-table-cells-large"></i> All
@@ -68,9 +68,8 @@ class TeamViewComponent {
           <div class="analytics-card" style="margin-bottom:0.65rem;">
             <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.3rem;">
               <div class="card-title">
-                <i class="fa-solid fa-users-gear text-green"></i> Active Roster (${players.length} Players)
+                <i class="fa-solid fa-users text-green"></i> Roster (${players.length})
               </div>
-              <span class="badge badge-blue">PFF Metrics</span>
             </div>
             <div class="roster-table-wrapper" style="width:100%; max-width:100%; overflow:hidden;">
               <table class="roster-table">
@@ -138,9 +137,9 @@ class TeamViewComponent {
           <!-- Team Stat Widgets -->
           <div class="stat-widget-grid" style="margin-bottom:0.65rem;">
             <div class="stat-widget">
-              <div class="stat-widget-label">Record & Power</div>
+              <div class="stat-widget-label">Record</div>
               <div class="stat-widget-value text-green">${team.wins}-${team.losses}</div>
-              <div class="stat-widget-subtext">ELO: ${team.eloRating}</div>
+              <div class="stat-widget-subtext">ELO ${team.eloRating}</div>
             </div>
             <div class="stat-widget">
               <div class="stat-widget-label">Decision IQ</div>
@@ -148,9 +147,9 @@ class TeamViewComponent {
               <div class="stat-widget-subtext">${team.decisionStats?.persona || 'Manager'}</div>
             </div>
             <div class="stat-widget">
-              <div class="stat-widget-label">Sacrificed</div>
+              <div class="stat-widget-label">Bench Lost</div>
               <div class="stat-widget-value text-red">-${team.decisionStats?.pointsSacrificed || team.benchPoints} Pts</div>
-              <div class="stat-widget-subtext">Bench Lost</div>
+              <div class="stat-widget-subtext">Sacrificed</div>
             </div>
             <div class="stat-widget">
               <div class="stat-widget-label">Waiver Net</div>
@@ -163,23 +162,23 @@ class TeamViewComponent {
           <div class="analytics-card" style="margin-bottom:0.65rem;">
             <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.3rem;">
               <div class="card-title">
-                <i class="fa-solid fa-brain text-green"></i> 5-Pillar Decision Profile
+                <i class="fa-solid fa-brain text-green"></i> Decision Profile
               </div>
-              <span class="badge badge-gold">${team.decisionStats?.persona || 'Active Manager'}</span>
+              <span class="badge badge-gold">${team.decisionStats?.persona || 'Manager'}</span>
             </div>
             <div class="responsive-grid-5" style="padding:0.25rem 0;">
               <div style="background:var(--bg-surface); padding:0.45rem 0.6rem; border-radius:var(--radius-md); border-left:3px solid var(--accent-sleeper);">
-                <div class="text-muted" style="font-size:0.68rem;">1. Start/Sit IQ</div>
+                <div class="text-muted" style="font-size:0.68rem;">1. Start/Sit</div>
                 <div class="font-mono text-green" style="font-size:1.05rem; font-weight:800;">${team.decisionStats?.startIQ || 85}%</div>
-                <div class="text-secondary" style="font-size:0.65rem;">${team.decisionStats?.clutchWins || 2} Clutch Wins</div>
+                <div class="text-secondary" style="font-size:0.65rem;">${team.decisionStats?.clutchWins || 2} Clutch</div>
               </div>
               <div style="background:var(--bg-surface); padding:0.45rem 0.6rem; border-radius:var(--radius-md); border-left:3px solid var(--accent-gold);">
-                <div class="text-muted" style="font-size:0.68rem;">2. Waiver Output</div>
+                <div class="text-muted" style="font-size:0.68rem;">2. Waivers</div>
                 <div class="font-mono text-gold" style="font-size:1.05rem; font-weight:800;">+${team.decisionStats?.waiverPoints || 150} Pts</div>
                 <div class="text-secondary" style="font-size:0.65rem;">${team.decisionStats?.positionalAcquisitions?.totalAdditions || 15} Claims</div>
               </div>
               <div style="background:var(--bg-surface); padding:0.45rem 0.6rem; border-radius:var(--radius-md); border-left:3px solid var(--accent-blue);">
-                <div class="text-muted" style="font-size:0.68rem;">3. Trade Impact</div>
+                <div class="text-muted" style="font-size:0.68rem;">3. Trades</div>
                 <div class="font-mono ${team.decisionStats?.tradeNetValue >= 0 ? 'text-green' : 'text-red'}" style="font-size:1.05rem; font-weight:800;">
                   ${team.decisionStats?.tradeNetValue >= 0 ? '+' : ''}${team.decisionStats?.tradeNetValue || 0} Pts
                 </div>
@@ -191,7 +190,7 @@ class TeamViewComponent {
                 <div class="text-secondary" style="font-size:0.65rem;">${team.decisionStats?.draftSteals || 1} Steals</div>
               </div>
               <div style="background:var(--bg-surface); padding:0.45rem 0.6rem; border-radius:var(--radius-md); border-left:3px solid #ec4899;">
-                <div class="text-muted" style="font-size:0.68rem;">5. FLEX Efficiency</div>
+                <div class="text-muted" style="font-size:0.68rem;">5. FLEX %</div>
                 <div class="font-mono text-gold" style="font-size:1.05rem; font-weight:800;">${team.decisionStats?.flexEfficiency || 80}%</div>
                 <div class="text-secondary" style="font-size:0.65rem;">${team.decisionStats?.flexPpg || 14.0} PPG</div>
               </div>
@@ -204,7 +203,7 @@ class TeamViewComponent {
           <div class="analytics-card" style="margin-bottom:0.65rem;">
             <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.3rem;">
               <div class="card-title">
-                <i class="fa-solid fa-list-check text-gold"></i> Free Agency Pickups by Position
+                <i class="fa-solid fa-list-check text-gold"></i> Free Agency by Position
               </div>
               <span class="badge badge-green">${team.decisionStats?.positionalAcquisitions?.totalAdditions || 15} Moves</span>
             </div>

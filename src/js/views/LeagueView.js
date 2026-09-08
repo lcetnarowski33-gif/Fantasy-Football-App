@@ -27,39 +27,36 @@ class LeagueViewComponent {
       <div class="animate-fade-in">
         <div class="league-matrix-header" style="margin-bottom:0.75rem;">
           <div>
-            <h2><i class="fa-solid fa-trophy text-gold"></i> League Manager Matrix</h2>
-            <p class="text-secondary" style="font-size:0.82rem; margin-top:0.15rem;">
-              Luck Ratings, Max Points, Bench Points, Playoff Odds, and Elo Ratings.
-            </p>
+            <h2><i class="fa-solid fa-trophy text-gold"></i> League Overview</h2>
           </div>
         </div>
 
-        <!-- Segmented Tab Switcher (ESPN Dense View vs Cards) -->
+        <!-- Segmented Tab Switcher -->
         <div class="segmented-tab-bar" style="margin-bottom:0.75rem;">
           <button class="segmented-tab-btn ${activeTab === 'matrix' ? 'active' : ''}" onclick="LeagueViewComponent.setTab('matrix')">
-            <i class="fa-solid fa-table-cells"></i> Matrix Table
+            <i class="fa-solid fa-table-cells"></i> Table
           </button>
           <button class="segmented-tab-btn ${activeTab === 'cards' ? 'active' : ''}" onclick="LeagueViewComponent.setTab('cards')">
-            <i class="fa-solid fa-id-card"></i> Manager Cards
+            <i class="fa-solid fa-id-card"></i> Cards
           </button>
         </div>
 
         ${activeTab === 'matrix' ? `
-          <!-- Dense Glanceable Manager Matrix Table -->
-          <div class="analytics-card" style="padding:0.35rem 0.5rem;">
+          <!-- Manager Matrix Table -->
+          <div class="analytics-card" style="padding:0.5rem 0.75rem;">
             <div class="table-responsive">
               <table class="standings-table">
                 <thead>
                   <tr>
                     <th style="width:30px; text-align:center;">#</th>
-                    <th>Team & Manager</th>
+                    <th>Team</th>
                     <th style="width:48px; text-align:center;">W-L</th>
                     <th style="width:58px; text-align:right;">PF</th>
-                    <th class="desktop-only" style="text-align:right;">Max Pts</th>
-                    <th class="desktop-only" style="text-align:right;">Bench Pts</th>
+                    <th class="desktop-only" style="text-align:right;">Max</th>
+                    <th class="desktop-only" style="text-align:right;">Bench</th>
                     <th class="desktop-only" style="text-align:center;">Luck</th>
-                    <th style="width:54px; text-align:center;">Playoff %</th>
-                    <th class="desktop-only" style="text-align:center;">Champ %</th>
+                    <th style="width:54px; text-align:center;">Playoff</th>
+                    <th class="desktop-only" style="text-align:center;">Title</th>
                     <th class="desktop-only" style="text-align:center;">Elo</th>
                   </tr>
                 </thead>
@@ -84,10 +81,10 @@ class LeagueViewComponent {
                       <td style="text-align:right; font-weight:800; font-size:0.82rem; white-space:nowrap; padding:0.3rem 0.3rem;" class="font-mono text-primary">
                         ${t.pointsFor}
                       </td>
-                      <td class="desktop-only" style="text-align:right; font-size:0.82rem;" class="font-mono text-secondary">
+                      <td class="desktop-only font-mono text-secondary" style="text-align:right; font-size:0.82rem;">
                         ${t.maxPoints}
                       </td>
-                      <td class="desktop-only" style="text-align:right; font-size:0.82rem;" class="font-mono text-gold">
+                      <td class="desktop-only font-mono text-gold" style="text-align:right; font-size:0.82rem;">
                         ${t.benchPoints}
                       </td>
                       <td class="desktop-only" style="text-align:center;">
@@ -105,7 +102,7 @@ class LeagueViewComponent {
                           ${t.championshipOdds}%
                         </span>
                       </td>
-                      <td class="desktop-only" style="text-align:center; font-size:0.82rem; font-weight:700;" class="font-mono text-primary">
+                      <td class="desktop-only font-mono text-primary" style="text-align:center; font-size:0.82rem; font-weight:700;">
                         ${t.eloRating || 1500}
                       </td>
                     </tr>
@@ -118,46 +115,42 @@ class LeagueViewComponent {
           <!-- Manager Cards Grid -->
           <div class="manager-card-grid">
             ${teams.map(t => `
-              <div class="manager-card" onclick="store.setView('team', {teamId: '${t.teamId}'});">
-                <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.65rem;">
-                  <img src="${t.logoUrl}" class="manager-avatar" style="width:40px; height:40px;">
+              <div class="manager-card" style="padding:0.75rem 0.9rem;" onclick="store.setView('team', {teamId: '${t.teamId}'});">
+                <div style="display:flex; align-items:center; gap:0.65rem; margin-bottom:0.65rem;">
+                  <img src="${t.logoUrl}" class="manager-avatar" style="width:36px; height:36px;">
                   <div>
-                    <h3 style="font-size:0.98rem; color:var(--text-primary); margin:0;">${t.name}</h3>
-                    <div class="text-secondary" style="font-size:0.75rem;">${t.managerName} • Division: ${t.division}</div>
+                    <h3 style="font-size:0.95rem; color:var(--text-primary); margin:0;">${t.name}</h3>
+                    <div class="text-secondary" style="font-size:0.72rem;">${t.managerName}</div>
                   </div>
                 </div>
 
-                <div class="responsive-grid-3" style="gap:0.35rem; text-align:center; background:var(--bg-surface); padding:0.5rem; border-radius:var(--radius-sm); margin-bottom:0.65rem;">
+                <div class="responsive-grid-3" style="gap:0.35rem; text-align:center; background:var(--bg-surface); padding:0.45rem; border-radius:var(--radius-sm); margin-bottom:0.55rem;">
                   <div>
                     <div class="stat-widget-label">Record</div>
                     <div class="font-mono text-green" style="font-weight:800; font-size:0.95rem;">${t.wins}-${t.losses}</div>
                   </div>
                   <div>
-                    <div class="stat-widget-label">Total Points</div>
+                    <div class="stat-widget-label">Points</div>
                     <div class="font-mono text-primary" style="font-weight:800; font-size:0.95rem;">${t.pointsFor}</div>
                   </div>
                   <div>
-                    <div class="stat-widget-label">Luck Rating</div>
+                    <div class="stat-widget-label">Luck</div>
                     <div class="font-mono ${t.luckRating > 60 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.95rem;">${t.luckRating}</div>
                   </div>
                 </div>
 
-                <div style="display:flex; flex-direction:column; gap:0.3rem; font-size:0.78rem;">
+                <div style="display:flex; flex-direction:column; gap:0.25rem; font-size:0.75rem;">
                   <div style="display:flex; justify-content:space-between;">
-                    <span class="text-muted">Max Potential Points:</span>
+                    <span class="text-muted">Max Points:</span>
                     <span class="font-mono text-primary" style="font-weight:700;">${t.maxPoints}</span>
                   </div>
                   <div style="display:flex; justify-content:space-between;">
-                    <span class="text-muted">Points Left On Bench:</span>
+                    <span class="text-muted">Bench Lost:</span>
                     <span class="font-mono text-gold" style="font-weight:700;">${t.benchPoints}</span>
                   </div>
-                  <div style="display:flex; justify-content:space-between;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span class="text-muted">Playoff Odds:</span>
-                    <span class="badge ${t.playoffOdds > 70 ? 'badge-green' : 'badge-gold'}" style="font-size:0.7rem;">${t.playoffOdds}%</span>
-                  </div>
-                  <div style="display:flex; justify-content:space-between;">
-                    <span class="text-muted">Championship Odds:</span>
-                    <span class="badge badge-purple" style="font-size:0.7rem;">${t.championshipOdds}%</span>
+                    <span class="badge ${t.playoffOdds > 70 ? 'badge-green' : 'badge-gold'}" style="font-size:0.68rem;">${t.playoffOdds}%</span>
                   </div>
                 </div>
               </div>

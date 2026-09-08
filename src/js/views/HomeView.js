@@ -62,16 +62,16 @@ class HomeViewComponent {
 
     mountEl.innerHTML = `
       <div class="animate-fade-in">
-        <!-- Compact ESPN-Style League Bar -->
-        <div class="dashboard-hero" style="padding:0.5rem 0.65rem; margin-bottom:0.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.35rem;">
-          <div class="hero-league-info" style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; min-width:0; flex:1 1 auto;">
-            <span class="badge badge-gold" style="font-size:0.68rem; padding:0.15rem 0.4rem; white-space:nowrap; flex-shrink:0;">
-              <i class="fa-solid fa-crown"></i> Wk ${league.currentWeek} • ${league.totalTeams} Teams
+        <!-- Compact League Bar -->
+        <div class="dashboard-hero" style="padding:0.6rem 0.8rem; margin-bottom:0.75rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem;">
+          <div class="hero-league-info" style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; min-width:0; flex:1 1 auto;">
+            <span class="badge badge-gold" style="font-size:0.7rem; padding:0.15rem 0.45rem; white-space:nowrap; flex-shrink:0;">
+              Wk ${league.currentWeek} • ${league.totalTeams} Teams
             </span>
-            <h1 style="font-size:1.05rem; margin:0; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${league.name}</h1>
+            <h1 style="font-size:1.1rem; margin:0; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${league.name}</h1>
           </div>
           <div style="display:flex; align-items:center; gap:0.35rem; flex-shrink:0;">
-            <button class="btn btn-outline btn-sm" style="font-size:0.68rem; padding:0.2rem 0.45rem;" onclick="EspnSyncModalComponent.open();">
+            <button class="btn btn-outline btn-sm" style="font-size:0.7rem; padding:0.25rem 0.5rem;" onclick="EspnSyncModalComponent.open();">
               <i class="fa-solid ${state.isEspnSynced ? 'fa-circle-check text-green' : 'fa-rotate text-gold'}"></i> ${state.isEspnSynced ? 'ESPN Live' : 'Sync ESPN'}
             </button>
           </div>
@@ -80,12 +80,12 @@ class HomeViewComponent {
         <!-- ========================================================================= -->
         <!-- 1. STANDINGS SECTION -->
         <!-- ========================================================================= -->
-        <div class="analytics-card" style="margin-bottom:0.5rem; padding:0.35rem 0.5rem;">
-          <div class="card-header" style="margin-bottom:0.25rem; padding-bottom:0.2rem; display:flex; justify-content:space-between; align-items:center;">
-            <div class="card-title" style="font-size:0.8rem; font-weight:800; display:flex; align-items:center; gap:0.35rem;">
-              <i class="fa-solid fa-list-ol text-green"></i> Official League Standings
+        <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.5rem 0.75rem;">
+          <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.25rem; display:flex; justify-content:space-between; align-items:center;">
+            <div class="card-title" style="font-size:0.85rem; font-weight:800; display:flex; align-items:center; gap:0.35rem;">
+              <i class="fa-solid fa-list-ol text-green"></i> Standings
             </div>
-            <span class="badge badge-green" style="font-size:0.6rem; padding:0.05rem 0.35rem; font-weight:700;">Top 4 Playoff Cutoff</span>
+            <span class="badge badge-green" style="font-size:0.65rem; padding:0.1rem 0.35rem;">Top 4 Playoff</span>
           </div>
           <div style="width:100%; max-width:100%; overflow:hidden;">
             <table class="compact-standings-table">
@@ -108,24 +108,24 @@ class HomeViewComponent {
               <tbody>
                 ${sortedStandings.map((t, idx) => `
                   <tr class="${idx === 3 ? 'playoff-line' : ''}" style="cursor:pointer;" onclick="store.setView('team', {teamId: '${t.teamId}'});">
-                    <td style="text-align:center; font-weight:800; font-size:0.7rem; color:${idx === 0 ? 'var(--accent-gold)' : (idx < 4 ? 'var(--accent-sleeper)' : 'var(--text-muted)')}; padding:0.2rem 0.15rem;">
+                    <td style="text-align:center; font-weight:800; font-size:0.75rem; color:${idx === 0 ? 'var(--accent-gold)' : (idx < 4 ? 'var(--accent-sleeper)' : 'var(--text-muted)')}; padding:0.25rem 0.15rem;">
                       ${idx + 1}
                     </td>
-                    <td style="text-align:left; min-width:0; max-width:0; overflow:hidden; padding:0.2rem 0.25rem;">
-                      <div style="display:flex; align-items:center; gap:0.35rem; min-width:0; overflow:hidden;">
-                        <img src="${t.logoUrl}" style="width:18px; height:18px; border-radius:3px; object-fit:cover; flex-shrink:0; background:var(--bg-surface);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
-                        <strong style="color:var(--text-primary); font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2; flex:1 1 auto; min-width:0;">${t.name}</strong>
-                        <span class="desktop-only" style="font-size:0.62rem; color:var(--text-secondary); flex-shrink:0; margin-left:auto;">${t.managerName ? t.managerName.split(' ')[0] : ''}</span>
+                    <td style="text-align:left; min-width:0; max-width:0; overflow:hidden; padding:0.25rem 0.25rem;">
+                      <div style="display:flex; align-items:center; gap:0.4rem; min-width:0; overflow:hidden;">
+                        <img src="${t.logoUrl}" style="width:20px; height:20px; border-radius:4px; object-fit:cover; flex-shrink:0; background:var(--bg-surface);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
+                        <strong style="color:var(--text-primary); font-size:0.78rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2; flex:1 1 auto; min-width:0;">${t.name}</strong>
+                        <span class="desktop-only text-secondary" style="font-size:0.68rem; flex-shrink:0; margin-left:auto;">${t.managerName ? t.managerName.split(' ')[0] : ''}</span>
                       </div>
                     </td>
-                    <td style="text-align:center; font-weight:800; font-size:0.75rem;" class="font-mono text-green">
+                    <td style="text-align:center; font-weight:800; font-size:0.78rem;" class="font-mono text-green">
                       ${t.wins}-${t.losses}
                     </td>
-                    <td style="text-align:right; font-weight:800; font-size:0.75rem;" class="font-mono text-primary">
+                    <td style="text-align:right; font-weight:800; font-size:0.78rem;" class="font-mono text-primary">
                       ${t.pointsFor}
                     </td>
-                    <td style="text-align:center; padding:0.2rem 0.15rem;">
-                      <span class="badge ${t.playoffOdds > 70 ? 'badge-green' : (t.playoffOdds > 30 ? 'badge-gold' : 'badge-red')}" style="font-size:0.62rem; padding:0.05rem 0.25rem; font-weight:700;">
+                    <td style="text-align:center; padding:0.25rem 0.15rem;">
+                      <span class="badge ${t.playoffOdds > 70 ? 'badge-green' : (t.playoffOdds > 30 ? 'badge-gold' : 'badge-red')}" style="font-size:0.65rem; padding:0.08rem 0.25rem; font-weight:700;">
                         ${t.playoffOdds}%
                       </span>
                     </td>
@@ -137,57 +137,54 @@ class HomeViewComponent {
         </div>
 
         <!-- ========================================================================= -->
-        <!-- 2. MATCHUPS SECTION (COMPACT WEEKLY GAMES) -->
+        <!-- 2. MATCHUPS SECTION -->
         <!-- ========================================================================= -->
-        <div class="analytics-card" style="margin-bottom:0.65rem;">
-          <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.3rem;">
-            <div class="card-title">
-              <i class="fa-solid fa-bolt text-gold"></i> Week ${league.currentWeek} All Matchups & Probabilities
+        <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.5rem 0.75rem;">
+          <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.25rem;">
+            <div class="card-title" style="font-size:0.85rem; font-weight:800;">
+              <i class="fa-solid fa-bolt text-gold"></i> Week ${league.currentWeek} Matchups
             </div>
-            <span class="badge badge-gold">${allLeagueMatchups.length} Games</span>
           </div>
-          <div style="display:flex; flex-direction:column; gap:0.4rem;">
+          <div style="display:flex; flex-direction:column; gap:0.45rem;">
             ${allLeagueMatchups.map(m => `
-              <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:0.5rem 0.65rem; cursor:pointer; transition:all var(--transition-fast);" onclick="store.setView('matchup');">
+              <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:0.55rem 0.75rem; cursor:pointer; transition:all var(--transition-fast);" onclick="store.setView('matchup');">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
                   
                   <!-- Home Team -->
-                  <div style="display:flex; align-items:center; gap:0.4rem; flex:1; min-width:0;">
-                    <img src="${m.homeTeam.logoUrl}" style="width:22px; height:22px; border-radius:50%; object-fit:cover; background:var(--bg-card);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
+                  <div style="display:flex; align-items:center; gap:0.45rem; flex:1; min-width:0;">
+                    <img src="${m.homeTeam.logoUrl}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; background:var(--bg-card);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
                     <div style="min-width:0; overflow:hidden;">
-                      <div style="font-size:0.78rem; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.homeTeam.name}</div>
-                      <div style="font-size:0.65rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.homeTeam.managerName}</div>
+                      <div style="font-size:0.8rem; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.homeTeam.name}</div>
                     </div>
                   </div>
 
                   <!-- Scores -->
-                  <div style="text-align:center; padding:0 0.4rem; flex-shrink:0;">
-                    <div class="font-mono" style="font-size:0.95rem; font-weight:900; color:var(--text-primary);">
+                  <div style="text-align:center; padding:0 0.5rem; flex-shrink:0;">
+                    <div class="font-mono" style="font-size:1rem; font-weight:900; color:var(--text-primary);">
                       <span class="${m.homeScore >= m.awayScore ? 'text-green' : 'text-muted'}">${m.homeScore}</span>
-                      <span style="color:var(--text-muted); font-size:0.75rem; margin:0 0.15rem;">-</span>
+                      <span style="color:var(--text-muted); font-size:0.75rem; margin:0 0.2rem;">-</span>
                       <span class="${m.awayScore > m.homeScore ? 'text-green' : 'text-muted'}">${m.awayScore}</span>
                     </div>
                   </div>
 
                   <!-- Away Team -->
-                  <div style="display:flex; align-items:center; justify-content:flex-end; gap:0.4rem; flex:1; text-align:right; min-width:0;">
+                  <div style="display:flex; align-items:center; justify-content:flex-end; gap:0.45rem; flex:1; text-align:right; min-width:0;">
                     <div style="min-width:0; overflow:hidden;">
-                      <div style="font-size:0.78rem; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.awayTeam.name}</div>
-                      <div style="font-size:0.65rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.awayTeam.managerName}</div>
+                      <div style="font-size:0.8rem; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.awayTeam.name}</div>
                     </div>
-                    <img src="${m.awayTeam.logoUrl}" style="width:22px; height:22px; border-radius:50%; object-fit:cover; background:var(--bg-card);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
+                    <img src="${m.awayTeam.logoUrl}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; background:var(--bg-card);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
                   </div>
 
                 </div>
 
                 <!-- Win Probability Dual Fill Bar -->
-                <div style="display:flex; align-items:center; gap:0.35rem;">
-                  <span class="font-mono text-green" style="font-size:0.68rem; font-weight:800;">${m.homeWinProb}%</span>
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                  <span class="font-mono text-green" style="font-size:0.7rem; font-weight:800;">${m.homeWinProb}%</span>
                   <div style="flex:1; height:4px; background:var(--bg-card); border-radius:2px; overflow:hidden; display:flex;">
                     <div style="width: ${m.homeWinProb}%; height:100%; background:var(--accent-sleeper);"></div>
                     <div style="width: ${100 - m.homeWinProb}%; height:100%; background:var(--accent-blue);"></div>
                   </div>
-                  <span class="font-mono text-blue" style="font-size:0.68rem; font-weight:800;">${100 - m.homeWinProb}%</span>
+                  <span class="font-mono text-blue" style="font-size:0.7rem; font-weight:800;">${100 - m.homeWinProb}%</span>
                 </div>
 
               </div>
@@ -198,37 +195,34 @@ class HomeViewComponent {
         <!-- ========================================================================= -->
         <!-- 3. POWER RANKINGS SECTION -->
         <!-- ========================================================================= -->
-        <div class="analytics-card" style="margin-bottom:0.65rem;">
-          <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.3rem; display:flex; justify-content:space-between; align-items:center;">
+        <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.5rem 0.75rem;">
+          <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.25rem; display:flex; justify-content:space-between; align-items:center;">
             <div class="card-title" style="font-size:0.85rem; font-weight:800; display:flex; align-items:center; gap:0.35rem;">
-              <i class="fa-solid fa-ranking-star text-gold"></i> Power Rankings (ELO)
+              <i class="fa-solid fa-ranking-star text-gold"></i> Power Rankings
             </div>
-            <span class="badge badge-gold" style="font-size:0.65rem; padding:0.15rem 0.4rem;">
-              <i class="fa-solid fa-bolt"></i> Wk ${league.currentWeek} ELO
-            </span>
           </div>
 
-          <!-- Featured Power Leader Highlights -->
+          <!-- Featured Power Highlights -->
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.4rem; margin-bottom:0.5rem;">
-            <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:0.4rem 0.55rem; display:flex; align-items:center; gap:0.4rem;">
-              <div style="width:26px; height:26px; border-radius:5px; background:rgba(245,158,11,0.15); color:var(--accent-gold); display:flex; align-items:center; justify-content:center; font-size:0.8rem; flex-shrink:0;">
+            <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:0.45rem 0.65rem; display:flex; align-items:center; gap:0.45rem;">
+              <div style="width:28px; height:28px; border-radius:6px; background:rgba(245,158,11,0.15); color:var(--accent-gold); display:flex; align-items:center; justify-content:center; font-size:0.85rem; flex-shrink:0;">
                 <i class="fa-solid fa-crown"></i>
               </div>
               <div style="min-width:0; overflow:hidden;">
-                <div class="text-muted" style="font-size:0.62rem; text-transform:uppercase; font-weight:700;">#1 Power Ranker</div>
-                <div style="font-size:0.76rem; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${powerRankings[0]?.name || 'N/A'}</div>
-                <div style="font-size:0.65rem;" class="text-gold font-mono">${powerRankings[0]?.eloRating} ELO (${powerRankings[0]?.wins}-${powerRankings[0]?.losses})</div>
+                <div class="text-muted" style="font-size:0.65rem; text-transform:uppercase; font-weight:700;">#1 Power</div>
+                <div style="font-size:0.78rem; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${powerRankings[0]?.name || 'N/A'}</div>
+                <div style="font-size:0.68rem;" class="text-gold font-mono">${powerRankings[0]?.eloRating} ELO</div>
               </div>
             </div>
 
-            <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:0.4rem 0.55rem; display:flex; align-items:center; gap:0.4rem;">
-              <div style="width:26px; height:26px; border-radius:5px; background:rgba(0,230,118,0.15); color:var(--accent-sleeper); display:flex; align-items:center; justify-content:center; font-size:0.8rem; flex-shrink:0;">
+            <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:0.45rem 0.65rem; display:flex; align-items:center; gap:0.45rem;">
+              <div style="width:28px; height:28px; border-radius:6px; background:rgba(0,230,118,0.15); color:var(--accent-sleeper); display:flex; align-items:center; justify-content:center; font-size:0.85rem; flex-shrink:0;">
                 <i class="fa-solid fa-fire"></i>
               </div>
               <div style="min-width:0; overflow:hidden;">
-                <div class="text-muted" style="font-size:0.62rem; text-transform:uppercase; font-weight:700;">Highest Scorer</div>
-                <div style="font-size:0.76rem; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${[...teams].sort((a,b)=>b.pointsFor - a.pointsFor)[0]?.name || 'N/A'}</div>
-                <div style="font-size:0.65rem;" class="text-green font-mono">${[...teams].sort((a,b)=>b.pointsFor - a.pointsFor)[0]?.pointsFor} Total PF</div>
+                <div class="text-muted" style="font-size:0.65rem; text-transform:uppercase; font-weight:700;">Top Scorer</div>
+                <div style="font-size:0.78rem; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${[...teams].sort((a,b)=>b.pointsFor - a.pointsFor)[0]?.name || 'N/A'}</div>
+                <div style="font-size:0.68rem;" class="text-green font-mono">${[...teams].sort((a,b)=>b.pointsFor - a.pointsFor)[0]?.pointsFor} PF</div>
               </div>
             </div>
           </div>
@@ -254,34 +248,33 @@ class HomeViewComponent {
               </thead>
               <tbody>
                 ${powerRankings.map((t, idx) => {
-                  let tierBadge = '<span class="badge badge-gold" style="font-size:0.6rem; padding:0.05rem 0.25rem;">#1</span>';
-                  if (idx === 1 || idx === 2) tierBadge = '<span class="badge badge-green" style="font-size:0.6rem; padding:0.05rem 0.25rem;">Elite</span>';
-                  else if (idx >= 3 && idx <= 5) tierBadge = '<span class="badge badge-blue" style="font-size:0.6rem; padding:0.05rem 0.25rem;">Lock</span>';
-                  else if (idx >= 6 && idx <= 7) tierBadge = '<span class="badge badge-gold" style="font-size:0.6rem; padding:0.05rem 0.25rem;">Hunt</span>';
-                  else if (idx > 7) tierBadge = '<span class="badge badge-red" style="font-size:0.6rem; padding:0.05rem 0.25rem;">Rebuild</span>';
+                  let tierBadge = '<span class="badge badge-gold" style="font-size:0.62rem; padding:0.05rem 0.25rem;">#1</span>';
+                  if (idx === 1 || idx === 2) tierBadge = '<span class="badge badge-green" style="font-size:0.62rem; padding:0.05rem 0.25rem;">Elite</span>';
+                  else if (idx >= 3 && idx <= 5) tierBadge = '<span class="badge badge-blue" style="font-size:0.62rem; padding:0.05rem 0.25rem;">Lock</span>';
+                  else if (idx >= 6 && idx <= 7) tierBadge = '<span class="badge badge-gold" style="font-size:0.62rem; padding:0.05rem 0.25rem;">Hunt</span>';
+                  else if (idx > 7) tierBadge = '<span class="badge badge-red" style="font-size:0.62rem; padding:0.05rem 0.25rem;">Rebuild</span>';
 
                   return `
                     <tr style="cursor:pointer;" onclick="store.setView('team', {teamId: '${t.teamId}'});">
-                      <td style="text-align:center; font-weight:800; font-size:0.7rem; color:${idx === 0 ? 'var(--accent-gold)' : (idx < 3 ? 'var(--accent-sleeper)' : 'var(--text-muted)')}; padding:0.2rem 0.15rem;">
+                      <td style="text-align:center; font-weight:800; font-size:0.75rem; color:${idx === 0 ? 'var(--accent-gold)' : (idx < 3 ? 'var(--accent-sleeper)' : 'var(--text-muted)')}; padding:0.25rem 0.15rem;">
                         ${idx + 1}
                       </td>
-                      <td style="text-align:left; min-width:0; max-width:0; overflow:hidden; padding:0.2rem 0.25rem;">
-                        <div style="display:flex; align-items:center; gap:0.35rem; min-width:0; overflow:hidden;">
-                          <img src="${t.logoUrl}" style="width:18px; height:18px; border-radius:3px; object-fit:cover; flex-shrink:0; background:var(--bg-surface);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
+                      <td style="text-align:left; min-width:0; max-width:0; overflow:hidden; padding:0.25rem 0.25rem;">
+                        <div style="display:flex; align-items:center; gap:0.4rem; min-width:0; overflow:hidden;">
+                          <img src="${t.logoUrl}" style="width:20px; height:20px; border-radius:4px; object-fit:cover; flex-shrink:0; background:var(--bg-surface);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
                           <div style="min-width:0; overflow:hidden; flex:1 1 auto;">
-                            <strong style="color:var(--text-primary); font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; line-height:1.2;">${t.name}</strong>
-                            <span class="mobile-only text-secondary" style="font-size:0.6rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;">${t.wins}-${t.losses} • ${t.pointsFor} PF</span>
-                            <span class="desktop-only text-secondary" style="font-size:0.62rem;">${t.managerName}</span>
+                            <strong style="color:var(--text-primary); font-size:0.78rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; line-height:1.2;">${t.name}</strong>
+                            <span class="mobile-only text-secondary" style="font-size:0.65rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;">${t.wins}-${t.losses} • ${t.pointsFor} PF</span>
                           </div>
                         </div>
                       </td>
-                      <td style="text-align:center; font-weight:800; font-size:0.75rem;" class="font-mono text-gold">
+                      <td style="text-align:center; font-weight:800; font-size:0.78rem;" class="font-mono text-gold">
                         ${t.eloRating}
                       </td>
-                      <td style="text-align:right; font-weight:700; font-size:0.75rem;" class="font-mono text-green desktop-only">
+                      <td style="text-align:right; font-weight:700; font-size:0.78rem;" class="font-mono text-green desktop-only">
                         ${t.pointsFor}
                       </td>
-                      <td style="text-align:center; padding:0.2rem 0.15rem;">
+                      <td style="text-align:center; padding:0.25rem 0.15rem;">
                         ${tierBadge}
                       </td>
                     </tr>
@@ -295,19 +288,21 @@ class HomeViewComponent {
         <!-- ========================================================================= -->
         <!-- 4. RECENT ACTIVITY FEED -->
         <!-- ========================================================================= -->
-        <div class="analytics-card" style="margin-bottom:0.65rem;">
-          <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.3rem;">
-            <div class="card-title">
-              <i class="fa-solid fa-right-left text-green"></i> Recent Activity Feed
+        <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.5rem 0.75rem;">
+          <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.25rem;">
+            <div class="card-title" style="font-size:0.85rem; font-weight:800;">
+              <i class="fa-solid fa-right-left text-green"></i> Recent Activity
             </div>
           </div>
-          <div style="display:flex; flex-direction:column; gap:0.4rem;">
-            ${transactions.map(tx => `
-              <div style="padding:0.45rem 0.6rem; background:var(--bg-surface); border-radius:var(--radius-md); border-left:3px solid var(--accent-sleeper); font-size:0.78rem;">
-                <span class="badge badge-green" style="font-size:0.65rem;">${tx.type} • Wk ${tx.week}</span>
-                <div style="color:var(--text-primary); margin-top:0.15rem;">${tx.details}</div>
+          <div style="display:flex; flex-direction:column; gap:0.35rem;">
+            ${transactions.length > 0 ? transactions.map(tx => `
+              <div style="padding:0.4rem 0.6rem; background:var(--bg-surface); border-radius:var(--radius-sm); border-left:3px solid var(--accent-sleeper); font-size:0.75rem; display:flex; align-items:center; justify-content:space-between; gap:0.5rem;">
+                <div style="color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${tx.details}</div>
+                <span class="badge badge-green" style="font-size:0.62rem; flex-shrink:0;">Wk ${tx.week}</span>
               </div>
-            `).join('')}
+            `).join('') : `
+              <div class="text-secondary" style="font-size:0.75rem; text-align:center; padding:0.5rem;">No recent transactions.</div>
+            `}
           </div>
         </div>
 

@@ -31,7 +31,7 @@ class H2HViewComponent {
 
           <div>
             <div class="h2h-vs-badge">VS</div>
-            <div class="badge badge-gold" style="margin-top:0.75rem;">10,000 Monte Carlo Sim</div>
+            <div class="badge badge-gold" style="margin-top:0.5rem;">Simulation</div>
           </div>
 
           <div>
@@ -46,7 +46,7 @@ class H2HViewComponent {
         <div class="analytics-card" style="margin-bottom:1.5rem;">
           <div class="card-header">
             <div class="card-title">
-              <i class="fa-solid fa-calculator"></i> Simulated Matchup Win Odds & Ceiling / Floor
+              <i class="fa-solid fa-calculator text-gold"></i> Matchup Odds
             </div>
           </div>
 
@@ -60,22 +60,22 @@ class H2HViewComponent {
             <div class="win-prob-fill-away" style="width:${simResult.awayWinProb}%;"></div>
           </div>
 
-          <div class="responsive-grid-4" style="text-align:center; margin-top:1.25rem; background:var(--bg-surface); padding:1rem; border-radius:var(--radius-md);">
+          <div class="responsive-grid-4" style="text-align:center; margin-top:1rem; background:var(--bg-surface); padding:0.85rem; border-radius:var(--radius-md);">
             <div>
               <div class="stat-widget-label">${teamA.abbrev} Median</div>
-              <div class="font-mono text-green" style="font-weight:800; font-size:1.2rem;">${simResult.homeMedian}</div>
+              <div class="font-mono text-green" style="font-weight:800; font-size:1.15rem;">${simResult.homeMedian}</div>
             </div>
             <div>
-              <div class="stat-widget-label">${teamA.abbrev} Floor / Ceiling</div>
-              <div class="font-mono text-muted" style="font-size:0.9rem;">${simResult.homeFloor} - ${simResult.homeCeiling}</div>
+              <div class="stat-widget-label">${teamA.abbrev} Range</div>
+              <div class="font-mono text-muted" style="font-size:0.85rem;">${simResult.homeFloor} - ${simResult.homeCeiling}</div>
             </div>
             <div>
               <div class="stat-widget-label">${teamB.abbrev} Median</div>
-              <div class="font-mono text-blue" style="font-weight:800; font-size:1.2rem;">${simResult.awayMedian}</div>
+              <div class="font-mono text-blue" style="font-weight:800; font-size:1.15rem;">${simResult.awayMedian}</div>
             </div>
             <div>
-              <div class="stat-widget-label">${teamB.abbrev} Floor / Ceiling</div>
-              <div class="font-mono text-muted" style="font-size:0.9rem;">${simResult.awayFloor} - ${simResult.awayCeiling}</div>
+              <div class="stat-widget-label">${teamB.abbrev} Range</div>
+              <div class="font-mono text-muted" style="font-size:0.85rem;">${simResult.awayFloor} - ${simResult.awayCeiling}</div>
             </div>
           </div>
         </div>

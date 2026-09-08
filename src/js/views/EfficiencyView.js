@@ -36,22 +36,22 @@ class EfficiencyViewComponent {
     mountEl.innerHTML = `
       <div class="animate-fade-in">
         <!-- Top Navigation Back Button -->
-        <div style="margin-bottom:1rem;">
-          <button class="btn btn-outline btn-sm" onclick="store.goBack()" style="display:inline-flex; align-items:center; gap:0.5rem; font-weight:700;">
-            <i class="fa-solid fa-arrow-left"></i> Back to Previous Page
+        <div style="margin-bottom:0.75rem;">
+          <button class="btn btn-outline btn-sm" onclick="store.goBack()" style="display:inline-flex; align-items:center; gap:0.4rem; font-weight:700;">
+            <i class="fa-solid fa-arrow-left"></i> Back
           </button>
         </div>
 
         <!-- Page Header -->
-        <div style="margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <div style="margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
           <div>
-            <h2><i class="fa-solid fa-sliders text-green"></i> Manager Moves & FLEX Efficiency Command Center</h2>
-            <p class="text-secondary" style="font-size:0.9rem;">
-              Complete tracking of all manager roster moves, free agency pickups by position (RBs, WRs, QBs, TEs), trade net value, and FLEX slot optimization.
+            <h2><i class="fa-solid fa-sliders text-green"></i> Move Efficiency</h2>
+            <p class="text-secondary" style="font-size:0.85rem; margin-top:0.2rem;">
+              FLEX optimization, positional additions, and trade net value.
             </p>
           </div>
-          <span class="badge badge-gold" style="font-size:0.85rem; padding:0.4rem 0.8rem;">
-            <i class="fa-solid fa-bolt"></i> Real-Time Efficiency Tracker
+          <span class="badge badge-gold" style="font-size:0.8rem; padding:0.35rem 0.75rem;">
+            <i class="fa-solid fa-bolt"></i> Efficiency
           </span>
         </div>
 
@@ -62,9 +62,9 @@ class EfficiencyViewComponent {
               <i class="fa-solid fa-sliders"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">FLEX Efficiency Leader</div>
+              <div class="text-muted" style="font-size:0.72rem; text-transform:uppercase; font-weight:700;">FLEX Leader</div>
               <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${sortedByFlex[0]?.managerName || 'N/A'}</div>
-              <div style="font-size:0.75rem;" class="text-green font-mono">${sortedByFlex[0]?.decisionStats?.flexEfficiency}% Optimal Pick (${sortedByFlex[0]?.decisionStats?.flexPpg} PPG)</div>
+              <div style="font-size:0.75rem;" class="text-green font-mono">${sortedByFlex[0]?.decisionStats?.flexEfficiency}% (${sortedByFlex[0]?.decisionStats?.flexPpg} PPG)</div>
             </div>
           </div>
 
@@ -73,9 +73,9 @@ class EfficiencyViewComponent {
               <i class="fa-solid fa-hand-holding-dollar"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">Most Active Move Maker</div>
+              <div class="text-muted" style="font-size:0.72rem; text-transform:uppercase; font-weight:700;">Most Moves</div>
               <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${sortedByMoves[0]?.managerName || 'N/A'}</div>
-              <div style="font-size:0.75rem;" class="text-blue font-mono">${sortedByMoves[0]?.decisionStats?.positionalAcquisitions?.totalAdditions} Free Agent Pickups (${sortedByMoves[0]?.decisionStats?.positionalAcquisitions?.rbClaims} RBs)</div>
+              <div style="font-size:0.75rem;" class="text-blue font-mono">${sortedByMoves[0]?.decisionStats?.positionalAcquisitions?.totalAdditions} Total Adds</div>
             </div>
           </div>
 
@@ -84,9 +84,9 @@ class EfficiencyViewComponent {
               <i class="fa-solid fa-chart-line"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">Best Free Agency ROI</div>
+              <div class="text-muted" style="font-size:0.72rem; text-transform:uppercase; font-weight:700;">Waiver ROI</div>
               <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${sortedByFaabRoi[0]?.managerName || 'N/A'}</div>
-              <div style="font-size:0.75rem;" class="text-gold font-mono">${sortedByFaabRoi[0]?.decisionStats?.faabRoi} Pts/$ FAAB (${sortedByFaabRoi[0]?.decisionStats?.positionalAcquisitions?.topWaiverPickup || 'Gem'})</div>
+              <div style="font-size:0.75rem;" class="text-gold font-mono">${sortedByFaabRoi[0]?.decisionStats?.faabRoi} Pts/$ ROI</div>
             </div>
           </div>
 
@@ -95,7 +95,7 @@ class EfficiencyViewComponent {
               <i class="fa-solid fa-user-check"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">Lineup Precision Leader</div>
+              <div class="text-muted" style="font-size:0.72rem; text-transform:uppercase; font-weight:700;">Lineup Precision</div>
               <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${sortedByStartIq[0]?.managerName || 'N/A'}</div>
               <div style="font-size:0.75rem;" class="font-mono text-primary">${sortedByStartIq[0]?.decisionStats?.startIQ}% Start IQ</div>
             </div>
@@ -105,19 +105,19 @@ class EfficiencyViewComponent {
         <!-- Filter Sub-Tabs -->
         <div class="decision-pillar-tabs">
           <button class="decision-tab-btn ${this.activeFilter === 'ALL' ? 'active' : ''}" onclick="EfficiencyViewComponent.setFilter('ALL')">
-            <i class="fa-solid fa-bars-staggered"></i> All Move Analytics
+            <i class="fa-solid fa-bars-staggered"></i> All
           </button>
           <button class="decision-tab-btn ${this.activeFilter === 'FLEX' ? 'active' : ''}" onclick="EfficiencyViewComponent.setFilter('FLEX')">
-            <i class="fa-solid fa-sliders"></i> FLEX Efficiency Focus
+            <i class="fa-solid fa-sliders"></i> FLEX
           </button>
           <button class="decision-tab-btn ${this.activeFilter === 'MOVES' ? 'active' : ''}" onclick="EfficiencyViewComponent.setFilter('MOVES')">
-            <i class="fa-solid fa-hand-holding-dollar"></i> Free Agency & Positional Pickups
+            <i class="fa-solid fa-hand-holding-dollar"></i> Pickups
           </button>
           <button class="decision-tab-btn ${this.activeFilter === 'FAAB' ? 'active' : ''}" onclick="EfficiencyViewComponent.setFilter('FAAB')">
-            <i class="fa-solid fa-list-check"></i> Waiver Wire Move Efficiency
+            <i class="fa-solid fa-list-check"></i> ROI
           </button>
           <button class="decision-tab-btn ${this.activeFilter === 'TRADES' ? 'active' : ''}" onclick="EfficiencyViewComponent.setFilter('TRADES')">
-            <i class="fa-solid fa-arrow-right-arrow-left"></i> Trade Moves Net Value
+            <i class="fa-solid fa-arrow-right-arrow-left"></i> Trades
           </button>
         </div>
 
@@ -125,26 +125,26 @@ class EfficiencyViewComponent {
         <div class="analytics-card" style="margin-bottom:1.5rem;">
           <div class="card-header">
             <div class="card-title">
-              <i class="fa-solid fa-list-check"></i> Manager Moves & Efficiency Leaderboard Matrix
+              <i class="fa-solid fa-list-check"></i> Move Efficiency Leaderboard
             </div>
           </div>
           <div class="analytics-table-wrapper">
             <table class="analytics-table">
               <thead>
                 <tr>
-                  <th>Rank</th>
-                  <th>Manager & Team</th>
+                  <th>#</th>
+                  <th>Manager</th>
                   <th>Persona</th>
-                  <th>FLEX Efficiency</th>
-                  <th>FLEX PPG</th>
-                  <th>RBs Claimed</th>
-                  <th>WRs Claimed</th>
-                  <th>QBs/TEs Claimed</th>
-                  <th>Total FA Moves</th>
-                  <th>FAAB ROI</th>
-                  <th>Start IQ</th>
-                  <th>Trade Net Pts</th>
-                  <th>Audit Moves</th>
+                  <th>FLEX %</th>
+                  <th>PPG</th>
+                  <th>RBs</th>
+                  <th>WRs</th>
+                  <th>QBs/TEs</th>
+                  <th>Moves</th>
+                  <th>ROI</th>
+                  <th>Start %</th>
+                  <th>Trades</th>
+                  <th>Audit</th>
                 </tr>
               </thead>
               <tbody>

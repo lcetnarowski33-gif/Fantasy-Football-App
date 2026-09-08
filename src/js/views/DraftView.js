@@ -68,31 +68,26 @@ class DraftViewComponent {
           </div>
         ` : ''}
 
-        <!-- Page Header & Subnav -->
-        <div style="margin-bottom:0.65rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem;">
+        <!-- Page Header -->
+        <div style="margin-bottom:0.75rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
           <div>
-            <h2 style="font-size:1.05rem; margin:0;"><i class="fa-solid fa-clipboard-list text-gold"></i> Draft Center & Value Analytics</h2>
-            <p class="text-secondary" style="font-size:0.75rem; margin:0.1rem 0 0 0;">
-              16-round audit: Steals, Reaches, ADP differentials, and net points added.
+            <h2 style="font-size:1.15rem; margin:0;"><i class="fa-solid fa-clipboard-list text-gold"></i> Draft Center</h2>
+            <p class="text-secondary" style="font-size:0.8rem; margin:0.15rem 0 0 0;">
+              Pick audits, steals, reaches, and manager VORP performance.
             </p>
-          </div>
-          <div class="sub-nav-actions">
-            <button class="btn btn-outline btn-sm" style="font-weight:700; padding:0.25rem 0.5rem; font-size:0.72rem;" onclick="store.setView('trade')"><i class="fa-solid fa-right-left"></i> Trade</button>
-            <button class="btn btn-outline btn-sm" style="font-weight:700; padding:0.25rem 0.5rem; font-size:0.72rem;" onclick="store.setView('waiver')"><i class="fa-solid fa-coins"></i> Free Agency</button>
-            <button class="btn btn-primary btn-sm" style="font-weight:700; padding:0.25rem 0.5rem; font-size:0.72rem;"><i class="fa-solid fa-clipboard-list"></i> Draft</button>
           </div>
         </div>
 
-        <!-- Horizontal Swipeable Highlight Stats -->
-        <div class="decision-leader-grid" style="margin-bottom:0.65rem;">
+        <!-- Horizontal Highlight Stats Strip -->
+        <div class="decision-leader-grid" style="margin-bottom:0.75rem;">
           <div class="decision-leader-card">
             <div class="decision-leader-icon" style="background:rgba(0,230,118,0.15); color:var(--accent-sleeper); width:28px; height:28px; font-size:0.85rem;">
               <i class="fa-solid fa-fire"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Top Draft Steal</div>
-              <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">C. McCaffrey (1.02)</div>
-              <div style="font-size:0.72rem;" class="text-green font-mono">+38.4 Net Pts</div>
+              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Top Steal</div>
+              <div style="font-size:0.88rem; font-weight:800; color:var(--text-primary);">C. McCaffrey (1.02)</div>
+              <div style="font-size:0.72rem;" class="text-green font-mono">+38.4 Pts</div>
             </div>
           </div>
 
@@ -102,8 +97,8 @@ class DraftViewComponent {
             </div>
             <div>
               <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Biggest Reach</div>
-              <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">T. Hill (1.05)</div>
-              <div style="font-size:0.72rem;" class="text-red font-mono">-18.2 Net Pts</div>
+              <div style="font-size:0.88rem; font-weight:800; color:var(--text-primary);">T. Hill (1.05)</div>
+              <div style="font-size:0.72rem;" class="text-red font-mono">-18.2 Pts</div>
             </div>
           </div>
 
@@ -112,15 +107,15 @@ class DraftViewComponent {
               <i class="fa-solid fa-crown"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Draft Mastermind</div>
-              <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${teams[0]?.managerName || 'Manager #1'}</div>
+              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Top Drafter</div>
+              <div style="font-size:0.88rem; font-weight:800; color:var(--text-primary);">${teams[0]?.managerName || 'Manager #1'}</div>
               <div style="font-size:0.72rem;" class="text-gold font-mono">Grade A+ (+142.5 VORP)</div>
             </div>
           </div>
         </div>
 
         <!-- Segmented Tab Switcher -->
-        <div class="segmented-tab-bar" style="margin-bottom:0.65rem;">
+        <div class="segmented-tab-bar" style="margin-bottom:0.75rem;">
           <button class="segmented-tab-btn ${activeTab === 'audit' ? 'active' : ''}" onclick="DraftViewComponent.setTab('audit')">
             <i class="fa-solid fa-list-ol"></i> Pick Audit
           </button>
@@ -142,13 +137,13 @@ class DraftViewComponent {
           <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem;">
             <div class="card-header" style="margin-bottom:0.4rem; padding-bottom:0.25rem;">
               <div class="card-title" style="font-size:0.85rem;">
-                <i class="fa-solid fa-list-ol text-green"></i> Pick-by-Pick Audit (${filteredPicks.length} Picks)
+                <i class="fa-solid fa-list-ol text-green"></i> Pick Audit (${filteredPicks.length})
               </div>
               <div style="display:flex; gap:0.25rem; flex-wrap:wrap;">
                 <button class="btn btn-sm ${this.activeClassificationFilter === 'ALL' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="DraftViewComponent.setClassificationFilter('ALL')">All</button>
-                <button class="btn btn-sm ${this.activeClassificationFilter === 'STEAL' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="DraftViewComponent.setClassificationFilter('STEAL')">🔥 Steals</button>
-                <button class="btn btn-sm ${this.activeClassificationFilter === 'REACH' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="DraftViewComponent.setClassificationFilter('REACH')">⚠️ Reaches</button>
-                <button class="btn btn-sm ${this.activeClassificationFilter === 'TOP_VALUE' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="DraftViewComponent.setClassificationFilter('TOP_VALUE')">🏆 Value</button>
+                <button class="btn btn-sm ${this.activeClassificationFilter === 'STEAL' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="DraftViewComponent.setClassificationFilter('STEAL')">Steals</button>
+                <button class="btn btn-sm ${this.activeClassificationFilter === 'REACH' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="DraftViewComponent.setClassificationFilter('REACH')">Reaches</button>
+                <button class="btn btn-sm ${this.activeClassificationFilter === 'TOP_VALUE' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="DraftViewComponent.setClassificationFilter('TOP_VALUE')">Top Value</button>
               </div>
             </div>
 
@@ -157,11 +152,11 @@ class DraftViewComponent {
                 <thead>
                   <tr>
                     <th style="width:42px; text-align:center;">Pick</th>
-                    <th>Player & Team</th>
+                    <th>Player</th>
                     <th class="desktop-only">Manager</th>
                     <th style="width:36px; text-align:center;">Pos</th>
                     <th class="desktop-only" style="text-align:center;">vs ADP</th>
-                    <th style="width:55px; text-align:right;">Season Pts</th>
+                    <th style="width:55px; text-align:right;">Pts</th>
                     <th class="desktop-only" style="text-align:right;">Net Pts</th>
                     <th style="width:52px; text-align:center;">Tag</th>
                   </tr>
@@ -215,7 +210,7 @@ class DraftViewComponent {
           <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem;">
             <div class="card-header" style="margin-bottom:0.4rem; padding-bottom:0.25rem;">
               <div class="card-title" style="font-size:0.85rem;">
-                <i class="fa-solid fa-table-cells text-blue"></i> 16-Round Draft Board Grid
+                <i class="fa-solid fa-table-cells text-blue"></i> Draft Board
               </div>
               <div style="display:flex; gap:0.25rem; align-items:center;">
                 <select id="draft-round-filter" class="filter-select" style="padding:0.2rem 0.4rem; font-size:0.75rem;" onchange="DraftViewComponent.setRoundFilter(this.value)">
@@ -261,7 +256,7 @@ class DraftViewComponent {
           <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem;">
             <div class="card-header" style="margin-bottom:0.4rem; padding-bottom:0.25rem;">
               <div class="card-title" style="font-size:0.85rem;">
-                <i class="fa-solid fa-award text-gold"></i> Manager Draft VORP & Performance
+                <i class="fa-solid fa-award text-gold"></i> Manager Grades
               </div>
             </div>
             <div class="table-responsive">
@@ -269,7 +264,7 @@ class DraftViewComponent {
                 <thead>
                   <tr>
                     <th style="width:40px; text-align:center;">#</th>
-                    <th>Manager & Team</th>
+                    <th>Manager</th>
                     <th style="text-align:right;">VORP</th>
                     <th style="text-align:center;">Hit Rate</th>
                     <th>Best Steal</th>

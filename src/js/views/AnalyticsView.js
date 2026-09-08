@@ -32,15 +32,15 @@ class AnalyticsViewComponent {
         </div>
 
         <!-- Page Header -->
-        <div style="margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <div style="margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
           <div>
-            <h2><i class="fa-solid fa-chart-line text-green"></i> Manager Analytics & Decision Suite</h2>
-            <p class="text-secondary" style="font-size:0.9rem;">
-              Simplified league comparison of manager IQ, lineup precision, free agency impact, draft value, and trade net performance.
+            <h2><i class="fa-solid fa-chart-line text-green"></i> Analytics</h2>
+            <p class="text-secondary" style="font-size:0.85rem; margin-top:0.2rem;">
+              Decision IQ, lineup precision, free agency, and trade performance.
             </p>
           </div>
-          <span class="badge badge-gold" style="font-size:0.85rem; padding:0.4rem 0.8rem;">
-            <i class="fa-solid fa-brain"></i> Decision IQ Matrix
+          <span class="badge badge-gold" style="font-size:0.8rem; padding:0.35rem 0.75rem;">
+            <i class="fa-solid fa-brain"></i> Decision IQ
           </span>
         </div>
 
@@ -51,9 +51,9 @@ class AnalyticsViewComponent {
               <i class="fa-solid fa-brain"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">#1 Composite Manager IQ</div>
+              <div class="text-muted" style="font-size:0.72rem; text-transform:uppercase; font-weight:700;">#1 Manager IQ</div>
               <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${topIqManager ? topIqManager.managerName : 'N/A'}</div>
-              <div style="font-size:0.75rem;" class="text-gold font-mono">${topIqManager ? topIqManager.compositeIQ : 0} / 100 Rating</div>
+              <div style="font-size:0.75rem;" class="text-gold font-mono">${topIqManager ? topIqManager.compositeIQ : 0} Rating</div>
             </div>
           </div>
 
@@ -62,7 +62,7 @@ class AnalyticsViewComponent {
               <i class="fa-solid fa-user-check"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">#1 Lineup Precision</div>
+              <div class="text-muted" style="font-size:0.72rem; text-transform:uppercase; font-weight:700;">Lineup Precision</div>
               <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${topStartManager ? topStartManager.managerName : 'N/A'}</div>
               <div style="font-size:0.75rem;" class="text-green font-mono">${topStartManager ? topStartManager.startIQ : 0}% Start IQ</div>
             </div>
@@ -73,9 +73,9 @@ class AnalyticsViewComponent {
               <i class="fa-solid fa-list-check"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">#1 Free Agency Move Maker</div>
+              <div class="text-muted" style="font-size:0.72rem; text-transform:uppercase; font-weight:700;">Free Agency</div>
               <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${topWaiverManager ? topWaiverManager.managerName : 'N/A'}</div>
-              <div style="font-size:0.75rem;" class="text-blue font-mono">+${topWaiverManager ? topWaiverManager.waiverPoints : 0} Net Pts Added</div>
+              <div style="font-size:0.75rem;" class="text-blue font-mono">+${topWaiverManager ? topWaiverManager.waiverPoints : 0} Pts Added</div>
             </div>
           </div>
 
@@ -84,9 +84,9 @@ class AnalyticsViewComponent {
               <i class="fa-solid fa-right-left"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">#1 Trade Mastermind</div>
+              <div class="text-muted" style="font-size:0.72rem; text-transform:uppercase; font-weight:700;">Trade Impact</div>
               <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${topTradeManager ? topTradeManager.managerName : 'N/A'}</div>
-              <div style="font-size:0.75rem;" class="text-purple font-mono">+${topTradeManager ? topTradeManager.tradeNetValue : 0} Net Trade Pts</div>
+              <div style="font-size:0.75rem;" class="text-purple font-mono">+${topTradeManager ? topTradeManager.tradeNetValue : 0} Net Pts</div>
             </div>
           </div>
         </div>
@@ -95,15 +95,15 @@ class AnalyticsViewComponent {
         <div class="analytics-card" style="margin-bottom:1.5rem;">
           <div class="card-header" style="flex-wrap:wrap; gap:1rem;">
             <div class="card-title">
-              <i class="fa-solid fa-chart-bar text-green"></i> League Manager Performance Comparison
+              <i class="fa-solid fa-chart-bar text-green"></i> League Comparison
             </div>
             <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
-              <button class="btn btn-sm ${this.activeMetric === 'COMPOSITE_IQ' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('COMPOSITE_IQ')">🧠 Composite IQ</button>
-              <button class="btn btn-sm ${this.activeMetric === 'START_IQ' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('START_IQ')">🎯 Start IQ %</button>
-              <button class="btn btn-sm ${this.activeMetric === 'WAIVER_PTS' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('WAIVER_PTS')">⚡ Waiver Net Pts</button>
-              <button class="btn btn-sm ${this.activeMetric === 'DRAFT_VORP' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('DRAFT_VORP')">🏆 Draft Value Pts</button>
-              <button class="btn btn-sm ${this.activeMetric === 'TRADE_NET' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('TRADE_NET')">🤝 Trade Net Pts</button>
-              <button class="btn btn-sm ${this.activeMetric === 'BENCH_LOST' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('BENCH_LOST')">⚠️ Bench Points Lost</button>
+              <button class="btn btn-sm ${this.activeMetric === 'COMPOSITE_IQ' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('COMPOSITE_IQ')">🧠 IQ</button>
+              <button class="btn btn-sm ${this.activeMetric === 'START_IQ' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('START_IQ')">🎯 Start %</button>
+              <button class="btn btn-sm ${this.activeMetric === 'WAIVER_PTS' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('WAIVER_PTS')">⚡ Waivers</button>
+              <button class="btn btn-sm ${this.activeMetric === 'DRAFT_VORP' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('DRAFT_VORP')">🏆 Draft</button>
+              <button class="btn btn-sm ${this.activeMetric === 'TRADE_NET' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('TRADE_NET')">🤝 Trades</button>
+              <button class="btn btn-sm ${this.activeMetric === 'BENCH_LOST' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="AnalyticsViewComponent.setMetric('BENCH_LOST')">⚠️ Bench Lost</button>
             </div>
           </div>
 
@@ -118,21 +118,20 @@ class AnalyticsViewComponent {
         <div class="analytics-card">
           <div class="card-header">
             <div class="card-title">
-              <i class="fa-solid fa-trophy text-gold"></i> Manager Decision & Skill Scorecard Table
+              <i class="fa-solid fa-trophy text-gold"></i> Decision Scorecard
             </div>
-            <span class="badge badge-gold">Tracked All Season</span>
           </div>
 
           <div class="roster-table-wrapper" style="width:100%; max-width:100%; overflow:hidden;">
             <table class="roster-table">
               <thead>
                 <tr>
-                  <th style="width:36px; text-align:center;">Rank</th>
-                  <th>Manager & Roster</th>
-                  <th style="width:90px; text-align:right;">Composite IQ</th>
-                  <th class="desktop-only" style="text-align:right;">Start/Sit</th>
-                  <th class="desktop-only" style="text-align:right;">Free Agency</th>
-                  <th class="desktop-only" style="text-align:right;">Trade Net</th>
+                  <th style="width:36px; text-align:center;">#</th>
+                  <th>Manager</th>
+                  <th style="width:90px; text-align:right;">IQ</th>
+                  <th class="desktop-only" style="text-align:right;">Start %</th>
+                  <th class="desktop-only" style="text-align:right;">Waivers</th>
+                  <th class="desktop-only" style="text-align:right;">Trades</th>
                   <th class="desktop-only" style="text-align:right;">Bench Lost</th>
                   <th class="desktop-only" style="text-align:center;">Persona</th>
                 </tr>

@@ -233,16 +233,16 @@ class TradeViewComponent {
           </div>
         </div>
 
-        <!-- Swipeable Highlights Strip -->
-        <div class="decision-leader-grid" style="margin-bottom:0.65rem;">
+        <!-- Highlights Strip -->
+        <div class="decision-leader-grid" style="margin-bottom:0.75rem;">
           <div class="decision-leader-card">
             <div class="decision-leader-icon" style="background:rgba(56,189,248,0.15); color:var(--accent-blue); width:28px; height:28px; font-size:0.85rem;">
               <i class="fa-solid fa-cube"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Completed Trades</div>
+              <div class="text-muted" style="font-size:0.65rem; text-transform:uppercase; font-weight:700;">Trades</div>
               <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${totalTrades} ${totalTrades === 1 ? 'Deal' : 'Deals'}</div>
-              <div style="font-size:0.72rem;" class="text-blue font-mono">Season ${leagueSeason}</div>
+              <div style="font-size:0.68rem;" class="text-blue font-mono">${leagueSeason} Season</div>
             </div>
           </div>
 
@@ -251,9 +251,9 @@ class TradeViewComponent {
               <i class="fa-solid fa-crown"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">#1 Mastermind</div>
+              <div class="text-muted" style="font-size:0.65rem; text-transform:uppercase; font-weight:700;">Top Trader</div>
               <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${topManager ? topManager.managerName : 'None Yet'}</div>
-              <div style="font-size:0.72rem;" class="${topManager ? 'text-green' : 'text-muted'} font-mono">${topManager ? `+${topManager.tradeNetValue} Net Pts` : '0 Trades'}</div>
+              <div style="font-size:0.68rem;" class="${topManager ? 'text-green' : 'text-muted'} font-mono">${topManager ? `+${topManager.tradeNetValue} Pts` : '0 Trades'}</div>
             </div>
           </div>
 
@@ -262,20 +262,20 @@ class TradeViewComponent {
               <i class="fa-solid fa-fire"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Top Deal Net</div>
+              <div class="text-muted" style="font-size:0.65rem; text-transform:uppercase; font-weight:700;">Top Trade</div>
               <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${highestNetTrade ? (highestNetTrade.teamAGains?.[0]?.split(' (')[0] || 'Top Trade') : 'No Trades Yet'}</div>
-              <div style="font-size:0.72rem;" class="${highestNetTrade ? 'text-green' : 'text-muted'} font-mono">${highestNetTrade ? `+${Math.max(highestNetTrade.teamANetPts || 0, highestNetTrade.teamBNetPts || 0)} Pts Edge` : 'Market Active'}</div>
+              <div style="font-size:0.68rem;" class="${highestNetTrade ? 'text-green' : 'text-muted'} font-mono">${highestNetTrade ? `+${Math.max(highestNetTrade.teamANetPts || 0, highestNetTrade.teamBNetPts || 0)} Pts` : 'Market Active'}</div>
             </div>
           </div>
         </div>
 
         <!-- Segmented Tab Switcher -->
-        <div class="segmented-tab-bar" style="margin-bottom:0.65rem;">
+        <div class="segmented-tab-bar" style="margin-bottom:0.75rem;">
           <button class="segmented-tab-btn ${activeTab === 'history' ? 'active' : ''}" onclick="TradeViewComponent.setTab('history')">
-            <i class="fa-solid fa-cube"></i> Deals (${totalTrades})
+            <i class="fa-solid fa-cube"></i> History (${totalTrades})
           </button>
           <button class="segmented-tab-btn ${activeTab === 'calculator' ? 'active' : ''}" onclick="TradeViewComponent.setTab('calculator')">
-            <i class="fa-solid fa-calculator"></i> Calculator ⚡
+            <i class="fa-solid fa-calculator"></i> Calculator
           </button>
           <button class="segmented-tab-btn ${activeTab === 'rankings' ? 'active' : ''}" onclick="TradeViewComponent.setTab('rankings')">
             <i class="fa-solid fa-trophy"></i> Rankings
@@ -289,28 +289,27 @@ class TradeViewComponent {
         </div>
 
         <!-- ========================================================================= -->
-        <!-- TAB 1: DEDICATED TRADE HISTORY FEED -->
+        <!-- TAB 1: TRADE HISTORY -->
         <!-- ========================================================================= -->
         ${(activeTab === 'history' || activeTab === 'all') ? `
-          <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem;">
-            <div class="card-header" style="margin-bottom:0.4rem; padding-bottom:0.25rem;">
-              <div class="card-title" style="font-size:0.85rem;">
-                <i class="fa-solid fa-cube text-blue"></i> Official League Trade History (${totalTrades} Deals)
+          <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.5rem 0.75rem;">
+            <div class="card-header" style="margin-bottom:0.35rem; padding-bottom:0.25rem;">
+              <div class="card-title" style="font-size:0.85rem; font-weight:800;">
+                <i class="fa-solid fa-cube text-blue"></i> Trade History
               </div>
             </div>
 
             ${totalTrades > 0 ? `
               <div style="display:flex; flex-direction:column; gap:0.45rem;">
                 ${completedTrades.map(t => `
-                  <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.5rem 0.65rem; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:0.35rem;">
-                    <!-- Top Card Bar -->
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:nowrap; gap:0.3rem;">
-                      <div style="display:flex; align-items:center; gap:0.35rem; min-width:0;">
-                        <span class="badge badge-green" style="font-size:0.62rem; padding:0.08rem 0.3rem; white-space:nowrap;"><i class="fa-solid fa-circle-check"></i> Executed</span>
-                        <span style="font-size:0.68rem; color:var(--text-muted); white-space:nowrap;">Wk ${t.week}</span>
-                        <span style="font-size:0.68rem; color:var(--text-muted); white-space:nowrap;">• ${t.date}</span>
+                  <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.55rem 0.75rem; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:0.35rem;">
+                    <!-- Top Bar -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:0.3rem;">
+                      <div style="display:flex; align-items:center; gap:0.35rem;">
+                        <span class="badge badge-green" style="font-size:0.62rem; padding:0.08rem 0.3rem;">Wk ${t.week}</span>
+                        <span style="font-size:0.68rem; color:var(--text-muted);">${t.date}</span>
                       </div>
-                      <div style="display:flex; align-items:center; gap:0.25rem; flex-shrink:0;">
+                      <div style="display:flex; align-items:center; gap:0.25rem;">
                         <span class="badge badge-gold" style="font-size:0.62rem; padding:0.08rem 0.3rem;">${t.outcome}</span>
                         <span class="badge ${t.grade.startsWith('A') ? 'badge-green' : (t.grade.startsWith('B') ? 'badge-blue' : 'badge-gold')}" style="font-size:0.65rem; padding:0.08rem 0.3rem; font-weight:800;">
                           Grade ${t.grade}
@@ -318,41 +317,35 @@ class TradeViewComponent {
                       </div>
                     </div>
 
-                    <!-- Teams & Exchanged Assets -->
-                    <div style="min-width:0;">
+                    <!-- Teams & Assets -->
+                    <div>
                       <div style="font-size:0.82rem; color:var(--text-primary); line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                         <strong style="color:var(--accent-blue);">${t.teamAName}</strong> & <strong style="color:var(--accent-sleeper);">${t.teamBName}</strong>
                       </div>
-                      <div style="font-size:0.72rem; color:var(--text-secondary); margin-top:0.15rem; line-height:1.3;">
-                        <span style="color:var(--accent-blue); font-weight:600;">${t.teamAManager} sent:</span> ${(t.teamAGives || []).join(', ')}
+                      <div style="font-size:0.72rem; color:var(--text-secondary); margin-top:0.15rem; line-height:1.35;">
+                        <span style="color:var(--accent-blue); font-weight:600;">${t.teamAManager}:</span> ${(t.teamAGives || []).join(', ')}
                         <br>
-                        <span style="color:var(--accent-sleeper); font-weight:600;">${t.teamBManager} sent:</span> ${(t.teamBGives || []).join(', ')}
+                        <span style="color:var(--accent-sleeper); font-weight:600;">${t.teamBManager}:</span> ${(t.teamBGives || []).join(', ')}
                       </div>
                     </div>
                   </div>
                 `).join('')}
               </div>
             ` : `
-              <!-- Authentic Zero-Trade Empty State -->
-              <div style="padding:1.25rem 0.85rem; text-align:center; background:rgba(255,255,255,0.02); border-radius:var(--radius-md); border:1px dashed var(--border-color);">
-                <div style="width:44px; height:44px; border-radius:50%; background:rgba(56,189,248,0.12); color:var(--accent-blue); display:inline-flex; align-items:center; justify-content:center; font-size:1.3rem; margin-bottom:0.5rem;">
+              <!-- Zero-Trade State -->
+              <div style="padding:1.5rem 1rem; text-align:center; background:rgba(255,255,255,0.02); border-radius:var(--radius-md); border:1px dashed var(--border-color);">
+                <div style="width:40px; height:40px; border-radius:50%; background:rgba(56,189,248,0.12); color:var(--accent-blue); display:inline-flex; align-items:center; justify-content:center; font-size:1.2rem; margin-bottom:0.5rem;">
                   <i class="fa-solid fa-scale-balanced"></i>
                 </div>
-                <div style="font-size:0.92rem; font-weight:800; color:var(--text-primary); margin-bottom:0.25rem;">
-                  No Executed Trades in ${leagueName} (${leagueSeason})
+                <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary); margin-bottom:0.25rem;">
+                  No Trades Executed Yet
                 </div>
-                <p class="text-secondary" style="font-size:0.76rem; max-width:440px; margin:0 auto 0.75rem auto; line-height:1.4;">
-                  No managers have completed an official trade this season yet. All roster movement has been conducted through Waivers and Free Agency.
+                <p class="text-secondary" style="font-size:0.78rem; max-width:380px; margin:0 auto 0.75rem auto; line-height:1.4;">
+                  No trades have been completed in ${leagueSeason} yet. Build and evaluate potential offers with the calculator below.
                 </p>
-                <div style="display:inline-flex; gap:0.35rem; flex-wrap:wrap; justify-content:center; margin-bottom:0.75rem;">
-                  <span class="badge badge-blue" style="font-size:0.66rem; padding:0.12rem 0.45rem;"><i class="fa-solid fa-circle-check"></i> Trade Market: Active</span>
-                  <span class="badge badge-green" style="font-size:0.66rem; padding:0.12rem 0.45rem;"><i class="fa-solid fa-shield-halved"></i> 100% Genuine League Data</span>
-                </div>
-                <div>
-                  <button class="btn btn-primary btn-sm" style="font-weight:700; font-size:0.75rem; padding:0.3rem 0.7rem;" onclick="TradeViewComponent.setTab('calculator')">
-                    <i class="fa-solid fa-calculator"></i> Launch Trade Calculator
-                  </button>
-                </div>
+                <button class="btn btn-primary btn-sm" style="font-weight:700; font-size:0.75rem; padding:0.35rem 0.8rem;" onclick="TradeViewComponent.setTab('calculator')">
+                  <i class="fa-solid fa-calculator"></i> Launch Calculator
+                </button>
               </div>
             `}
           </div>
@@ -430,18 +423,18 @@ class TradeViewComponent {
         ` : ''}
 
         <!-- ========================================================================= -->
-        <!-- TAB 4: DETAILED AI TRADE AUDITS & ROSTER IMPACT -->
+        <!-- TAB 4: DETAILED TRADE AUDITS -->
         <!-- ========================================================================= -->
         ${(activeTab === 'audits' || activeTab === 'all') ? `
-          <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem;">
+          <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.5rem 0.75rem;">
             <div class="card-header" style="margin-bottom:0.4rem; padding-bottom:0.25rem;">
               <div class="card-title" style="font-size:0.85rem;">
-                <i class="fa-solid fa-robot text-gold"></i> AI Trade Impact Audits & Grades
+                <i class="fa-solid fa-robot text-gold"></i> Trade Audits
               </div>
               ${totalTrades > 0 ? `
                 <div style="display:flex; gap:0.25rem; flex-wrap:wrap;">
                   <button class="btn btn-sm ${this.activeFilter === 'ALL' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="TradeViewComponent.setFilter('ALL')">All</button>
-                  <button class="btn btn-sm ${this.activeFilter === 'MASTERMIND' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="TradeViewComponent.setFilter('MASTERMIND')">🔥 Mastermind</button>
+                  <button class="btn btn-sm ${this.activeFilter === 'MASTERMIND' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="TradeViewComponent.setFilter('MASTERMIND')">🔥 Wins</button>
                   <button class="btn btn-sm ${this.activeFilter === 'EVEN' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="TradeViewComponent.setFilter('EVEN')">🤝 Win-Win</button>
                   <button class="btn btn-sm ${this.activeFilter === 'FLEECE' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="TradeViewComponent.setFilter('FLEECE')">⚠️ Overpays</button>
                 </div>
@@ -455,7 +448,7 @@ class TradeViewComponent {
                     
                     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:0.35rem;">
                       <div style="display:flex; align-items:center; gap:0.35rem;">
-                        <span class="badge badge-green" style="font-size:0.62rem;"><i class="fa-solid fa-circle-check"></i> Wk ${t.week}</span>
+                        <span class="badge badge-green" style="font-size:0.62rem;">Wk ${t.week}</span>
                         <span class="badge badge-gold" style="font-size:0.65rem;">${t.outcome}</span>
                       </div>
                       <div style="display:flex; align-items:center; gap:0.4rem;">
@@ -468,7 +461,7 @@ class TradeViewComponent {
 
                     <!-- Side-by-Side Trade Overview -->
                     <div class="responsive-grid-2" style="gap:0.35rem;">
-                      <div style="background:var(--bg-card); padding:0.4rem 0.55rem; border-radius:var(--radius-sm); border-left:3px solid ${t.teamANetPts >= 0 ? 'var(--accent-sleeper)' : '#ef4444'};">
+                      <div style="background:var(--bg-card); padding:0.45rem 0.6rem; border-radius:var(--radius-sm); border-left:3px solid ${t.teamANetPts >= 0 ? 'var(--accent-sleeper)' : '#ef4444'};">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                           <strong style="font-size:0.82rem; color:var(--text-primary);">${t.teamAName}</strong>
                           <span class="font-mono ${t.teamANetPts >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.82rem;">
@@ -480,7 +473,7 @@ class TradeViewComponent {
                         </div>
                       </div>
 
-                      <div style="background:var(--bg-card); padding:0.4rem 0.55rem; border-radius:var(--radius-sm); border-left:3px solid ${t.teamBNetPts >= 0 ? 'var(--accent-sleeper)' : '#ef4444'};">
+                      <div style="background:var(--bg-card); padding:0.45rem 0.6rem; border-radius:var(--radius-sm); border-left:3px solid ${t.teamBNetPts >= 0 ? 'var(--accent-sleeper)' : '#ef4444'};">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                           <strong style="font-size:0.82rem; color:var(--text-primary);">${t.teamBName}</strong>
                           <span class="font-mono ${t.teamBNetPts >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.82rem;">
@@ -494,19 +487,19 @@ class TradeViewComponent {
                     </div>
 
                     <!-- AI Recap -->
-                    <div style="font-size:0.75rem; color:var(--text-secondary); line-height:1.35; padding-top:0.25rem;">
-                      <strong style="color:var(--text-primary);"><i class="fa-solid fa-robot text-gold"></i> Recap:</strong> ${t.recap}
+                    <div style="font-size:0.75rem; color:var(--text-secondary); line-height:1.35; padding-top:0.15rem;">
+                      <strong style="color:var(--text-primary);">Audit:</strong> ${t.recap}
                     </div>
 
                   </div>
                 `).join('')}
               </div>
             ` : `
-              <div style="padding:1rem 0.85rem; text-align:center; background:rgba(255,255,255,0.02); border-radius:var(--radius-md); border:1px dashed var(--border-color);">
+              <div style="padding:1.5rem 1rem; text-align:center; background:rgba(255,255,255,0.02); border-radius:var(--radius-md); border:1px dashed var(--border-color);">
                 <div style="color:var(--accent-gold); font-size:1.3rem; margin-bottom:0.35rem;"><i class="fa-solid fa-robot"></i></div>
-                <div style="font-size:0.88rem; font-weight:700; color:var(--text-primary); margin-bottom:0.25rem;">AI Trade Audits Standing By</div>
-                <p class="text-secondary" style="font-size:0.75rem; margin:0 auto; max-width:440px; line-height:1.35;">
-                  Our AI engine audits executed trades by calculating Rest-of-Season (ROS) starter point differentials and playoff probability shifts. Once a trade is executed in your league, an instant audit will generate here automatically.
+                <div style="font-size:0.9rem; font-weight:700; color:var(--text-primary); margin-bottom:0.25rem;">Trade Audits Ready</div>
+                <p class="text-secondary" style="font-size:0.75rem; margin:0 auto; max-width:380px; line-height:1.4;">
+                  Automatic starter point differentials and playoff odds audits generate here whenever trades occur.
                 </p>
               </div>
             `}
@@ -555,7 +548,7 @@ class TradeViewComponent {
     // Determine fairness & audit
     let fairnessTitle = 'Select Players to Evaluate';
     let fairnessBadge = 'badge-blue';
-    let fairnessDesc = 'Choose assets from both rosters to run the AI trade evaluation algorithm.';
+    let fairnessDesc = 'Choose assets from both rosters to evaluate trade value.';
     let verdictGrade = '—';
 
     if (selectedA.length > 0 && selectedB.length > 0) {
@@ -563,31 +556,31 @@ class TradeViewComponent {
         fairnessTitle = '🤝 Even Win-Win Trade';
         fairnessBadge = 'badge-green';
         verdictGrade = 'A+';
-        fairnessDesc = `Extremely balanced trade. Weekly starting differential is just ${Math.abs(avgDiffA).toFixed(1)} PPG. Both managers preserve roster equity while addressing positional needs.`;
+        fairnessDesc = `Balanced trade. Weekly starting differential is ${Math.abs(avgDiffA).toFixed(1)} PPG. Both rosters preserve value.`;
       } else if (avgDiffA > 1.8) {
         fairnessTitle = `🔥 Advantage ${teamA.name}`;
         fairnessBadge = 'badge-gold';
         verdictGrade = 'A';
-        fairnessDesc = `${teamA.name} upgrades starter production by +${avgDiffA.toFixed(1)} PPG (+${netPtsA.toFixed(1)} total points). ${teamB.name} should ask for an additional bench asset or draft capital.`;
+        fairnessDesc = `${teamA.name} upgrades starters by +${avgDiffA.toFixed(1)} PPG (+${netPtsA.toFixed(1)} net points).`;
       } else {
         fairnessTitle = `⚠️ Overpay by ${teamA.name}`;
         fairnessBadge = 'badge-gold';
         verdictGrade = 'C+';
-        fairnessDesc = `${teamB.name} gains +${Math.abs(avgDiffA).toFixed(1)} PPG in projected starter output. ${teamA.name} is giving up superior weekly scoring and should negotiate for a sweetener.`;
+        fairnessDesc = `${teamB.name} gains +${Math.abs(avgDiffA).toFixed(1)} PPG in starter output.`;
       }
     } else if (selectedA.length > 0) {
       fairnessTitle = `Select player(s) from ${teamB.name}`;
-      fairnessDesc = `Select what ${teamB.name} offers in exchange for ${selectedA.map(p => p.name).join(', ')}.`;
+      fairnessDesc = `Select what ${teamB.name} sends in return.`;
     } else if (selectedB.length > 0) {
       fairnessTitle = `Select player(s) from ${teamA.name}`;
-      fairnessDesc = `Select what ${teamA.name} offers in exchange for ${selectedB.map(p => p.name).join(', ')}.`;
+      fairnessDesc = `Select what ${teamA.name} sends in return.`;
     }
 
     return `
-      <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.6rem 0.65rem;">
+      <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.6rem 0.75rem;">
         <div class="card-header" style="margin-bottom:0.5rem; padding-bottom:0.25rem;">
           <div class="card-title" style="font-size:0.85rem;">
-            <i class="fa-solid fa-calculator text-blue"></i> Live Trade Analyzer & Fairness Calculator
+            <i class="fa-solid fa-calculator text-blue"></i> Trade Calculator
           </div>
           <button class="btn btn-outline btn-sm" style="font-size:0.68rem; padding:0.15rem 0.45rem;" onclick="TradeViewComponent.resetCalculator()">
             <i class="fa-solid fa-rotate-left"></i> Reset
@@ -600,7 +593,7 @@ class TradeViewComponent {
           <div class="trade-team-box" style="padding:0.6rem 0.75rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
               <span style="font-size:0.72rem; font-weight:800; color:var(--accent-blue); text-transform:uppercase;">
-                <i class="fa-solid fa-user-shield"></i> Team A (Proposing)
+                Team A
               </span>
               <span class="badge badge-blue" style="font-size:0.62rem; padding:0.08rem 0.35rem;">
                 ${selectedA.length} Selected
@@ -615,7 +608,7 @@ class TradeViewComponent {
             </select>
 
             <div style="font-size:0.68rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.25rem;">
-              Select Players to Offer:
+              Offer Players:
             </div>
             <div style="max-height:160px; overflow-y:auto; display:flex; flex-direction:column; gap:0.25rem; padding-right:0.2rem;">
               ${playersA.length > 0 ? playersA.map(p => {
@@ -642,7 +635,7 @@ class TradeViewComponent {
           <div class="trade-team-box" style="padding:0.6rem 0.75rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
               <span style="font-size:0.72rem; font-weight:800; color:var(--accent-sleeper); text-transform:uppercase;">
-                <i class="fa-solid fa-handshake"></i> Team B (Receiving)
+                Team B
               </span>
               <span class="badge badge-green" style="font-size:0.62rem; padding:0.08rem 0.35rem;">
                 ${selectedB.length} Selected
@@ -657,7 +650,7 @@ class TradeViewComponent {
             </select>
 
             <div style="font-size:0.68rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.25rem;">
-              Select Players to Acquire:
+              Receive Players:
             </div>
             <div style="max-height:160px; overflow-y:auto; display:flex; flex-direction:column; gap:0.25rem; padding-right:0.2rem;">
               ${playersB.length > 0 ? playersB.map(p => {

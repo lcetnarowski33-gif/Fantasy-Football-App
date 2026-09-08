@@ -48,31 +48,26 @@ class FreeAgencyViewComponent {
 
     mountEl.innerHTML = `
       <div class="animate-fade-in">
-        <!-- Page Title & Navigation Header -->
-        <div style="margin-bottom:0.65rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem;">
+        <!-- Page Title Header -->
+        <div style="margin-bottom:0.75rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
           <div>
-            <h2 style="font-size:1.05rem; margin:0;"><i class="fa-solid fa-list-check text-gold"></i> Free Agency & Waiver Center</h2>
-            <p class="text-secondary" style="font-size:0.75rem; margin:0.1rem 0 0 0;">
-              Acquisitions, priority orders, and net points added.
+            <h2 style="font-size:1.15rem; margin:0;"><i class="fa-solid fa-list-check text-gold"></i> Free Agency</h2>
+            <p class="text-secondary" style="font-size:0.8rem; margin:0.15rem 0 0 0;">
+              Waiver claims, free agent adds, and net points.
             </p>
-          </div>
-          <div class="sub-nav-actions">
-            <button class="btn btn-outline btn-sm" style="font-weight:700; padding:0.25rem 0.5rem; font-size:0.72rem;" onclick="store.setView('trade')"><i class="fa-solid fa-right-left"></i> Trade</button>
-            <button class="btn btn-primary btn-sm" style="font-weight:700; padding:0.25rem 0.5rem; font-size:0.72rem;"><i class="fa-solid fa-list-check"></i> Free Agency</button>
-            <button class="btn btn-outline btn-sm" style="font-weight:700; padding:0.25rem 0.5rem; font-size:0.72rem;" onclick="store.setView('draft')"><i class="fa-solid fa-clipboard-list"></i> Draft</button>
           </div>
         </div>
 
         <!-- Swipeable Highlights Strip -->
-        <div class="decision-leader-grid" style="margin-bottom:0.65rem;">
+        <div class="decision-leader-grid" style="margin-bottom:0.75rem;">
           <div class="decision-leader-card">
             <div class="decision-leader-icon" style="background:rgba(245,158,11,0.15); color:var(--accent-gold); width:28px; height:28px; font-size:0.85rem;">
               <i class="fa-solid fa-hand-holding-hand"></i>
             </div>
             <div>
               <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Acquisitions</div>
-              <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${totalClaims} Moves</div>
-              <div style="font-size:0.72rem;" class="text-gold font-mono">Season 2025</div>
+              <div style="font-size:0.88rem; font-weight:800; color:var(--text-primary);">${totalClaims} Moves</div>
+              <div style="font-size:0.72rem;" class="text-gold font-mono">Season</div>
             </div>
           </div>
 
@@ -81,9 +76,9 @@ class FreeAgencyViewComponent {
               <i class="fa-solid fa-crown"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">#1 Move Maker</div>
-              <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${topManager ? topManager.managerName : 'N/A'}</div>
-              <div style="font-size:0.72rem;" class="text-green font-mono">+${topManager ? topManager.netPoints : 0} Net Pts</div>
+              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Top Manager</div>
+              <div style="font-size:0.88rem; font-weight:800; color:var(--text-primary);">${topManager ? topManager.managerName : 'N/A'}</div>
+              <div style="font-size:0.72rem;" class="text-green font-mono">+${topManager ? topManager.netPoints : 0} Pts</div>
             </div>
           </div>
 
@@ -93,19 +88,19 @@ class FreeAgencyViewComponent {
             </div>
             <div>
               <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Top Pickup</div>
-              <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${topSteal ? topSteal.playerName : 'N/A'}</div>
-              <div style="font-size:0.72rem;" class="text-blue font-mono">+${topSteal ? topSteal.netPoints : 0} Net Pts</div>
+              <div style="font-size:0.88rem; font-weight:800; color:var(--text-primary);">${topSteal ? topSteal.playerName : 'N/A'}</div>
+              <div style="font-size:0.72rem;" class="text-blue font-mono">+${topSteal ? topSteal.netPoints : 0} Pts</div>
             </div>
           </div>
         </div>
 
         <!-- Segmented Tab Switcher -->
-        <div class="segmented-tab-bar" style="margin-bottom:0.65rem;">
+        <div class="segmented-tab-bar" style="margin-bottom:0.75rem;">
           <button class="segmented-tab-btn ${activeTab === 'log' ? 'active' : ''}" onclick="FreeAgencyViewComponent.setTab('log')">
             <i class="fa-solid fa-list-check"></i> Moves Log
           </button>
           <button class="segmented-tab-btn ${activeTab === 'rankings' ? 'active' : ''}" onclick="FreeAgencyViewComponent.setTab('rankings')">
-            <i class="fa-solid fa-trophy"></i> Manager Efficiency
+            <i class="fa-solid fa-trophy"></i> Efficiency
           </button>
           <button class="segmented-tab-btn ${activeTab === 'all' ? 'active' : ''}" onclick="FreeAgencyViewComponent.setTab('all')">
             <i class="fa-solid fa-layer-group"></i> All
@@ -119,12 +114,12 @@ class FreeAgencyViewComponent {
           <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem;">
             <div class="card-header" style="margin-bottom:0.4rem; padding-bottom:0.25rem;">
               <div class="card-title" style="font-size:0.85rem;">
-                <i class="fa-solid fa-list-check text-blue"></i> Acquisitions Feed (${filteredPickups.length} Moves)
+                <i class="fa-solid fa-list-check text-blue"></i> Moves (${filteredPickups.length})
               </div>
               <div style="display:flex; gap:0.25rem; flex-wrap:wrap;">
                 <button class="btn btn-sm ${this.activeFilter === 'ALL' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="FreeAgencyViewComponent.setFilter('ALL')">All</button>
-                <button class="btn btn-sm ${this.activeFilter === 'WAIVER_CLAIMS' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="FreeAgencyViewComponent.setFilter('WAIVER_CLAIMS')">📋 Waiver</button>
-                <button class="btn btn-sm ${this.activeFilter === 'FREE_AGENTS' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="FreeAgencyViewComponent.setFilter('FREE_AGENTS')">⚡ FA Add</button>
+                <button class="btn btn-sm ${this.activeFilter === 'WAIVER_CLAIMS' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="FreeAgencyViewComponent.setFilter('WAIVER_CLAIMS')">Waivers</button>
+                <button class="btn btn-sm ${this.activeFilter === 'FREE_AGENTS' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="FreeAgencyViewComponent.setFilter('FREE_AGENTS')">Free Agents</button>
               </div>
             </div>
 
@@ -135,15 +130,15 @@ class FreeAgencyViewComponent {
                   <div style="display:flex; align-items:center; gap:0.45rem; min-width:0;">
                     <img src="${p.playerPhoto}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; background:var(--bg-card); flex-shrink:0;" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
                     <div style="min-width:0; overflow:hidden;">
-                      <div style="display:flex; align-items:center; gap:0.3rem;">
-                        <span class="badge ${p.claimType === 'Waiver Claim' ? 'badge-blue' : 'badge-green'}" style="font-size:0.62rem; padding:0.1rem 0.3rem;">${p.claimType === 'Waiver Claim' ? 'Waiver' : 'FA Add'}</span>
-                        <span style="font-size:0.68rem; color:var(--text-muted);">Wk ${p.week}</span>
+                      <div style="display:flex; align-items:center; gap:0.35rem;">
+                        <strong style="font-size:0.82rem; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">
+                          ${p.playerName}
+                        </strong>
+                        <span style="font-size:0.68rem; color:var(--text-secondary); font-weight:500;">${p.playerPos} · ${p.playerNflTeam}</span>
                       </div>
-                      <strong style="font-size:0.82rem; color:var(--text-primary); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">
-                        ${p.playerName} <span style="font-size:0.68rem; color:var(--text-secondary); font-weight:500;">(${p.playerPos}-${p.playerNflTeam})</span>
-                      </strong>
-                      <div style="font-size:0.68rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        ${p.managerName}
+                      <div style="font-size:0.68rem; color:var(--text-secondary); display:flex; align-items:center; gap:0.35rem; margin-top:0.1rem;">
+                        <span class="badge ${p.claimType === 'Waiver Claim' ? 'badge-blue' : 'badge-green'}" style="font-size:0.62rem; padding:0.05rem 0.3rem;">${p.claimType === 'Waiver Claim' ? 'Waiver' : 'FA'}</span>
+                        <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.managerName} · Wk ${p.week}</span>
                       </div>
                     </div>
                   </div>
@@ -168,7 +163,7 @@ class FreeAgencyViewComponent {
           <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem;">
             <div class="card-header" style="margin-bottom:0.4rem; padding-bottom:0.25rem;">
               <div class="card-title" style="font-size:0.85rem;">
-                <i class="fa-solid fa-trophy text-gold"></i> Manager Waiver & Move Efficiency
+                <i class="fa-solid fa-trophy text-gold"></i> Manager Efficiency
               </div>
             </div>
 
@@ -177,7 +172,7 @@ class FreeAgencyViewComponent {
                 <thead>
                   <tr>
                     <th style="width:35px; text-align:center;">#</th>
-                    <th>Manager & Team</th>
+                    <th>Manager</th>
                     <th style="text-align:center;">Moves</th>
                     <th style="text-align:center;">Priority</th>
                     <th style="text-align:right;">Net Pts</th>

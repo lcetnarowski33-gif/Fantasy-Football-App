@@ -56,50 +56,47 @@ class MatchupViewComponent {
           </div>
         </div>
 
-        <!-- ESPN-Style Compact Matchup Hero Scoreboard -->
-        <div class="matchup-hero-card" style="margin-bottom:0.65rem; background:linear-gradient(135deg, rgba(20,25,35,0.95), rgba(15,20,30,0.98)); border:1px solid var(--border-color); border-radius:var(--radius-md); box-shadow:var(--shadow-md);">
+        <!-- Matchup Scoreboard -->
+        <div class="matchup-hero-card" style="margin-bottom:0.75rem; padding:0.75rem 0.9rem; background:linear-gradient(135deg, rgba(20,25,35,0.95), rgba(15,20,30,0.98)); border:1px solid var(--border-color); border-radius:var(--radius-md); box-shadow:var(--shadow-md);">
           <!-- Home Team -->
-          <div style="display:flex; align-items:center; gap:0.6rem;">
-            <img src="${matchup.homeTeam.logoUrl}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; background:var(--bg-surface); border:2px solid var(--accent-sleeper);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
+          <div style="display:flex; align-items:center; gap:0.65rem;">
+            <img src="${matchup.homeTeam.logoUrl}" style="width:38px; height:38px; border-radius:50%; object-fit:cover; background:var(--bg-surface); border:2px solid var(--accent-sleeper);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
             <div>
-              <div style="font-size:0.7rem; font-weight:800; color:var(--accent-sleeper); text-transform:uppercase;">HOME • ${matchup.homeTeam.record}</div>
-              <strong style="font-size:0.92rem; color:var(--text-primary); display:block; line-height:1.15;">${matchup.homeTeam.name}</strong>
-              <div class="font-mono text-green" style="font-size:1.35rem; font-weight:900; line-height:1.15;">${matchup.homeScore.toFixed(1)}</div>
-              <span class="text-muted" style="font-size:0.68rem;">Proj: ${matchup.homeProjected}</span>
+              <div style="font-size:0.68rem; font-weight:700; color:var(--accent-sleeper);">${matchup.homeTeam.record}</div>
+              <strong style="font-size:0.95rem; color:var(--text-primary); display:block; line-height:1.2;">${matchup.homeTeam.name}</strong>
+              <div class="font-mono text-green" style="font-size:1.45rem; font-weight:900; line-height:1.15;">${matchup.homeScore.toFixed(1)}</div>
+              <span class="text-muted" style="font-size:0.68rem;">Proj ${matchup.homeProjected}</span>
             </div>
           </div>
 
           <!-- VS Center Badge -->
-          <div style="text-align:center; padding:0 0.35rem;">
-            <div class="badge badge-gold" style="font-size:0.68rem; padding:0.15rem 0.4rem; margin-bottom:0.2rem; font-weight:700;">
-              ${matchup.weather}
-            </div>
+          <div style="text-align:center; padding:0 0.4rem;">
             <div class="h2h-vs-badge" style="width:32px; height:32px; border-radius:50%; background:var(--accent-gold); color:#0b0e14; font-weight:900; font-size:0.8rem; display:inline-flex; align-items:center; justify-content:center;">VS</div>
-            <div style="font-size:0.7rem; font-weight:700; color:var(--text-secondary); margin-top:0.2rem;">Wk ${this.selectedWeek}</div>
+            <div style="font-size:0.68rem; font-weight:700; color:var(--text-secondary); margin-top:0.25rem;">Wk ${this.selectedWeek}</div>
           </div>
 
           <!-- Away Team -->
-          <div style="display:flex; align-items:center; justify-content:flex-end; gap:0.6rem; text-align:right;">
+          <div style="display:flex; align-items:center; justify-content:flex-end; gap:0.65rem; text-align:right;">
             <div>
-              <div style="font-size:0.7rem; font-weight:800; color:var(--accent-blue); text-transform:uppercase;">AWAY • ${matchup.awayTeam.record}</div>
-              <strong style="font-size:0.92rem; color:var(--text-primary); display:block; line-height:1.15;">${matchup.awayTeam.name}</strong>
-              <div class="font-mono text-blue" style="font-size:1.35rem; font-weight:900; line-height:1.15;">${matchup.awayScore.toFixed(1)}</div>
-              <span class="text-muted" style="font-size:0.68rem;">Proj: ${matchup.awayProjected}</span>
+              <div style="font-size:0.68rem; font-weight:700; color:var(--accent-blue);">${matchup.awayTeam.record}</div>
+              <strong style="font-size:0.95rem; color:var(--text-primary); display:block; line-height:1.2;">${matchup.awayTeam.name}</strong>
+              <div class="font-mono text-blue" style="font-size:1.45rem; font-weight:900; line-height:1.15;">${matchup.awayScore.toFixed(1)}</div>
+              <span class="text-muted" style="font-size:0.68rem;">Proj ${matchup.awayProjected}</span>
             </div>
-            <img src="${matchup.awayTeam.logoUrl}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; background:var(--bg-surface); border:2px solid var(--accent-blue);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
+            <img src="${matchup.awayTeam.logoUrl}" style="width:38px; height:38px; border-radius:50%; object-fit:cover; background:var(--bg-surface); border:2px solid var(--accent-blue);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
           </div>
         </div>
 
-        <!-- Swipeable Highlights Strip -->
-        <div class="decision-leader-grid" style="margin-bottom:0.65rem;">
+        <!-- Highlights Strip -->
+        <div class="decision-leader-grid" style="margin-bottom:0.75rem;">
           <div class="decision-leader-card">
             <div class="decision-leader-icon" style="background:rgba(0,230,118,0.15); color:var(--accent-sleeper); width:28px; height:28px; font-size:0.85rem;">
               <i class="fa-solid fa-trophy"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Projected Winner</div>
-              <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${matchup.homeScore >= matchup.awayScore ? matchup.homeTeam.name : matchup.awayTeam.name}</div>
-              <div style="font-size:0.72rem;" class="text-green font-mono">${Math.max(matchup.homeScore, matchup.awayScore).toFixed(1)} Pts</div>
+              <div class="text-muted" style="font-size:0.65rem; text-transform:uppercase; font-weight:700;">Projected Win</div>
+              <div style="font-size:0.82rem; font-weight:800; color:var(--text-primary);">${matchup.homeScore >= matchup.awayScore ? matchup.homeTeam.name : matchup.awayTeam.name}</div>
+              <div style="font-size:0.7rem;" class="text-green font-mono">${Math.max(matchup.homeScore, matchup.awayScore).toFixed(1)} Pts</div>
             </div>
           </div>
 
@@ -108,9 +105,9 @@ class MatchupViewComponent {
               <i class="fa-solid fa-award"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Draft Differential</div>
-              <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${homeNetDraftTotal >= 0 ? matchup.homeTeam.name : matchup.awayTeam.name}</div>
-              <div style="font-size:0.72rem;" class="font-mono ${homeNetDraftTotal >= 0 ? 'text-green' : 'text-blue'}">${homeNetDraftTotal >= 0 ? '+' : ''}${homeNetDraftTotal.toFixed(1)} Pts Edge</div>
+              <div class="text-muted" style="font-size:0.65rem; text-transform:uppercase; font-weight:700;">Draft Edge</div>
+              <div style="font-size:0.82rem; font-weight:800; color:var(--text-primary);">${homeNetDraftTotal >= 0 ? matchup.homeTeam.name : matchup.awayTeam.name}</div>
+              <div style="font-size:0.7rem;" class="font-mono ${homeNetDraftTotal >= 0 ? 'text-green' : 'text-blue'}">${homeNetDraftTotal >= 0 ? '+' : ''}${homeNetDraftTotal.toFixed(1)} Pts</div>
             </div>
           </div>
 
@@ -119,23 +116,23 @@ class MatchupViewComponent {
               <i class="fa-solid fa-fire"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Top Draft Matchup</div>
-              <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${matchup.starters[1]?.homePlayer.name || 'C. McCaffrey'}</div>
-              <div style="font-size:0.72rem;" class="text-blue font-mono">+${matchup.starters[1]?.netDraftPts || 14.3} Net Gain</div>
+              <div class="text-muted" style="font-size:0.65rem; text-transform:uppercase; font-weight:700;">Key Matchup</div>
+              <div style="font-size:0.82rem; font-weight:800; color:var(--text-primary);">${matchup.starters[1]?.homePlayer.name || 'C. McCaffrey'}</div>
+              <div style="font-size:0.7rem;" class="text-blue font-mono">+${matchup.starters[1]?.netDraftPts || 14.3} Pts</div>
             </div>
           </div>
         </div>
 
-        <!-- Segmented Tab Bar (Starters | Bench | Recap | All) -->
-        <div class="segmented-tab-bar" style="margin-bottom:0.65rem;">
+        <!-- Segmented Tab Bar -->
+        <div class="segmented-tab-bar" style="margin-bottom:0.75rem;">
           <button class="segmented-tab-btn ${activeTab === 'starters' ? 'active' : ''}" onclick="MatchupViewComponent.setTab('starters')">
             <i class="fa-solid fa-people-arrows"></i> Starters
           </button>
           <button class="segmented-tab-btn ${activeTab === 'bench' ? 'active' : ''}" onclick="MatchupViewComponent.setTab('bench')">
-            <i class="fa-solid fa-chair"></i> Bench Depth
+            <i class="fa-solid fa-chair"></i> Bench
           </button>
           <button class="segmented-tab-btn ${activeTab === 'recap' ? 'active' : ''}" onclick="MatchupViewComponent.setTab('recap')">
-            <i class="fa-solid fa-robot"></i> AI Recap
+            <i class="fa-solid fa-robot"></i> Recap
           </button>
           <button class="segmented-tab-btn ${activeTab === 'all' ? 'active' : ''}" onclick="MatchupViewComponent.setTab('all')">
             <i class="fa-solid fa-layer-group"></i> All
@@ -146,12 +143,11 @@ class MatchupViewComponent {
         <!-- STARTERS TAB -->
         <!-- ========================================================================= -->
         ${(activeTab === 'starters' || activeTab === 'all') ? `
-          <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem;">
+          <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.5rem 0.75rem;">
             <div class="card-header" style="margin-bottom:0.4rem; padding-bottom:0.25rem;">
               <div class="card-title" style="font-size:0.85rem;">
-                <i class="fa-solid fa-people-arrows text-gold"></i> Starting Lineups & Draft Origin Breakdown
+                <i class="fa-solid fa-people-arrows text-gold"></i> Starting Lineups
               </div>
-              <span class="badge badge-gold" style="font-size:0.68rem; padding:0.15rem 0.4rem;"><i class="fa-solid fa-award"></i> Draft Audits</span>
             </div>
 
             <div style="display:flex; flex-direction:column; gap:0.4rem;">
@@ -204,17 +200,16 @@ class MatchupViewComponent {
         <!-- BENCH TAB -->
         <!-- ========================================================================= -->
         ${(activeTab === 'bench' || activeTab === 'all') ? `
-          <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem;">
+          <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.5rem 0.75rem;">
             <div class="card-header" style="margin-bottom:0.4rem; padding-bottom:0.25rem;">
               <div class="card-title" style="font-size:0.85rem;">
-                <i class="fa-solid fa-chair text-blue"></i> Bench Roster & Draft Origin Comparison
+                <i class="fa-solid fa-chair text-blue"></i> Bench Comparison
               </div>
-              <span class="badge badge-blue" style="font-size:0.68rem;">Bench Depth Audit</span>
             </div>
 
             <div style="display:flex; flex-direction:column; gap:0.35rem;">
               ${matchup.bench.map(b => `
-                <div class="matchup-row-grid" style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.35rem 0.5rem;">
+                <div class="matchup-row-grid" style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.4rem 0.6rem;">
                   <!-- Home Bench -->
                   <div style="display:flex; align-items:center; gap:0.4rem; min-width:0;">
                     <strong style="color:var(--text-primary); font-size:0.8rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${b.homePlayer.name}</strong>
@@ -222,13 +217,13 @@ class MatchupViewComponent {
                     <span class="font-mono text-muted" style="font-size:0.8rem; font-weight:700; margin-left:auto;">${b.homePts.toFixed(1)}</span>
                   </div>
 
-                  <!-- Center Pos -->
-                  <div style="text-align:center; padding:0 0.25rem;">
-                    <span class="badge badge-blue" style="font-size:0.65rem; padding:0.1rem 0.35rem;">BN (${b.pos})</span>
+                  <!-- Center Position Battle -->
+                  <div style="text-align:center; padding:0 0.25rem; flex-shrink:0;">
+                    <span class="badge badge-blue" style="font-size:0.68rem; padding:0.1rem 0.35rem;">${b.pos}</span>
                   </div>
 
                   <!-- Away Bench -->
-                  <div style="display:flex; align-items:center; justify-content:flex-end; gap:0.4rem; text-align:right; min-width:0;">
+                  <div style="display:flex; align-items:center; justify-content:flex-end; gap:0.4rem; min-width:0;">
                     <span class="font-mono text-muted" style="font-size:0.8rem; font-weight:700; margin-right:auto;">${b.awayPts.toFixed(1)}</span>
                     <span class="badge badge-gold" style="font-size:0.62rem;">${b.awayDraftBadge}</span>
                     <strong style="color:var(--text-primary); font-size:0.8rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${b.awayPlayer.name}</strong>
@@ -243,17 +238,15 @@ class MatchupViewComponent {
         <!-- RECAP TAB -->
         <!-- ========================================================================= -->
         ${(activeTab === 'recap' || activeTab === 'all') ? `
-          <div class="analytics-card" style="padding:0.65rem 0.75rem;">
+          <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.6rem 0.8rem;">
             <div class="card-header" style="margin-bottom:0.4rem; padding-bottom:0.25rem;">
               <div class="card-title" style="font-size:0.85rem;">
-                <i class="fa-solid fa-robot text-gold"></i> AI Matchup & Draft Decision Audit Recap
+                <i class="fa-solid fa-robot text-gold"></i> Matchup Recap
               </div>
             </div>
-            <div style="background:var(--bg-surface); padding:0.75rem; border-radius:var(--radius-sm); border:1px solid var(--border-color); display:flex; align-items:flex-start; gap:0.65rem;">
-              <i class="fa-solid fa-lightbulb text-gold" style="font-size:1.2rem; margin-top:0.15rem;"></i>
-              <div style="line-height:1.5; font-size:0.82rem; color:var(--text-secondary);">
-                <strong style="color:var(--text-primary);">Key Draft Matchup Takeaway:</strong> 
-                ${matchup.homeTeam.name}'s decision to draft <strong style="color:var(--accent-gold);">${matchup.starters[1]?.homePlayer.name}</strong> (${matchup.starters[1]?.homeDraftBadge}) yielded a <strong class="text-green">+${matchup.starters[1]?.netDraftPts.toFixed(1)} Net Points Advantage</strong> over ${matchup.awayTeam.name}'s choice of <strong style="color:var(--accent-blue);">${matchup.starters[1]?.awayPlayer.name}</strong> (${matchup.starters[1]?.awayDraftBadge}). Overall, draft selections generated a <strong class="text-green">${homeNetDraftTotal >= 0 ? '+' : ''}${homeNetDraftTotal.toFixed(1)} net points differential</strong> in this head-to-head matchup.
+            <div>
+              <div style="line-height:1.45; font-size:0.82rem; color:var(--text-secondary);">
+                ${matchup.homeTeam.name}'s start of <strong style="color:var(--accent-gold);">${matchup.starters[1]?.homePlayer.name}</strong> gave them a <strong class="text-green">+${matchup.starters[1]?.netDraftPts.toFixed(1)} pt edge</strong> over ${matchup.awayTeam.name}'s <strong style="color:var(--accent-blue);">${matchup.starters[1]?.awayPlayer.name}</strong>. Overall, draft capital provided a <strong class="text-green">${homeNetDraftTotal >= 0 ? '+' : ''}${homeNetDraftTotal.toFixed(1)} pt difference</strong> in this matchup.
               </div>
             </div>
           </div>
