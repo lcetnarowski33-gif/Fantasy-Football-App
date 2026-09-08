@@ -3,17 +3,29 @@
  * Renders the Free Agency & Waiver Wire Center featuring Manager Pickup Analytics,
  * Waiver Wire Move Efficiency Leaderboards, and Pick-by-Pick Waiver Audit Logs.
  * Standard non-bidding Waiver Priority system.
+ * Enhanced with an ESPN Fantasy-style compact layout and segmented sub-tabs to fit small phone screens.
  */
 
 class FreeAgencyViewComponent {
   static activeFilter = 'ALL';
   static activePosFilter = 'ALL';
+  static activeTab = 'log'; // 'log', 'rankings', 'all'
+
+  static setTab(tab) {
+    this.activeTab = tab;
+    if (typeof store !== 'undefined') {
+      const state = store.getState();
+      const mountEl = document.getElementById('main-view-container');
+      if (mountEl) this.render(mountEl, state);
+    }
+  }
 
   static render(mountEl, state) {
     if (!mountEl) return;
 
     const teams = state.data.teams || [];
     const pickups = this.getWaiverPickups(teams);
+    const activeTab = this.activeTab || 'log';
 
     // Calculate Manager Waiver Rankings
     const managerRankings = this.calculateManagerWaiverRankings(teams, pickups);
@@ -31,184 +43,184 @@ class FreeAgencyViewComponent {
     }
 
     const totalClaims = pickups.length;
-    const topManager = managerRankings[0] || { managerName: 'N/A', teamName: 'N/A', totalMoves: 0, netPoints: 0, faabRoi: 0 };
-    const topSteal = [...pickups].sort((a, b) => (b.netPoints || 0) - (a.netPoints || 0))[0] || { playerName: 'N/A', managerName: 'N/A', netPoints: 0, details: 'No moves recorded yet.' };
-    const avgPickups = (pickups.length / Math.max(1, teams.length)).toFixed(1);
+    const topManager = managerRankings[0] || { managerName: 'N/A', teamName: 'N/A', totalMoves: 0, netPoints: 0 };
+    const topSteal = [...pickups].sort((a, b) => (b.netPoints || 0) - (a.netPoints || 0))[0] || { playerName: 'N/A', managerName: 'N/A', netPoints: 0 };
 
     mountEl.innerHTML = `
       <div class="animate-fade-in">
         <!-- Page Title & Navigation Header -->
-        <div style="margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <div style="margin-bottom:0.65rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem;">
           <div>
-            <h2><i class="fa-solid fa-list-check text-gold"></i> Free Agency & Waiver Wire Center</h2>
-            <p class="text-secondary" style="font-size:0.9rem;">
-              Detailed manager analytics, waiver wire acquisitions, priority order tracking, and roster net points added.
+            <h2 style="font-size:1.05rem; margin:0;"><i class="fa-solid fa-list-check text-gold"></i> Free Agency & Waiver Center</h2>
+            <p class="text-secondary" style="font-size:0.75rem; margin:0.1rem 0 0 0;">
+              Acquisitions, priority orders, and net points added.
             </p>
           </div>
           <div class="sub-nav-actions">
-            <button class="btn btn-outline btn-sm" style="font-weight:700;" onclick="store.setView('trade')"><i class="fa-solid fa-right-left"></i> Trade</button>
-            <button class="btn btn-primary btn-sm" style="font-weight:700;"><i class="fa-solid fa-list-check"></i> Free Agency</button>
-            <button class="btn btn-outline btn-sm" style="font-weight:700;" onclick="store.setView('draft')"><i class="fa-solid fa-clipboard-list"></i> Draft</button>
+            <button class="btn btn-outline btn-sm" style="font-weight:700; padding:0.25rem 0.5rem; font-size:0.72rem;" onclick="store.setView('trade')"><i class="fa-solid fa-right-left"></i> Trade</button>
+            <button class="btn btn-primary btn-sm" style="font-weight:700; padding:0.25rem 0.5rem; font-size:0.72rem;"><i class="fa-solid fa-list-check"></i> Free Agency</button>
+            <button class="btn btn-outline btn-sm" style="font-weight:700; padding:0.25rem 0.5rem; font-size:0.72rem;" onclick="store.setView('draft')"><i class="fa-solid fa-clipboard-list"></i> Draft</button>
           </div>
         </div>
 
-        <!-- Highlight Summary Stat Cards -->
-        <div class="decision-leader-grid" style="margin-bottom:1.5rem;">
+        <!-- Swipeable Highlights Strip -->
+        <div class="decision-leader-grid" style="margin-bottom:0.65rem;">
           <div class="decision-leader-card">
-            <div class="decision-leader-icon" style="background:rgba(245,158,11,0.15); color:var(--accent-gold);">
+            <div class="decision-leader-icon" style="background:rgba(245,158,11,0.15); color:var(--accent-gold); width:28px; height:28px; font-size:0.85rem;">
               <i class="fa-solid fa-hand-holding-hand"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">Total Acquisitions</div>
-              <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${totalClaims} Waiver & FA Moves</div>
-              <div style="font-size:0.75rem;" class="text-gold font-mono">Season 2025 History</div>
+              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Acquisitions</div>
+              <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${totalClaims} Moves</div>
+              <div style="font-size:0.72rem;" class="text-gold font-mono">Season 2025</div>
             </div>
           </div>
 
           <div class="decision-leader-card">
-            <div class="decision-leader-icon" style="background:rgba(0,230,118,0.15); color:var(--accent-sleeper);">
+            <div class="decision-leader-icon" style="background:rgba(0,230,118,0.15); color:var(--accent-sleeper); width:28px; height:28px; font-size:0.85rem;">
               <i class="fa-solid fa-crown"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">#1 Waiver Move Maker</div>
-              <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${topManager ? topManager.managerName : 'N/A'}</div>
-              <div style="font-size:0.75rem;" class="text-green font-mono">+${topManager ? topManager.netPoints : 0} Net Pts Added</div>
+              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">#1 Move Maker</div>
+              <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${topManager ? topManager.managerName : 'N/A'}</div>
+              <div style="font-size:0.72rem;" class="text-green font-mono">+${topManager ? topManager.netPoints : 0} Net Pts</div>
             </div>
           </div>
 
           <div class="decision-leader-card">
-            <div class="decision-leader-icon" style="background:rgba(56,189,248,0.15); color:var(--accent-blue);">
+            <div class="decision-leader-icon" style="background:rgba(56,189,248,0.15); color:var(--accent-blue); width:28px; height:28px; font-size:0.85rem;">
               <i class="fa-solid fa-fire"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">Top Waiver Pickup</div>
-              <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${topSteal ? topSteal.playerName : 'N/A'}</div>
-              <div style="font-size:0.75rem;" class="text-blue font-mono">${topSteal ? topSteal.playerPos : 'WR'} (+${topSteal ? topSteal.netPoints : 0} Net Pts)</div>
-            </div>
-          </div>
-
-          <div class="decision-leader-card">
-            <div class="decision-leader-icon" style="background:rgba(168,85,247,0.15); color:#a855f7;">
-              <i class="fa-solid fa-chart-line"></i>
-            </div>
-            <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">Avg Pickups / Manager</div>
-              <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${avgPickups} Moves / Team</div>
-              <div style="font-size:0.75rem;" class="text-purple font-mono">League Activity Pace</div>
+              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Top Pickup</div>
+              <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${topSteal ? topSteal.playerName : 'N/A'}</div>
+              <div style="font-size:0.72rem;" class="text-blue font-mono">+${topSteal ? topSteal.netPoints : 0} Net Pts</div>
             </div>
           </div>
         </div>
 
-        <!-- Manager Free Agency & Move Efficiency Leaderboard -->
-        <div class="analytics-card" style="margin-bottom:1.5rem;">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fa-solid fa-trophy text-gold"></i> Manager Waiver & Free Agency Efficiency Rankings
-            </div>
-            <span class="badge badge-gold">Tracked All Season</span>
-          </div>
-
-          <div class="analytics-table-wrapper">
-            <table class="analytics-table">
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Manager & Roster</th>
-                  <th>Total Moves</th>
-                  <th>Waiver Priority</th>
-                  <th>Season Net Pts Added</th>
-                  <th>Top Waiver Pickup</th>
-                  <th>Waiver Grade</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${managerRankings.map((m, idx) => `
-                  <tr style="cursor:pointer;" onclick="store.setView('team', {teamId: '${m.teamId}'});">
-                    <td data-label="Rank" style="font-weight:800; color:${idx === 0 ? 'var(--accent-gold)' : (idx === 1 || idx === 2 ? 'var(--accent-sleeper)' : 'var(--accent-blue)')};">
-                      #${idx + 1}
-                    </td>
-                    <td data-label="Manager & Roster">
-                      <div style="display:flex; align-items:center; gap:0.65rem;">
-                        <img src="${m.logoUrl}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; background:var(--bg-surface);">
-                        <div>
-                          <strong style="color:var(--text-primary); font-size:0.95rem;">${m.managerName}</strong>
-                          <div style="font-size:0.78rem; color:var(--text-secondary); font-weight:500;">${m.name}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td data-label="Total Moves" class="font-mono" style="font-weight:700; color:var(--text-primary);">${m.claimsCount} Moves</td>
-                    <td data-label="Waiver Priority" class="font-mono text-gold" style="font-weight:800;">Priority #${idx + 1}</td>
-                    <td data-label="Season Net Pts Added" class="font-mono ${m.netPoints >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.95rem;">
-                      ${m.netPoints >= 0 ? '+' : ''}${m.netPoints} Pts
-                    </td>
-                    <td data-label="Top Waiver Pickup" style="font-size:0.82rem;">
-                      <span style="font-weight:600; color:var(--text-secondary);">${m.topPickup}</span>
-                    </td>
-                    <td data-label="Waiver Grade">
-                      <span class="badge ${m.grade.startsWith('A') ? 'badge-green' : (m.grade.startsWith('B') ? 'badge-blue' : (m.grade.startsWith('C') ? 'badge-gold' : 'badge-red'))}">
-                        ${m.grade}
-                      </span>
-                    </td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
+        <!-- Segmented Tab Switcher -->
+        <div class="segmented-tab-bar" style="margin-bottom:0.65rem;">
+          <button class="segmented-tab-btn ${activeTab === 'log' ? 'active' : ''}" onclick="FreeAgencyViewComponent.setTab('log')">
+            <i class="fa-solid fa-list-check"></i> Moves Log
+          </button>
+          <button class="segmented-tab-btn ${activeTab === 'rankings' ? 'active' : ''}" onclick="FreeAgencyViewComponent.setTab('rankings')">
+            <i class="fa-solid fa-trophy"></i> Manager Efficiency
+          </button>
+          <button class="segmented-tab-btn ${activeTab === 'all' ? 'active' : ''}" onclick="FreeAgencyViewComponent.setTab('all')">
+            <i class="fa-solid fa-layer-group"></i> All
+          </button>
         </div>
 
-        <!-- Detailed Free Agency & Waiver Wire Claims Audit Log -->
-        <div class="analytics-card">
-          <div class="card-header" style="flex-wrap:wrap; gap:1rem;">
-            <div class="card-title">
-              <i class="fa-solid fa-list-check text-blue"></i> Detailed Free Agency & Waiver Wire Acquisitions Log
-            </div>
-            <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
-              <button class="btn btn-sm ${this.activeFilter === 'ALL' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="FreeAgencyViewComponent.setFilter('ALL')">All Acquisitions</button>
-              <button class="btn btn-sm ${this.activeFilter === 'WAIVER_CLAIMS' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="FreeAgencyViewComponent.setFilter('WAIVER_CLAIMS')">📋 Waiver Priority Claims</button>
-              <button class="btn btn-sm ${this.activeFilter === 'FREE_AGENTS' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="FreeAgencyViewComponent.setFilter('FREE_AGENTS')">⚡ Free Agent Pickups</button>
-            </div>
-          </div>
-
-          <div style="display:flex; flex-direction:column; gap:1rem;">
-            ${filteredPickups.map(p => `
-              <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1.1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; box-shadow:var(--shadow-md);">
-                
-                <div style="display:flex; align-items:center; gap:1rem;">
-                  <img src="${p.playerPhoto}" style="width:46px; height:46px; border-radius:50%; object-fit:cover; background:var(--bg-surface); border:2px solid var(--border-color);" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
-                  <div>
-                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
-                      <span class="badge ${p.claimType === 'Waiver Claim' ? 'badge-blue' : 'badge-green'}"><i class="fa-solid fa-hand-holding-hand"></i> ${p.claimType}</span>
-                      <span style="font-size:0.82rem; font-weight:700; color:var(--text-primary);">Week ${p.week} • ${p.date}</span>
-                    </div>
-                    <div style="font-size:1rem; font-weight:800; color:var(--text-primary);">
-                      ${p.playerName} <span style="font-size:0.82rem; font-weight:600; color:var(--text-secondary);">(${p.playerPos} - ${p.playerNflTeam})</span>
-                    </div>
-                    <div style="font-size:0.82rem; color:var(--text-secondary); margin-top:0.2rem;">
-                      Manager: <strong style="color:var(--accent-blue);">${p.managerName}</strong> (${p.teamName})
-                    </div>
-                  </div>
-                </div>
-
-                <div style="display:flex; align-items:center; gap:1.25rem; flex-wrap:wrap;">
-                  <div style="text-align:right;">
-                    <div style="font-size:0.75rem; color:var(--text-secondary); font-weight:700;">ACQUISITION TYPE</div>
-                    <div style="font-size:0.95rem; font-weight:800;" class="font-mono text-gold">${p.claimType}</div>
-                  </div>
-
-                  <div style="text-align:right;">
-                    <div style="font-size:0.75rem; color:var(--text-secondary); font-weight:700;">ROSTER OUTPUT</div>
-                    <div style="font-size:0.95rem; font-weight:800;" class="font-mono text-green">+${p.netPoints} Net Pts (${p.avgPPG} PPG)</div>
-                  </div>
-
-                  <span class="badge ${p.grade.startsWith('A') ? 'badge-green' : (p.grade.startsWith('B') ? 'badge-blue' : 'badge-gold')}" style="font-size:0.9rem; padding:0.4rem 0.8rem; font-weight:800;">
-                    Grade ${p.grade}
-                  </span>
-                </div>
-
+        <!-- ========================================================================= -->
+        <!-- TAB 1: DETAILED ACQUISITIONS LOG -->
+        <!-- ========================================================================= -->
+        ${(activeTab === 'log' || activeTab === 'all') ? `
+          <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem;">
+            <div class="card-header" style="margin-bottom:0.4rem; padding-bottom:0.25rem;">
+              <div class="card-title" style="font-size:0.85rem;">
+                <i class="fa-solid fa-list-check text-blue"></i> Acquisitions Feed (${filteredPickups.length} Moves)
               </div>
-            `).join('')}
+              <div style="display:flex; gap:0.25rem; flex-wrap:wrap;">
+                <button class="btn btn-sm ${this.activeFilter === 'ALL' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="FreeAgencyViewComponent.setFilter('ALL')">All</button>
+                <button class="btn btn-sm ${this.activeFilter === 'WAIVER_CLAIMS' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="FreeAgencyViewComponent.setFilter('WAIVER_CLAIMS')">📋 Waiver</button>
+                <button class="btn btn-sm ${this.activeFilter === 'FREE_AGENTS' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="FreeAgencyViewComponent.setFilter('FREE_AGENTS')">⚡ FA Add</button>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:0.4rem;">
+              ${filteredPickups.map(p => `
+                <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.45rem 0.6rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem; box-shadow:var(--shadow-sm);">
+                  
+                  <div style="display:flex; align-items:center; gap:0.45rem; min-width:0;">
+                    <img src="${p.playerPhoto}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; background:var(--bg-card); flex-shrink:0;" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
+                    <div style="min-width:0; overflow:hidden;">
+                      <div style="display:flex; align-items:center; gap:0.3rem;">
+                        <span class="badge ${p.claimType === 'Waiver Claim' ? 'badge-blue' : 'badge-green'}" style="font-size:0.62rem; padding:0.1rem 0.3rem;">${p.claimType === 'Waiver Claim' ? 'Waiver' : 'FA Add'}</span>
+                        <span style="font-size:0.68rem; color:var(--text-muted);">Wk ${p.week}</span>
+                      </div>
+                      <strong style="font-size:0.82rem; color:var(--text-primary); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">
+                        ${p.playerName} <span style="font-size:0.68rem; color:var(--text-secondary); font-weight:500;">(${p.playerPos}-${p.playerNflTeam})</span>
+                      </strong>
+                      <div style="font-size:0.68rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        ${p.managerName}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="text-align:right; flex-shrink:0;">
+                    <div class="font-mono text-green" style="font-size:0.85rem; font-weight:800;">+${p.netPoints} Net</div>
+                    <span class="badge ${p.grade.startsWith('A') ? 'badge-green' : (p.grade.startsWith('B') ? 'badge-blue' : 'badge-gold')}" style="font-size:0.65rem; padding:0.1rem 0.3rem;">
+                      ${p.grade}
+                    </span>
+                  </div>
+
+                </div>
+              `).join('')}
+            </div>
           </div>
-        </div>
+        ` : ''}
+
+        <!-- ========================================================================= -->
+        <!-- TAB 2: MANAGER WAIVER RANKINGS TABLE -->
+        <!-- ========================================================================= -->
+        ${(activeTab === 'rankings' || activeTab === 'all') ? `
+          <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem;">
+            <div class="card-header" style="margin-bottom:0.4rem; padding-bottom:0.25rem;">
+              <div class="card-title" style="font-size:0.85rem;">
+                <i class="fa-solid fa-trophy text-gold"></i> Manager Waiver & Move Efficiency
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="standings-table">
+                <thead>
+                  <tr>
+                    <th style="width:35px; text-align:center;">#</th>
+                    <th>Manager & Team</th>
+                    <th style="text-align:center;">Moves</th>
+                    <th style="text-align:center;">Priority</th>
+                    <th style="text-align:right;">Net Pts</th>
+                    <th>Top Pickup</th>
+                    <th style="text-align:center;">Grade</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${managerRankings.map((m, idx) => `
+                    <tr style="cursor:pointer;" onclick="store.setView('team', {teamId: '${m.teamId}'});">
+                      <td style="text-align:center; font-weight:800; color:${idx === 0 ? 'var(--accent-gold)' : 'var(--text-secondary)'}; font-size:0.8rem;">
+                        #${idx + 1}
+                      </td>
+                      <td style="position:sticky; left:0; background:var(--bg-surface); z-index:2; box-shadow:2px 0 6px rgba(0,0,0,0.25);">
+                        <div style="display:flex; align-items:center; gap:0.45rem;">
+                          <img src="${m.logoUrl}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; background:var(--bg-surface);">
+                          <div>
+                            <strong style="color:var(--text-primary); font-size:0.82rem; display:block; line-height:1.15;">${m.managerName}</strong>
+                            <div style="font-size:0.68rem; color:var(--text-secondary);">${m.name}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style="text-align:center;" class="font-mono" style="font-size:0.8rem;">${m.claimsCount}</td>
+                      <td style="text-align:center;" class="font-mono text-gold" style="font-weight:700; font-size:0.78rem;">#${idx + 1}</td>
+                      <td style="text-align:right;" class="font-mono ${m.netPoints >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.85rem;">
+                        ${m.netPoints >= 0 ? '+' : ''}${m.netPoints}
+                      </td>
+                      <td style="font-size:0.75rem; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        ${m.topPickup}
+                      </td>
+                      <td style="text-align:center;">
+                        <span class="badge ${m.grade.startsWith('A') ? 'badge-green' : (m.grade.startsWith('B') ? 'badge-blue' : 'badge-gold')}" style="font-size:0.68rem; padding:0.1rem 0.35rem;">
+                          ${m.grade}
+                        </span>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ` : ''}
+
       </div>
     `;
   }

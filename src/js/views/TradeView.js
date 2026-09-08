@@ -3,18 +3,19 @@
  * Renders Completed Trade Analytics, AI Roster Impact Scores,
  * Season-Long Manager Trade Performance Leaderboard,
  * Dedicated Trade History Timeline (Cube Section), and AI Trade Audits.
+ * Enhanced with an ESPN Fantasy-style compact layout and segmented sub-tabs to fit small phone screens.
  */
 
 class TradeViewComponent {
   static activeFilter = 'ALL';
-  static activeMobileTab = 'summary';
+  static activeTab = 'history'; // 'history', 'rankings', 'audits', 'all'
 
-  static setMobileTab(tabName) {
-    this.activeMobileTab = tabName;
+  static setTab(tab) {
+    this.activeTab = tab;
     if (typeof store !== 'undefined') {
       const state = store.getState();
-      const mainContainer = document.getElementById('main-view-container');
-      if (mainContainer) this.render(mainContainer, state);
+      const mountEl = document.getElementById('main-view-container');
+      if (mountEl) this.render(mountEl, state);
     }
   }
 
@@ -24,6 +25,7 @@ class TradeViewComponent {
     const teams = state.data.teams || [];
     const transactions = (state.data.transactions || []).filter(t => t.type === 'TRADE');
     const completedTrades = this.getCompletedTrades(teams, transactions);
+    const activeTab = this.activeTab || 'history';
 
     // Calculate Manager Trade Performance Leaderboard
     const managerRankings = this.calculateManagerRankings(teams, completedTrades);
@@ -38,305 +40,257 @@ class TradeViewComponent {
       filteredTrades = filteredTrades.filter(t => t.outcome.includes('FLEECE') || t.grade.startsWith('C') || t.grade.startsWith('D') || t.grade.startsWith('F'));
     }
 
-    // High level metrics
     const totalTrades = completedTrades.length;
     const topManager = managerRankings[0] || { managerName: 'N/A', name: 'N/A', netScore: 0, netWins: 0, totalTrades: 0, grade: 'N/A' };
     const highestNetTrade = [...completedTrades].sort((a, b) => Math.max(b.teamANetPts || 0, b.teamBNetPts || 0) - Math.max(a.teamANetPts || 0, a.teamBNetPts || 0))[0] || { teamAName: 'N/A', teamBName: 'N/A', teamANetPts: 0, teamBNetPts: 0, details: 'No trade history recorded yet.' };
-    const avgScore = (completedTrades.reduce((acc, t) => acc + (t.score || 85), 0) / Math.max(1, totalTrades)).toFixed(1);
 
     mountEl.innerHTML = `
       <div class="animate-fade-in">
         <!-- Page Title & Navigation Header -->
-        <div style="margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <div style="margin-bottom:0.65rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem;">
           <div>
-            <h2><i class="fa-solid fa-right-left text-blue"></i> Completed Trade Analytics & Manager Rankings</h2>
-            <p class="text-secondary" style="font-size:0.9rem;">
-              Season-long tracking of executed trades, trade history timeline, roster net points added, and manager trade rankings.
+            <h2 style="font-size:1.05rem; margin:0;"><i class="fa-solid fa-right-left text-blue"></i> Completed Trade Analytics</h2>
+            <p class="text-secondary" style="font-size:0.75rem; margin:0.1rem 0 0 0;">
+              Executed deals, roster net points added, and manager rankings.
             </p>
           </div>
           <div class="sub-nav-actions">
-            <button class="btn btn-primary btn-sm" style="font-weight:700;"><i class="fa-solid fa-right-left"></i> Trade</button>
-            <button class="btn btn-outline btn-sm" style="font-weight:700;" onclick="store.setView('waiver')"><i class="fa-solid fa-coins"></i> Free Agency</button>
-            <button class="btn btn-outline btn-sm" style="font-weight:700;" onclick="store.setView('draft')"><i class="fa-solid fa-clipboard-list"></i> Draft</button>
+            <button class="btn btn-primary btn-sm" style="font-weight:700; padding:0.25rem 0.5rem; font-size:0.72rem;"><i class="fa-solid fa-right-left"></i> Trade</button>
+            <button class="btn btn-outline btn-sm" style="font-weight:700; padding:0.25rem 0.5rem; font-size:0.72rem;" onclick="store.setView('waiver')"><i class="fa-solid fa-coins"></i> Free Agency</button>
+            <button class="btn btn-outline btn-sm" style="font-weight:700; padding:0.25rem 0.5rem; font-size:0.72rem;" onclick="store.setView('draft')"><i class="fa-solid fa-clipboard-list"></i> Draft</button>
           </div>
         </div>
 
-        <!-- Highlight Summary Stat Cards -->
-        <div class="decision-leader-grid" style="margin-bottom:1.5rem;">
+        <!-- Swipeable Highlights Strip -->
+        <div class="decision-leader-grid" style="margin-bottom:0.65rem;">
           <div class="decision-leader-card">
-            <div class="decision-leader-icon" style="background:rgba(56,189,248,0.15); color:var(--accent-blue);">
+            <div class="decision-leader-icon" style="background:rgba(56,189,248,0.15); color:var(--accent-blue); width:28px; height:28px; font-size:0.85rem;">
               <i class="fa-solid fa-cube"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">Completed Trades</div>
-              <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${totalTrades} Executed Deals</div>
-              <div style="font-size:0.75rem;" class="text-blue font-mono">Season 2025 History</div>
+              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Completed Trades</div>
+              <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${totalTrades} Deals</div>
+              <div style="font-size:0.72rem;" class="text-blue font-mono">Season 2025</div>
             </div>
           </div>
 
           <div class="decision-leader-card">
-            <div class="decision-leader-icon" style="background:rgba(245,158,11,0.15); color:var(--accent-gold);">
+            <div class="decision-leader-icon" style="background:rgba(245,158,11,0.15); color:var(--accent-gold); width:28px; height:28px; font-size:0.85rem;">
               <i class="fa-solid fa-crown"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">#1 Trade Mastermind</div>
-              <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${topManager ? topManager.managerName : 'N/A'}</div>
-              <div style="font-size:0.75rem;" class="text-green font-mono">+${topManager ? topManager.tradeNetValue : 0} Net Pts Added</div>
+              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">#1 Mastermind</div>
+              <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${topManager ? topManager.managerName : 'N/A'}</div>
+              <div style="font-size:0.72rem;" class="text-green font-mono">+${topManager ? topManager.tradeNetValue : 0} Net Pts</div>
             </div>
           </div>
 
           <div class="decision-leader-card">
-            <div class="decision-leader-icon" style="background:rgba(0,230,118,0.15); color:var(--accent-sleeper);">
+            <div class="decision-leader-icon" style="background:rgba(0,230,118,0.15); color:var(--accent-sleeper); width:28px; height:28px; font-size:0.85rem;">
               <i class="fa-solid fa-fire"></i>
             </div>
             <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">Highest Net Impact Trade</div>
-              <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${highestNetTrade ? highestNetTrade.teamAGives[0].split(' (')[0] : 'N/A'}</div>
-              <div style="font-size:0.75rem;" class="text-green font-mono">+${highestNetTrade ? Math.max(highestNetTrade.teamANetPts, highestNetTrade.teamBNetPts) : 0} Pts Differential</div>
-            </div>
-          </div>
-
-          <div class="decision-leader-card">
-            <div class="decision-leader-icon" style="background:rgba(168,85,247,0.15); color:#a855f7;">
-              <i class="fa-solid fa-award"></i>
-            </div>
-            <div>
-              <div class="text-muted" style="font-size:0.75rem; text-transform:uppercase; font-weight:700;">Avg Trade Score</div>
-              <div style="font-size:0.95rem; font-weight:800; color:var(--text-primary);">${avgScore} / 100 Rating</div>
-              <div style="font-size:0.75rem;" class="text-purple font-mono">Fairness & Efficiency Baseline</div>
+              <div class="text-muted" style="font-size:0.68rem; text-transform:uppercase; font-weight:700;">Top Deal Net</div>
+              <div style="font-size:0.85rem; font-weight:800; color:var(--text-primary);">${highestNetTrade ? highestNetTrade.teamAGives[0].split(' (')[0] : 'N/A'}</div>
+              <div style="font-size:0.72rem;" class="text-green font-mono">+${highestNetTrade ? Math.max(highestNetTrade.teamANetPts, highestNetTrade.teamBNetPts) : 0} Pts Edge</div>
             </div>
           </div>
         </div>
 
-        <!-- ========================================================================= -->
-        <!-- SECTION 1: MANAGER TRADE PERFORMANCE & EFFICIENCY RANKINGS TABLE -->
-        <!-- ========================================================================= -->
-        <div class="analytics-card" style="margin-bottom:1.5rem;">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fa-solid fa-trophy text-gold"></i> Season Manager Trade Performance & Efficiency Rankings
-            </div>
-            <span class="badge badge-gold">Tracked All Season</span>
-          </div>
+        <!-- Segmented Tab Switcher -->
+        <div class="segmented-tab-bar" style="margin-bottom:0.65rem;">
+          <button class="segmented-tab-btn ${activeTab === 'history' ? 'active' : ''}" onclick="TradeViewComponent.setTab('history')">
+            <i class="fa-solid fa-cube"></i> Deals History
+          </button>
+          <button class="segmented-tab-btn ${activeTab === 'rankings' ? 'active' : ''}" onclick="TradeViewComponent.setTab('rankings')">
+            <i class="fa-solid fa-trophy"></i> Manager Rankings
+          </button>
+          <button class="segmented-tab-btn ${activeTab === 'audits' ? 'active' : ''}" onclick="TradeViewComponent.setTab('audits')">
+            <i class="fa-solid fa-robot"></i> AI Audits
+          </button>
+          <button class="segmented-tab-btn ${activeTab === 'all' ? 'active' : ''}" onclick="TradeViewComponent.setTab('all')">
+            <i class="fa-solid fa-layer-group"></i> All
+          </button>
+        </div>
 
-          <div class="analytics-table-wrapper">
-            <table class="analytics-table">
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Manager & Roster</th>
-                  <th>Trades Executed</th>
-                  <th>Season Trade Net Pts</th>
-                  <th>Trade Efficiency Score</th>
-                  <th>Overall Trade Grade</th>
-                  <th>Top Executed Trade</th>
-                  <th>Playoff Odds Shift</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${managerRankings.map((m, idx) => `
-                  <tr style="cursor:pointer;" onclick="store.setView('team', {teamId: '${m.teamId}'});">
-                    <td style="font-weight:800; color:${idx === 0 ? 'var(--accent-gold)' : (idx === 1 || idx === 2 ? 'var(--accent-sleeper)' : 'var(--accent-blue)')};">
-                      #${idx + 1}
-                    </td>
-                    <td>
-                      <div style="display:flex; align-items:center; gap:0.65rem;">
-                        <img src="${m.logoUrl}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; background:var(--bg-surface);">
-                        <div>
-                          <strong style="color:var(--text-primary); font-size:0.95rem;">${m.managerName}</strong>
-                          <div style="font-size:0.78rem; color:var(--text-secondary); font-weight:500;">${m.name}</div>
-                        </div>
+        <!-- ========================================================================= -->
+        <!-- TAB 1: DEDICATED TRADE HISTORY FEED (THE CUBE SECTION) -->
+        <!-- ========================================================================= -->
+        ${(activeTab === 'history' || activeTab === 'all') ? `
+          <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem;">
+            <div class="card-header" style="margin-bottom:0.4rem; padding-bottom:0.25rem;">
+              <div class="card-title" style="font-size:0.85rem;">
+                <i class="fa-solid fa-cube text-blue"></i> Official League Trade History Feed (${totalTrades} Deals)
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:0.4rem;">
+              ${completedTrades.map(t => `
+                <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.45rem 0.6rem; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:0.35rem;">
+                  <!-- Top Card Bar: Badges & Execution Status -->
+                  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:nowrap; gap:0.3rem;">
+                    <div style="display:flex; align-items:center; gap:0.35rem; min-width:0;">
+                      <div style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); border-radius:4px; color:var(--accent-blue); font-size:0.75rem; flex-shrink:0;">
+                        <i class="fa-solid fa-cube"></i>
                       </div>
-                    </td>
-                    <td class="font-mono" style="font-weight:700; color:var(--text-primary);">${m.tradesCount} ${m.tradesCount === 1 ? 'Trade' : 'Trades'}</td>
-                    <td class="font-mono ${m.tradeNetValue >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.95rem;">
-                      ${m.tradeNetValue >= 0 ? '+' : ''}${m.tradeNetValue} Pts
-                    </td>
-                    <td>
-                      <div style="display:flex; align-items:center; gap:0.4rem;">
-                        <div style="flex:1; height:6px; background:var(--bg-surface); border-radius:3px; overflow:hidden;">
-                          <div style="width:${Math.min(100, Math.max(10, m.efficiencyScore))}%; height:100%; background:${m.efficiencyScore >= 80 ? 'var(--accent-sleeper)' : (m.efficiencyScore >= 60 ? 'var(--accent-gold)' : '#ef4444')};"></div>
-                        </div>
-                        <span class="font-mono" style="font-size:0.8rem; font-weight:700; color:var(--text-primary);">${m.efficiencyScore}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <span class="badge ${m.tradeGrade.startsWith('A') ? 'badge-green' : (m.tradeGrade.startsWith('B') ? 'badge-blue' : (m.tradeGrade.startsWith('C') ? 'badge-gold' : 'badge-red'))}">
-                        ${m.tradeGrade}
+                      <span class="badge badge-green" style="font-size:0.62rem; padding:0.08rem 0.3rem; white-space:nowrap;"><i class="fa-solid fa-circle-check"></i> Executed</span>
+                      <span style="font-size:0.68rem; color:var(--text-muted); white-space:nowrap;">Wk ${t.week}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.25rem; flex-shrink:0;">
+                      <span class="badge badge-gold" style="font-size:0.62rem; padding:0.08rem 0.3rem;">${t.outcome}</span>
+                      <span class="badge ${t.grade.startsWith('A') ? 'badge-green' : (t.grade.startsWith('B') ? 'badge-blue' : 'badge-gold')}" style="font-size:0.65rem; padding:0.08rem 0.3rem; font-weight:800;">
+                        Grade ${t.grade}
                       </span>
-                    </td>
-                    <td style="font-size:0.82rem; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                      <span style="font-weight:600; color:var(--text-secondary);">${m.bestTrade}</span>
-                    </td>
-                    <td class="font-mono ${m.playoffShift.startsWith('+') ? 'text-green' : (m.playoffShift.startsWith('-') ? 'text-red' : 'text-muted')}" style="font-weight:700;">
-                      ${m.playoffShift}
-                    </td>
+                    </div>
+                  </div>
+
+                  <!-- Trade Content: Teams & Assets Exchanged -->
+                  <div style="min-width:0;">
+                    <div style="font-size:0.82rem; color:var(--text-primary); line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                      <strong style="color:var(--accent-blue);">${t.teamAName}</strong> & <strong style="color:var(--accent-sleeper);">${t.teamBName}</strong>
+                    </div>
+                    <div style="font-size:0.72rem; color:var(--text-secondary); margin-top:0.1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                      ${t.teamAGives[0]} ⇄ ${t.teamBGives[0]}
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- ========================================================================= -->
+        <!-- TAB 2: MANAGER TRADE PERFORMANCE RANKINGS TABLE -->
+        <!-- ========================================================================= -->
+        ${(activeTab === 'rankings' || activeTab === 'all') ? `
+          <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem;">
+            <div class="card-header" style="margin-bottom:0.4rem; padding-bottom:0.25rem;">
+              <div class="card-title" style="font-size:0.85rem;">
+                <i class="fa-solid fa-trophy text-gold"></i> Season Manager Trade Performance & Rankings
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="standings-table">
+                <thead>
+                  <tr>
+                    <th style="width:35px; text-align:center;">#</th>
+                    <th>Manager & Roster</th>
+                    <th style="text-align:center;">Deals</th>
+                    <th style="text-align:right;">Net Pts</th>
+                    <th style="text-align:center;">Score</th>
+                    <th style="text-align:center;">Grade</th>
+                    <th style="text-align:center;">Shift</th>
                   </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- ========================================================================= -->
-        <!-- SECTION 2: DEDICATED TRADE HISTORY TIMELINE (THE CUBE SECTION 🧊) -->
-        <!-- ========================================================================= -->
-        <div class="analytics-card" style="margin-bottom:1.5rem;">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fa-solid fa-cube text-blue" style="font-size:1.2rem;"></i> Official League Trade History Feed
+                </thead>
+                <tbody>
+                  ${managerRankings.map((m, idx) => `
+                    <tr style="cursor:pointer;" onclick="store.setView('team', {teamId: '${m.teamId}'});">
+                      <td style="text-align:center; font-weight:800; color:${idx === 0 ? 'var(--accent-gold)' : (idx === 1 || idx === 2 ? 'var(--accent-sleeper)' : 'var(--accent-blue)')}; font-size:0.8rem;">
+                        #${idx + 1}
+                      </td>
+                      <td style="position:sticky; left:0; background:var(--bg-surface); z-index:2; box-shadow:2px 0 6px rgba(0,0,0,0.25);">
+                        <div style="display:flex; align-items:center; gap:0.45rem;">
+                          <img src="${m.logoUrl}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; background:var(--bg-surface);">
+                          <div>
+                            <strong style="color:var(--text-primary); font-size:0.82rem; display:block; line-height:1.15;">${m.managerName}</strong>
+                            <div style="font-size:0.68rem; color:var(--text-secondary);">${m.name}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style="text-align:center;" class="font-mono" style="font-size:0.8rem;">${m.tradesCount}</td>
+                      <td style="text-align:right;" class="font-mono ${m.tradeNetValue >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.85rem;">
+                        ${m.tradeNetValue >= 0 ? '+' : ''}${m.tradeNetValue}
+                      </td>
+                      <td style="text-align:center;" class="font-mono text-primary" style="font-weight:700; font-size:0.82rem;">${m.efficiencyScore}</td>
+                      <td style="text-align:center;">
+                        <span class="badge ${m.tradeGrade.startsWith('A') ? 'badge-green' : (m.tradeGrade.startsWith('B') ? 'badge-blue' : (m.tradeGrade.startsWith('C') ? 'badge-gold' : 'badge-red'))}" style="font-size:0.68rem; padding:0.1rem 0.35rem;">
+                          ${m.tradeGrade}
+                        </span>
+                      </td>
+                      <td style="text-align:center;" class="font-mono ${m.playoffShift.startsWith('+') ? 'text-green' : (m.playoffShift.startsWith('-') ? 'text-red' : 'text-muted')}" style="font-weight:700; font-size:0.75rem;">
+                        ${m.playoffShift}
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
             </div>
-            <span class="badge badge-blue"><i class="fa-solid fa-clock-rotate-left"></i> ${totalTrades} Executed Deals Recorded</span>
           </div>
+        ` : ''}
 
-          <div style="display:flex; flex-direction:column; gap:0.85rem;">
-            ${completedTrades.map(t => `
-              <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; box-shadow:var(--shadow-sm);">
-                <div style="display:flex; align-items:center; gap:1rem;">
-                  <div style="display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); border-radius:8px; color:var(--accent-blue); font-size:1.15rem;" title="Trade Block Record">
-                    <i class="fa-solid fa-cube"></i>
-                  </div>
-                  <div>
-                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.3rem;">
-                      <span class="badge badge-green"><i class="fa-solid fa-circle-check"></i> Executed</span>
-                      <span style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Week ${t.week} • ${t.date}</span>
-                    </div>
-                    <div style="font-size:0.95rem; font-weight:700; color:var(--text-primary); line-height:1.4;">
-                      <strong style="color:var(--accent-blue);">${t.teamAName}</strong> (${t.teamAManager}) traded 
-                      <span style="color:var(--accent-gold); font-weight:600;">${t.teamAGives.join(', ')}</span> 
-                      to <strong style="color:var(--accent-blue);">${t.teamBName}</strong> (${t.teamBManager}) for 
-                      <span style="color:var(--accent-sleeper); font-weight:600;">${t.teamBGives.join(', ')}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div style="display:flex; align-items:center; gap:0.75rem;">
-                  <span class="badge badge-gold" style="font-size:0.8rem; font-weight:700;">${t.outcome}</span>
-                  <span class="badge ${t.grade.startsWith('A') ? 'badge-green' : (t.grade.startsWith('B') ? 'badge-blue' : 'badge-gold')}" style="font-size:0.9rem; padding:0.35rem 0.75rem; font-weight:800;">
-                    Grade ${t.grade}
-                  </span>
-                </div>
+        <!-- ========================================================================= -->
+        <!-- TAB 3: DETAILED AI TRADE AUDITS & ROSTER IMPACT -->
+        <!-- ========================================================================= -->
+        ${(activeTab === 'audits' || activeTab === 'all') ? `
+          <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem;">
+            <div class="card-header" style="margin-bottom:0.4rem; padding-bottom:0.25rem;">
+              <div class="card-title" style="font-size:0.85rem;">
+                <i class="fa-solid fa-robot text-gold"></i> AI Trade Impact Audits & Grades
               </div>
-            `).join('')}
-          </div>
-        </div>
-
-        <!-- ========================================================================= -->
-        <!-- SECTION 3: DETAILED AI TRADE AUDITS & ROSTER IMPACT ANALYSIS -->
-        <!-- ========================================================================= -->
-        <div class="analytics-card">
-          <div class="card-header" style="flex-wrap:wrap; gap:1rem;">
-            <div class="card-title">
-              <i class="fa-solid fa-robot text-gold"></i> Detailed AI Trade Impact Audits & Roster Grades
+              <div style="display:flex; gap:0.25rem; flex-wrap:wrap;">
+                <button class="btn btn-sm ${this.activeFilter === 'ALL' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="TradeViewComponent.setFilter('ALL')">All</button>
+                <button class="btn btn-sm ${this.activeFilter === 'MASTERMIND' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="TradeViewComponent.setFilter('MASTERMIND')">🔥 Mastermind</button>
+                <button class="btn btn-sm ${this.activeFilter === 'EVEN' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="TradeViewComponent.setFilter('EVEN')">🤝 Win-Win</button>
+                <button class="btn btn-sm ${this.activeFilter === 'FLEECE' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:0.2rem 0.4rem;" onclick="TradeViewComponent.setFilter('FLEECE')">⚠️ Overpays</button>
+              </div>
             </div>
-            <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
-              <button class="btn btn-sm ${this.activeFilter === 'ALL' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="TradeViewComponent.setFilter('ALL')">All Audits</button>
-              <button class="btn btn-sm ${this.activeFilter === 'MASTERMIND' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="TradeViewComponent.setFilter('MASTERMIND')">🔥 Mastermind Trades</button>
-              <button class="btn btn-sm ${this.activeFilter === 'EVEN' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="TradeViewComponent.setFilter('EVEN')">🤝 Win-Win Deals</button>
-              <button class="btn btn-sm ${this.activeFilter === 'FLEECE' ? 'btn-primary' : 'btn-outline'}" style="font-size:0.75rem;" onclick="TradeViewComponent.setFilter('FLEECE')">⚠️ Reaches / Overpays</button>
-            </div>
-          </div>
 
-          <div style="display:flex; flex-direction:column; gap:1.25rem;">
-            ${filteredTrades.map(t => `
-              <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1.25rem; display:flex; flex-direction:column; gap:1rem; position:relative; box-shadow:var(--shadow-md);">
-                
-                <!-- Trade Header Row -->
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; border-bottom:1px solid var(--border-color); padding-bottom:0.75rem;">
-                  <div style="display:flex; align-items:center; gap:0.6rem;">
-                    <div style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); border-radius:6px; color:var(--accent-blue); font-size:0.85rem;" title="Completed Trade Block">
-                      <i class="fa-solid fa-cube"></i>
+            <div style="display:flex; flex-direction:column; gap:0.65rem;">
+              ${filteredTrades.map(t => `
+                <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.6rem 0.75rem; display:flex; flex-direction:column; gap:0.45rem; box-shadow:var(--shadow-sm);">
+                  
+                  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:0.35rem;">
+                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                      <span class="badge badge-green" style="font-size:0.62rem;"><i class="fa-solid fa-circle-check"></i> Wk ${t.week}</span>
+                      <span class="badge badge-gold" style="font-size:0.65rem;">${t.outcome}</span>
                     </div>
-                    <span class="badge badge-green"><i class="fa-solid fa-circle-check"></i> Executed</span>
-                    <span style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">Week ${t.week} • ${t.date}</span>
-                    <span class="badge badge-gold" style="font-size:0.75rem; font-weight:700;">${t.outcome}</span>
-                  </div>
-                  <div style="display:flex; align-items:center; gap:0.75rem;">
-                    <div style="font-size:0.85rem; text-align:right; color:var(--text-secondary);">
-                      Trade Score: <strong class="font-mono text-primary" style="font-size:1rem; font-weight:800;">${t.score} / 100</strong>
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                      <span class="font-mono text-primary" style="font-size:0.8rem; font-weight:800;">${t.score}/100</span>
+                      <span class="badge ${t.grade.startsWith('A') ? 'badge-green' : (t.grade.startsWith('B') ? 'badge-blue' : 'badge-gold')}" style="font-size:0.7rem; padding:0.1rem 0.35rem; font-weight:800;">
+                        ${t.grade}
+                      </span>
                     </div>
-                    <span class="badge ${t.grade.startsWith('A') ? 'badge-green' : (t.grade.startsWith('B') ? 'badge-blue' : 'badge-gold')}" style="font-size:0.95rem; padding:0.4rem 0.8rem; font-weight:800;">
-                      Grade ${t.grade}
-                    </span>
                   </div>
-                </div>
 
-                <!-- Side-by-Side Trade Details -->
-                <div class="responsive-grid-2" style="align-items:stretch;">
-                  <!-- Side A -->
-                  <div style="background:var(--bg-surface); padding:1.1rem; border-radius:var(--radius-md); border-left:4px solid ${t.teamANetPts >= 0 ? 'var(--accent-sleeper)' : '#ef4444'}; border-top:1px solid var(--border-color); border-right:1px solid var(--border-color); border-bottom:1px solid var(--border-color); display:flex; flex-direction:column; justify-content:space-between;">
-                    <div>
-                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                        <strong style="font-size:1.05rem; color:var(--text-primary);">${t.teamAName}</strong>
-                        <span class="font-mono ${t.teamANetPts >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:1.05rem;">
-                          ${t.teamANetPts >= 0 ? '+' : ''}${t.teamANetPts} Pts
+                  <!-- Side-by-Side Trade Overview -->
+                  <div class="responsive-grid-2" style="gap:0.35rem;">
+                    <div style="background:var(--bg-card); padding:0.4rem 0.55rem; border-radius:var(--radius-sm); border-left:3px solid ${t.teamANetPts >= 0 ? 'var(--accent-sleeper)' : '#ef4444'};">
+                      <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong style="font-size:0.82rem; color:var(--text-primary);">${t.teamAName}</strong>
+                        <span class="font-mono ${t.teamANetPts >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.82rem;">
+                          ${t.teamANetPts >= 0 ? '+' : ''}${t.teamANetPts}
                         </span>
                       </div>
-                      <div style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:0.75rem; font-weight:600;">
-                        <i class="fa-solid fa-user-circle text-blue" style="margin-right:0.35rem;"></i>Manager: ${t.teamAManager}
-                      </div>
-                      <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.4rem; letter-spacing:0.04em;">
-                        <i class="fa-solid fa-box-open" style="margin-right:0.35rem;"></i>Acquired Assets
-                      </div>
-                      <div style="display:flex; flex-direction:column; gap:0.4rem;">
-                        ${t.teamAGains.map(g => `
-                          <div style="background:var(--bg-card); padding:0.5rem 0.75rem; border-radius:var(--radius-sm); border:1px solid var(--border-color); font-weight:600; color:var(--text-primary); font-size:0.85rem; display:flex; align-items:center; gap:0.5rem;">
-                            <i class="fa-solid fa-square-plus text-green"></i>
-                            <span>${g}</span>
-                          </div>
-                        `).join('')}
+                      <div style="font-size:0.7rem; color:var(--accent-gold); margin-top:0.2rem;">
+                        Got: ${t.teamAGains.join(', ')}
                       </div>
                     </div>
-                    <div style="margin-top:1rem; padding-top:0.6rem; border-top:1px dashed var(--border-color); font-size:0.8rem; display:flex; justify-content:space-between; align-items:center;">
-                      <span style="color:var(--text-secondary); font-weight:600;">Roster Playoff Shift:</span>
-                      <span class="font-mono ${t.teamAPlayoffShift.startsWith('+') ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.9rem;">${t.teamAPlayoffShift}</span>
-                    </div>
-                  </div>
 
-                  <!-- Side B -->
-                  <div style="background:var(--bg-surface); padding:1.1rem; border-radius:var(--radius-md); border-left:4px solid ${t.teamBNetPts >= 0 ? 'var(--accent-sleeper)' : '#ef4444'}; border-top:1px solid var(--border-color); border-right:1px solid var(--border-color); border-bottom:1px solid var(--border-color); display:flex; flex-direction:column; justify-content:space-between;">
-                    <div>
-                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
-                        <strong style="font-size:1.05rem; color:var(--text-primary);">${t.teamBName}</strong>
-                        <span class="font-mono ${t.teamBNetPts >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:1.05rem;">
-                          ${t.teamBNetPts >= 0 ? '+' : ''}${t.teamBNetPts} Pts
+                    <div style="background:var(--bg-card); padding:0.4rem 0.55rem; border-radius:var(--radius-sm); border-left:3px solid ${t.teamBNetPts >= 0 ? 'var(--accent-sleeper)' : '#ef4444'};">
+                      <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong style="font-size:0.82rem; color:var(--text-primary);">${t.teamBName}</strong>
+                        <span class="font-mono ${t.teamBNetPts >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.82rem;">
+                          ${t.teamBNetPts >= 0 ? '+' : ''}${t.teamBNetPts}
                         </span>
                       </div>
-                      <div style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:0.75rem; font-weight:600;">
-                        <i class="fa-solid fa-user-circle text-blue" style="margin-right:0.35rem;"></i>Manager: ${t.teamBManager}
-                      </div>
-                      <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:var(--accent-gold); margin-bottom:0.4rem; letter-spacing:0.04em;">
-                        <i class="fa-solid fa-box-open" style="margin-right:0.35rem;"></i>Acquired Assets
-                      </div>
-                      <div style="display:flex; flex-direction:column; gap:0.4rem;">
-                        ${t.teamBGains.map(g => `
-                          <div style="background:var(--bg-card); padding:0.5rem 0.75rem; border-radius:var(--radius-sm); border:1px solid var(--border-color); font-weight:600; color:var(--text-primary); font-size:0.85rem; display:flex; align-items:center; gap:0.5rem;">
-                            <i class="fa-solid fa-square-plus text-green"></i>
-                            <span>${g}</span>
-                          </div>
-                        `).join('')}
+                      <div style="font-size:0.7rem; color:var(--accent-sleeper); margin-top:0.2rem;">
+                        Got: ${t.teamBGains.join(', ')}
                       </div>
                     </div>
-                    <div style="margin-top:1rem; padding-top:0.6rem; border-top:1px dashed var(--border-color); font-size:0.8rem; display:flex; justify-content:space-between; align-items:center;">
-                      <span style="color:var(--text-secondary); font-weight:600;">Roster Playoff Shift:</span>
-                      <span class="font-mono ${t.teamBPlayoffShift.startsWith('+') ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.9rem;">${t.teamBPlayoffShift}</span>
-                    </div>
                   </div>
-                </div>
 
-                <!-- AI Roster & Trade Recap -->
-                <div style="background:var(--bg-surface); padding:0.9rem 1.1rem; border-radius:var(--radius-md); border:1px solid var(--border-color); font-size:0.88rem; color:var(--text-secondary); display:flex; align-items:flex-start; gap:0.75rem;">
-                  <i class="fa-solid fa-robot text-gold" style="font-size:1.2rem; margin-top:0.15rem;"></i>
-                  <div style="line-height:1.5;">
-                    <strong style="color:var(--text-primary);">AI Roster Impact Analysis:</strong>
-                    <span style="color:var(--text-secondary); margin-left:0.25rem;">${t.recap}</span>
+                  <!-- AI Recap -->
+                  <div style="font-size:0.75rem; color:var(--text-secondary); line-height:1.35; padding-top:0.25rem;">
+                    <strong style="color:var(--text-primary);"><i class="fa-solid fa-robot text-gold"></i> Recap:</strong> ${t.recap}
                   </div>
-                </div>
 
-              </div>
-            `).join('')}
+                </div>
+              `).join('')}
+            </div>
           </div>
-        </div>
+        ` : ''}
+
       </div>
     `;
   }

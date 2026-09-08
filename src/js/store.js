@@ -215,6 +215,7 @@ class AppStore {
       try {
         storage.removeItem('espn_sync_creds');
         storage.removeItem('fantasy_league_data_2025');
+        storage.removeItem('espn_is_synced');
       } catch (e) {}
     }
 
@@ -241,9 +242,10 @@ class AppStore {
    */
   saveLeagueData() {
     const storage = this.getLocalStorage();
-    if (storage && this.state.data && this.state.data.league) {
+    if (storage && this.state.data && (this.state.data.league || this.state.data.teams)) {
       try {
         storage.setItem('fantasy_league_data_2025', JSON.stringify(this.state.data));
+        storage.setItem('espn_is_synced', this.state.isEspnSynced ? 'true' : 'false');
       } catch (e) {
         console.warn('Unable to write to localStorage for league data persistence.');
       }
@@ -258,11 +260,13 @@ class AppStore {
     if (!storage) return;
     try {
       const saved = storage.getItem('fantasy_league_data_2025');
+      const isSynced = storage.getItem('espn_is_synced') === 'true';
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && parsed.teams && parsed.league) {
+        if (parsed && parsed.teams && (parsed.league || parsed.name)) {
           this.state.data = parsed;
-          console.log('📦 Successfully restored saved league data from localStorage!');
+          this.state.isEspnSynced = isSynced;
+          console.log(`📦 Successfully restored saved league data from localStorage! Synced: ${isSynced}`);
         }
       }
     } catch (e) {

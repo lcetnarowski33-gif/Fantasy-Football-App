@@ -50,12 +50,28 @@ async function fetchEspnLeagueData(leagueId, season = null, swid = null, espnS2 
     throw new Error(`Invalid ESPN League ID "${leagueId}". Please enter a numeric League ID or valid ESPN URL.`);
   }
 
-  // Format SWID and espn_s2 cookies
-  let cleanSwid = swid ? String(swid).trim() : null;
-  if (cleanSwid && !cleanSwid.startsWith('{') && !cleanSwid.endsWith('}')) {
-    cleanSwid = `{${cleanSwid}}`;
+  // Format and sanitize SWID and espn_s2 cookies
+  let cleanSwid = null;
+  if (swid) {
+    let s = String(swid).trim().replace(/^["']|["']$/g, '').replace(/^(?:swid=)/i, '').trim();
+    const match = s.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i);
+    if (match) {
+      cleanSwid = `{${match[0].toUpperCase()}}`;
+    } else if (s.startsWith('{') && s.endsWith('}')) {
+      cleanSwid = s;
+    } else if (s.length > 0) {
+      cleanSwid = `{${s}}`;
+    }
   }
-  let cleanEspnS2 = espnS2 ? String(espnS2).trim() : null;
+
+  let cleanEspnS2 = null;
+  if (espnS2) {
+    cleanEspnS2 = String(espnS2).trim()
+      .replace(/^["']|["']$/g, '')
+      .replace(/^(?:espn_s2=)/i, '')
+      .replace(/;+$/, '')
+      .trim();
+  }
 
   const views = ['mRoster', 'mMatchup', 'mSettings', 'mTeam', 'mDraftDetail', 'mPendingTransactions', 'mMembers'];
   const viewParams = views.map(v => `view=${v}`).join('&');

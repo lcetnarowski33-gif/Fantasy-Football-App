@@ -1,36 +1,60 @@
 /**
  * Header Component
- * Renders the top navigation bar, brand title, view tabs, week selector,
- * ESPN Sync status badge, and global search modal trigger.
+ * Renders:
+ * 1. Top navigation bar with brand title, actions, and desktop links.
+ * 2. Mobile Bottom Navigation Bar (Dashboard, Matchups, League, Team, More).
+ * 3. Mobile Slide-Over Drawer Menu with comfortable touch targets for all views.
  */
 
 class HeaderComponent {
+  static isDrawerOpen = false;
+
+  static toggleDrawer(open) {
+    this.isDrawerOpen = typeof open === 'boolean' ? open : !this.isDrawerOpen;
+    const drawer = document.getElementById('mobile-nav-drawer');
+    const overlay = document.getElementById('mobile-drawer-overlay');
+    if (drawer && overlay) {
+      if (this.isDrawerOpen) {
+        drawer.classList.add('open');
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      } else {
+        drawer.classList.remove('open');
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    }
+  }
+
   static render(mountEl, currentState) {
     if (!mountEl) return;
 
     const views = [
-      { id: 'home', label: 'Dashboard', icon: 'fa-gauge-high' },
-      { id: 'league', label: 'League Matrix', icon: 'fa-trophy' },
-      { id: 'team', label: 'Team Hub', icon: 'fa-users' },
-      { id: 'matchup', label: 'Matchups', icon: 'fa-bolt' },
-      { id: 'trade', label: 'Trade Center', icon: 'fa-right-left' },
-      { id: 'waiver', label: 'Free Agency', icon: 'fa-list-check' },
-      { id: 'draft', label: 'Draft Center', icon: 'fa-clipboard-list' },
-      { id: 'analytics', label: 'Analytics', icon: 'fa-chart-line' }
+      { id: 'home', label: 'Dashboard', icon: 'fa-gauge-high', sub: 'Standings & Live Feed' },
+      { id: 'matchup', label: 'Matchups', icon: 'fa-bolt', sub: 'Weekly H2H & Net Draft' },
+      { id: 'league', label: 'League Matrix', icon: 'fa-trophy', sub: 'Odds, ELO & Record Book' },
+      { id: 'team', label: 'Team Hub', icon: 'fa-users', sub: 'Active Rosters & Metrics' },
+      { id: 'trade', label: 'Trade Center', icon: 'fa-right-left', sub: 'Executed Deals & Audits' },
+      { id: 'waiver', label: 'Free Agency', icon: 'fa-list-check', sub: 'Waiver Wire & Moves Log' },
+      { id: 'draft', label: 'Draft Center', icon: 'fa-clipboard-list', sub: '160 Picks & VORP Matrix' },
+      { id: 'analytics', label: 'Analytics', icon: 'fa-chart-line', sub: 'Decision IQ & ELO Leaderboard' }
     ];
 
     const activeView = currentState.activeView || 'home';
     const isEspnSynced = currentState.isEspnSynced;
 
     mountEl.innerHTML = `
+      <!-- Desktop & Mobile Top Header Bar -->
       <header class="app-header">
         <div class="header-container">
           <div class="brand-logo" id="header-brand-click">
             <i class="fa-solid fa-football"></i>
-            <span>Fantasy League Analytics</span>
+            <span class="brand-text-full">Fantasy League Analytics</span>
+            <span class="brand-text-mobile">Fantasy Analytics</span>
           </div>
 
-          <nav class="nav-links">
+          <!-- Desktop Navigation Links (Hidden on mobile via media query) -->
+          <nav class="nav-links desktop-only-nav">
             ${views.map(v => {
               const isActive = activeView === v.id || 
                 (v.id === 'matchup' && activeView === 'h2h') ||
@@ -47,37 +71,133 @@ class HeaderComponent {
             }).join('')}
           </nav>
 
+          <!-- Top Header Right Actions -->
           <div class="header-actions">
             <button class="btn-espn-sync" id="btn-open-espn-modal">
-              <i class="fa-solid ${isEspnSynced ? 'fa-circle-check' : 'fa-rotate'}"></i>
+              <i class="fa-solid ${isEspnSynced ? 'fa-circle-check text-green' : 'fa-rotate text-gold'}"></i>
               <span>${isEspnSynced ? 'ESPN Live' : 'Sync ESPN'}</span>
             </button>
 
             <button class="btn-icon-search" id="btn-open-search-modal" title="Search Players, Teams, Managers">
               <i class="fa-solid fa-magnifying-glass"></i>
             </button>
+
+            <!-- Mobile Hamburger Button -->
+            <button class="btn-mobile-menu" id="btn-mobile-menu-toggle" aria-label="Open Navigation Menu">
+              <i class="fa-solid fa-bars"></i>
+            </button>
           </div>
         </div>
       </header>
+
+      <!-- Mobile Bottom Navigation Bar (Fixed touch bar for mobile screens) -->
+      <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <button class="mobile-nav-item ${activeView === 'home' ? 'active' : ''}" data-view="home">
+          <i class="fa-solid fa-gauge-high"></i>
+          <span>Home</span>
+        </button>
+        <button class="mobile-nav-item ${activeView === 'matchup' || activeView === 'h2h' ? 'active' : ''}" data-view="matchup">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Matchup</span>
+        </button>
+        <button class="mobile-nav-item ${activeView === 'league' || activeView === 'records' ? 'active' : ''}" data-view="league">
+          <i class="fa-solid fa-trophy"></i>
+          <span>League</span>
+        </button>
+        <button class="mobile-nav-item ${activeView === 'team' || activeView === 'player' ? 'active' : ''}" data-view="team">
+          <i class="fa-solid fa-users"></i>
+          <span>Team</span>
+        </button>
+        <button class="mobile-nav-item" id="btn-bottom-nav-more">
+          <i class="fa-solid fa-ellipsis"></i>
+          <span>More</span>
+        </button>
+      </nav>
+
+      <!-- Mobile Drawer Backdrop Overlay -->
+      <div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
+
+      <!-- Slide-Over Mobile Navigation Drawer -->
+      <aside class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Mobile Navigation Drawer">
+        <div class="mobile-drawer-header">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <i class="fa-solid fa-football text-green" style="font-size:1.25rem;"></i>
+            <strong style="font-size:1.05rem; color:var(--text-primary); font-family:var(--font-display);">League Menu</strong>
+          </div>
+          <button class="btn-drawer-close" id="btn-drawer-close" aria-label="Close Menu">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="mobile-drawer-body">
+          <div class="drawer-nav-list">
+            ${views.map(v => {
+              const isActive = activeView === v.id || 
+                (v.id === 'matchup' && activeView === 'h2h') ||
+                (v.id === 'analytics' && activeView === 'efficiency') ||
+                (v.id === 'league' && activeView === 'records') ||
+                (v.id === 'team' && activeView === 'player');
+
+              return `
+                <button class="drawer-nav-item ${isActive ? 'active' : ''}" data-view="${v.id}">
+                  <div class="drawer-item-icon">
+                    <i class="fa-solid ${v.icon}"></i>
+                  </div>
+                  <div class="drawer-item-info">
+                    <div class="drawer-item-title">${v.label}</div>
+                    <div class="drawer-item-sub">${v.sub}</div>
+                  </div>
+                  ${isActive ? '<span class="badge badge-green" style="font-size:0.65rem; margin-left:auto;">ACTIVE</span>' : '<i class="fa-solid fa-chevron-right text-muted" style="font-size:0.75rem; margin-left:auto;"></i>'}
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <div class="mobile-drawer-footer">
+          <button class="btn btn-primary btn-block" id="drawer-btn-espn-sync" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; width:100%; padding:0.65rem;">
+            <i class="fa-solid fa-rotate"></i>
+            <span>${isEspnSynced ? 'Re-Sync ESPN League' : 'Connect ESPN League'}</span>
+          </button>
+        </div>
+      </aside>
     `;
 
-    // Event Delegation
-    mountEl.querySelectorAll('.nav-link').forEach(btn => {
+    // Event Delegations for Desktop Nav Links
+    mountEl.querySelectorAll('.desktop-only-nav .nav-link').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const view = e.currentTarget.getAttribute('data-view');
-        if (view === 'player') {
-          store.setView('player', { playerId: null });
-        } else {
-          store.setView(view);
-        }
+        store.setView(view);
       });
     });
 
+    // Event Delegations for Mobile Bottom Nav Items
+    mountEl.querySelectorAll('.mobile-nav-item[data-view]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const view = e.currentTarget.getAttribute('data-view');
+        store.setView(view);
+      });
+    });
+
+    // Event Delegations for Drawer Nav Items
+    mountEl.querySelectorAll('.drawer-nav-item').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const view = e.currentTarget.getAttribute('data-view');
+        HeaderComponent.toggleDrawer(false);
+        store.setView(view);
+      });
+    });
+
+    // Brand Logo Click
     const brandClick = mountEl.querySelector('#header-brand-click');
     if (brandClick) {
-      brandClick.addEventListener('click', () => store.setView('home'));
+      brandClick.addEventListener('click', () => {
+        HeaderComponent.toggleDrawer(false);
+        store.setView('home');
+      });
     }
 
+    // Top Header Search Button
     const searchBtn = mountEl.querySelector('#btn-open-search-modal');
     if (searchBtn) {
       searchBtn.addEventListener('click', () => {
@@ -85,10 +205,52 @@ class HeaderComponent {
       });
     }
 
+    // Top Header ESPN Sync Button
     const espnBtn = mountEl.querySelector('#btn-open-espn-modal');
     if (espnBtn) {
       espnBtn.addEventListener('click', () => {
         EspnSyncModalComponent.open();
+      });
+    }
+
+    // Drawer ESPN Sync Button
+    const drawerEspnBtn = mountEl.querySelector('#drawer-btn-espn-sync');
+    if (drawerEspnBtn) {
+      drawerEspnBtn.addEventListener('click', () => {
+        HeaderComponent.toggleDrawer(false);
+        EspnSyncModalComponent.open();
+      });
+    }
+
+    // Hamburger Menu Toggle
+    const menuToggleBtn = mountEl.querySelector('#btn-mobile-menu-toggle');
+    if (menuToggleBtn) {
+      menuToggleBtn.addEventListener('click', () => {
+        HeaderComponent.toggleDrawer(true);
+      });
+    }
+
+    // Bottom Nav "More" Button
+    const bottomNavMore = mountEl.querySelector('#btn-bottom-nav-more');
+    if (bottomNavMore) {
+      bottomNavMore.addEventListener('click', () => {
+        HeaderComponent.toggleDrawer(true);
+      });
+    }
+
+    // Drawer Close Button
+    const drawerCloseBtn = mountEl.querySelector('#btn-drawer-close');
+    if (drawerCloseBtn) {
+      drawerCloseBtn.addEventListener('click', () => {
+        HeaderComponent.toggleDrawer(false);
+      });
+    }
+
+    // Drawer Backdrop Overlay Click
+    const drawerOverlay = mountEl.querySelector('#mobile-drawer-overlay');
+    if (drawerOverlay) {
+      drawerOverlay.addEventListener('click', () => {
+        HeaderComponent.toggleDrawer(false);
       });
     }
   }

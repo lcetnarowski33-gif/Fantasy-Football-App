@@ -98,6 +98,17 @@ class EspnSyncModalComponent {
       syncBtn.addEventListener('click', () => this.executeSync());
     }
 
+    // Auto-save and auto-sanitize input fields as user types or pastes
+    const inputs = ['espn-input-league-id', 'espn-input-season', 'espn-input-swid', 'espn-input-s2'];
+    inputs.forEach(id => {
+      const el = mountEl.querySelector('#' + id);
+      if (el) {
+        el.addEventListener('input', () => {
+          this.persistFormState();
+        });
+      }
+    });
+
     // Auto-parse full URLs pasted into League ID field
     const leagueInput = mountEl.querySelector('#espn-input-league-id');
     if (leagueInput) {
@@ -114,8 +125,28 @@ class EspnSyncModalComponent {
             const seasonInput = mountEl.querySelector('#espn-input-season');
             if (seasonInput) seasonInput.value = matchSeason[1];
           }
+          this.persistFormState();
         }
       });
+    }
+  }
+
+  static persistFormState() {
+    const idEl = document.getElementById('espn-input-league-id');
+    const seasonEl = document.getElementById('espn-input-season');
+    const swidEl = document.getElementById('espn-input-swid');
+    const s2El = document.getElementById('espn-input-s2');
+
+    const creds = {
+      leagueId: idEl?.value.trim() || '',
+      season: seasonEl?.value || '',
+      swid: swidEl?.value.trim() || '',
+      espnS2: s2El?.value.trim() || ''
+    };
+
+    if (typeof store !== 'undefined') {
+      store.state.espnCredentials = { ...store.state.espnCredentials, ...creds };
+      store.saveEspnCredentials(store.state.espnCredentials);
     }
   }
 
@@ -123,18 +154,24 @@ class EspnSyncModalComponent {
     const overlay = document.getElementById('espn-modal-overlay');
     if (overlay) overlay.classList.add('open');
 
-    // Pre-fill saved credentials if available
-    const creds = store.getState().espnCredentials;
+    // Pre-fill saved credentials if available from store or localStorage
+    let creds = (typeof store !== 'undefined' ? store.getState().espnCredentials : null);
+    if (!creds || !creds.leagueId) {
+      try {
+        creds = JSON.parse(localStorage.getItem('espn_sync_creds') || 'null');
+      } catch (e) {}
+    }
+
     if (creds) {
       const idEl = document.getElementById('espn-input-league-id');
       const seasonEl = document.getElementById('espn-input-season');
       const swidEl = document.getElementById('espn-input-swid');
       const s2El = document.getElementById('espn-input-s2');
 
-      if (idEl && creds.leagueId) idEl.value = creds.leagueId;
-      if (seasonEl && creds.season) seasonEl.value = creds.season;
-      if (swidEl && creds.swid) swidEl.value = creds.swid;
-      if (s2El && creds.espnS2) s2El.value = creds.espnS2;
+      if (idEl && creds.leagueId && !idEl.value) idEl.value = creds.leagueId;
+      if (seasonEl && creds.season && !seasonEl.value) seasonEl.value = creds.season;
+      if (swidEl && (creds.swid || creds.SWID)) swidEl.value = creds.swid || creds.SWID;
+      if (s2El && (creds.espnS2 || creds.espn_s2)) s2El.value = creds.espnS2 || creds.espn_s2;
     }
   }
 
@@ -146,14 +183,34 @@ class EspnSyncModalComponent {
   static async executeSync() {
     const rawLeagueId = document.getElementById('espn-input-league-id').value.trim();
     const season = document.getElementById('espn-input-season').value;
-    const swid = document.getElementById('espn-input-swid').value.trim();
-    const espnS2 = document.getElementById('espn-input-s2').value.trim();
+    const rawSwid = document.getElementById('espn-input-swid').value.trim();
+    const rawS2 = document.getElementById('espn-input-s2').value.trim();
     const saveAsDefault = document.getElementById('espn-save-default')?.checked ?? true;
     const statusMsg = document.getElementById('espn-sync-status-msg');
 
     // Extract numeric ID if URL was submitted directly
     const matchId = rawLeagueId.match(/leagueId=(\d+)/i) || rawLeagueId.match(/(\d+)/);
     const leagueId = matchId ? matchId[1] || matchId[0] : rawLeagueId;
+
+    // Sanitize SWID and espn_s2
+    let swid = '';
+    if (rawSwid) {
+      let s = rawSwid.replace(/^["']|["']$/g, '').replace(/^(?:swid=)/i, '').trim();
+      const match = s.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i);
+      swid = match ? `{${match[0].toUpperCase()}}` : (s.startsWith('{') && s.endsWith('}') ? s : `{${s}}`);
+      const swidEl = document.getElementById('espn-input-swid');
+      if (swidEl) swidEl.value = swid;
+    }
+
+    let espnS2 = '';
+    if (rawS2) {
+      espnS2 = rawS2.replace(/^["']|["']$/g, '').replace(/^(?:espn_s2=)/i, '').replace(/;+$/, '').trim();
+      const s2El = document.getElementById('espn-input-s2');
+      if (s2El) s2El.value = espnS2;
+    }
+
+    // Auto-save credentials immediately so they are never lost on error or reload
+    this.persistFormState();
 
     if (!leagueId) {
       statusMsg.style.display = 'block';
@@ -180,7 +237,7 @@ class EspnSyncModalComponent {
       if (resData.success) {
         statusMsg.style.background = 'rgba(0,230,118,0.15)';
         statusMsg.style.color = '#00e676';
-        statusMsg.innerText = `Successfully synced "${resData.data.name}" globally for all users!`;
+        statusMsg.innerText = `Successfully synced "${resData.data.name}" globally!`;
 
         // Apply data to store
         store.applyEspnSync(resData.data, { leagueId, season, swid, espnS2 });

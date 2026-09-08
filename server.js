@@ -160,10 +160,13 @@ app.get('/api/league/current', (req, res) => {
   return res.json({
     success: true,
     hasCachedData: !!cachedLeagueData,
+    isEspnSynced: !!(cachedLeagueData && cachedLeagueData.teams && cachedLeagueData.teams.length > 0),
     data: cachedLeagueData,
     config: {
       leagueId: serverConfig.leagueId,
       season: serverConfig.season,
+      swid: serverConfig.swid || '',
+      espnS2: serverConfig.espnS2 || '',
       isAutoSyncEnabled: serverConfig.isAutoSyncEnabled
     }
   });

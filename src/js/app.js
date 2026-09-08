@@ -143,6 +143,11 @@ function bootApp() {
         if (payload.success && payload.hasCachedData && payload.data && typeof store !== 'undefined') {
           console.log(`🌐 Automatically loaded global single-league dataset: "${payload.data.name}"`);
           store.applyEspnSync(payload.data, payload.config);
+        } else if (payload.config && typeof store !== 'undefined') {
+          if (payload.config.leagueId || payload.config.swid || payload.config.espnS2) {
+            store.state.espnCredentials = { ...store.state.espnCredentials, ...payload.config };
+            store.saveEspnCredentials(store.state.espnCredentials);
+          }
         }
       }
     } catch (err) {

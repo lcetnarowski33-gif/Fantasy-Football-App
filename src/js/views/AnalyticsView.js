@@ -123,50 +123,47 @@ class AnalyticsViewComponent {
             <span class="badge badge-gold">Tracked All Season</span>
           </div>
 
-          <div class="analytics-table-wrapper">
-            <table class="analytics-table">
+          <div class="roster-table-wrapper" style="width:100%; max-width:100%; overflow:hidden;">
+            <table class="roster-table">
               <thead>
                 <tr>
-                  <th>Rank</th>
+                  <th style="width:36px; text-align:center;">Rank</th>
                   <th>Manager & Roster</th>
-                  <th>Composite Manager IQ</th>
-                  <th>Start/Sit Precision</th>
-                  <th>Free Agency Moves</th>
-                  <th>Trade Net Value</th>
-                  <th>Bench Points Lost</th>
-                  <th>Manager Persona</th>
+                  <th style="width:90px; text-align:right;">Composite IQ</th>
+                  <th class="desktop-only" style="text-align:right;">Start/Sit</th>
+                  <th class="desktop-only" style="text-align:right;">Free Agency</th>
+                  <th class="desktop-only" style="text-align:right;">Trade Net</th>
+                  <th class="desktop-only" style="text-align:right;">Bench Lost</th>
+                  <th class="desktop-only" style="text-align:center;">Persona</th>
                 </tr>
               </thead>
               <tbody>
                 ${managerMetrics.map((m, idx) => `
                   <tr style="cursor:pointer;" onclick="store.setView('team', {teamId: '${m.teamId}'});">
-                    <td data-label="Rank" style="font-weight:800; color:${idx === 0 ? 'var(--accent-gold)' : (idx === 1 || idx === 2 ? 'var(--accent-sleeper)' : 'var(--accent-blue)')};">
+                    <td style="font-weight:800; text-align:center; padding:0.3rem 0.2rem; color:${idx === 0 ? 'var(--accent-gold)' : (idx === 1 || idx === 2 ? 'var(--accent-sleeper)' : 'var(--accent-blue)')};">
                       #${idx + 1}
                     </td>
-                    <td data-label="Manager & Roster">
-                      <div style="display:flex; align-items:center; gap:0.65rem;">
-                        <img src="${m.logoUrl}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; background:var(--bg-surface);">
-                        <div>
-                          <strong style="color:var(--text-primary); font-size:0.95rem;">${m.managerName}</strong>
-                          <div style="font-size:0.78rem; color:var(--text-secondary); font-weight:500;">${m.name}</div>
+                    <td style="padding:0.3rem 0.35rem; min-width:0;">
+                      <div style="display:flex; align-items:center; gap:0.45rem; min-width:0;">
+                        <img src="${m.logoUrl}" style="width:26px; height:26px; border-radius:50%; object-fit:cover; background:var(--bg-surface); flex-shrink:0;">
+                        <div style="min-width:0; overflow:hidden;">
+                          <strong style="color:var(--text-primary); font-size:0.82rem; display:block; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.managerName}</strong>
+                          <div style="font-size:0.68rem; color:var(--text-secondary); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.name}</div>
                         </div>
                       </div>
                     </td>
-                    <td data-label="Composite Manager IQ">
-                      <div style="display:flex; align-items:center; gap:0.5rem; justify-content:flex-end;">
-                        <span class="badge ${m.iqGrade.startsWith('A') ? 'badge-green' : (m.iqGrade.startsWith('B') ? 'badge-blue' : 'badge-gold')}" style="font-size:0.8rem;">${m.iqGrade}</span>
-                        <div style="flex:1; max-width:80px; height:6px; background:var(--bg-surface); border-radius:3px; overflow:hidden;">
-                          <div style="width:${Math.min(100, Math.max(10, m.compositeIQ))}%; height:100%; background:${m.compositeIQ >= 85 ? 'var(--accent-sleeper)' : (m.compositeIQ >= 75 ? 'var(--accent-gold)' : '#ef4444')};"></div>
-                        </div>
-                        <span class="font-mono" style="font-weight:800; font-size:0.88rem; color:var(--text-primary);">${m.compositeIQ}</span>
+                    <td style="padding:0.3rem 0.35rem; text-align:right;">
+                      <div style="display:inline-flex; align-items:center; gap:0.35rem; justify-content:flex-end;">
+                        <span class="badge ${m.iqGrade.startsWith('A') ? 'badge-green' : (m.iqGrade.startsWith('B') ? 'badge-blue' : 'badge-gold')}" style="font-size:0.7rem; padding:0.1rem 0.3rem;">${m.iqGrade}</span>
+                        <span class="font-mono" style="font-weight:800; font-size:0.82rem; color:var(--text-primary);">${m.compositeIQ}</span>
                       </div>
                     </td>
-                    <td data-label="Start/Sit Precision" class="font-mono text-green" style="font-weight:700;">${m.startIQ}%</td>
-                    <td data-label="Free Agency Moves" class="font-mono ${m.waiverPoints >= 0 ? 'text-green' : 'text-muted'}" style="font-weight:700;">+${m.waiverPoints} Pts</td>
-                    <td data-label="Trade Net Value" class="font-mono ${m.tradeNetValue >= 0 ? 'text-green' : 'text-red'}" style="font-weight:700;">${m.tradeNetValue >= 0 ? '+' : ''}${m.tradeNetValue} Pts</td>
-                    <td data-label="Bench Points Lost" class="font-mono text-red" style="font-weight:700;">-${m.pointsSacrificed} Pts</td>
-                    <td data-label="Manager Persona">
-                      <span class="badge badge-blue" style="font-size:0.78rem;">${m.persona}</span>
+                    <td class="desktop-only font-mono text-green" style="font-weight:700; text-align:right;">${m.startIQ}%</td>
+                    <td class="desktop-only font-mono ${m.waiverPoints >= 0 ? 'text-green' : 'text-muted'}" style="font-weight:700; text-align:right;">+${m.waiverPoints} Pts</td>
+                    <td class="desktop-only font-mono ${m.tradeNetValue >= 0 ? 'text-green' : 'text-red'}" style="font-weight:700; text-align:right;">${m.tradeNetValue >= 0 ? '+' : ''}${m.tradeNetValue} Pts</td>
+                    <td class="desktop-only font-mono text-red" style="font-weight:700; text-align:right;">-${m.pointsSacrificed} Pts</td>
+                    <td class="desktop-only" style="text-align:center;">
+                      <span class="badge badge-blue" style="font-size:0.72rem;">${m.persona}</span>
                     </td>
                   </tr>
                 `).join('')}
