@@ -295,6 +295,16 @@ class AppStore {
       const isSynced = storage.getItem('espn_is_synced') === 'true';
       if (saved) {
         const parsed = JSON.parse(saved);
+        const leagueIdStr = String(parsed.espnLeagueId || parsed.leagueId || parsed.league?.id || '');
+        // If stored data belongs to another league (e.g. 1585576113), discard it immediately
+        if (leagueIdStr.includes('1585576113') || (leagueIdStr && !leagueIdStr.includes('1990371748'))) {
+          console.warn('Scrubbing outdated league data from localStorage:', leagueIdStr);
+          storage.removeItem('fantasy_league_data_2025');
+          storage.removeItem('espn_is_synced');
+          storage.removeItem('espn_sync_creds');
+          return;
+        }
+
         if (parsed && parsed.teams && (parsed.league || parsed.name)) {
           this.state.data = parsed;
           this.state.isEspnSynced = isSynced;
@@ -315,7 +325,14 @@ class AppStore {
     try {
       const saved = storage.getItem('espn_sync_creds');
       if (saved) {
-        this.state.espnCredentials = JSON.parse(saved);
+        const creds = JSON.parse(saved);
+        if (creds && (String(creds.leagueId).includes('1585576113') || (creds.leagueId && !String(creds.leagueId).includes('1990371748')))) {
+          console.warn('Scrubbing outdated ESPN credentials from localStorage');
+          storage.removeItem('espn_sync_creds');
+          this.state.espnCredentials = null;
+          return;
+        }
+        this.state.espnCredentials = creds;
       }
     } catch (e) {
       console.warn('Unable to access localStorage for ESPN credentials.');

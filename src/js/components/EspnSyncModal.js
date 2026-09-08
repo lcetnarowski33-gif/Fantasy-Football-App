@@ -8,7 +8,7 @@ class EspnSyncModalComponent {
   static render(mountEl) {
     if (!mountEl) return;
 
-    const currentYear = new Date().getFullYear();
+    const currentYear = 2025;
 
     mountEl.innerHTML = `
       <div class="modal-overlay" id="espn-modal-overlay">

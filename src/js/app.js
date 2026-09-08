@@ -142,37 +142,32 @@ function bootApp() {
       }
 
       if (token) {
-        const payload = JSON.parse(decodeURIComponent(escape(atob(token))));
-        if (payload && (payload.id || payload.leagueId)) {
-          const creds = {
-            leagueId: payload.id || payload.leagueId,
-            season: payload.yr || payload.season || 2024,
-            swid: payload.sw || payload.swid || '',
-            espnS2: payload.s2 || payload.espnS2 || ''
-          };
-          console.log(`🔗 Detected ESPN sync token in URL for League #${creds.leagueId}`);
-          if (typeof store !== 'undefined') {
-            store.saveEspnCredentials(creds);
-            try {
-              const syncRes = await fetch('/api/sync/espn', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  leagueId: creds.leagueId,
-                  season: creds.season,
-                  swid: creds.swid,
-                  espnS2: creds.espnS2,
-                  saveAsDefault: true
-                })
-              });
-              const syncData = await syncRes.json();
-              if (syncData.success && syncData.data) {
-                store.applyEspnSync(syncData.data, creds);
-              }
-            } catch (err) {
-              console.warn('Sync token auto-sync failed:', err);
+        try {
+          const payload = JSON.parse(decodeURIComponent(escape(atob(token))));
+          const targetId = String(payload.id || payload.leagueId || '');
+          // If token references an old or different league, strip it from the URL immediately
+          if (targetId.includes('1585576113') || (targetId && targetId !== '1990371748')) {
+            console.warn('Scrubbing outdated sync token from URL:', targetId);
+            const cleanUrl = new URL(window.location.href);
+            cleanUrl.searchParams.delete('sync');
+            window.history.replaceState({}, '', cleanUrl.toString());
+            return;
+          }
+
+          if (payload && (payload.id || payload.leagueId)) {
+            const creds = {
+              leagueId: payload.id || payload.leagueId,
+              season: payload.yr || payload.season || 2025,
+              swid: payload.sw || payload.swid || '',
+              espnS2: payload.s2 || payload.espnS2 || ''
+            };
+            console.log(`🔗 Detected valid ESPN sync token in URL for League #${creds.leagueId}`);
+            if (typeof store !== 'undefined') {
+              store.saveEspnCredentials(creds);
             }
           }
+        } catch (err) {
+          console.warn('Sync token parse failed:', err);
         }
       }
     } catch (e) {

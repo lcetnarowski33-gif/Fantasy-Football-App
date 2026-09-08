@@ -213,7 +213,12 @@ app.post('/api/sync/espn', async (req, res) => {
     return res.status(400).json({ error: 'Missing required ESPN League ID parameter.' });
   }
 
-  const seasonYear = season || new Date().getFullYear();
+  // Reject deprecated league ID to prevent accidental regressions
+  if (String(leagueId).includes('1585576113')) {
+    return res.status(400).json({ error: 'League 1585576113 is deprecated. Active league is 1990371748.' });
+  }
+
+  const seasonYear = season ? parseInt(season, 10) : 2025;
 
   try {
     const rawData = await fetchEspnLeagueData(leagueId, seasonYear, swid, espnS2);
