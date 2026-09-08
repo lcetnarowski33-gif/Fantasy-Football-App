@@ -31,13 +31,13 @@ class HeaderComponent {
 
     const views = [
       { id: 'home', label: 'Dashboard', icon: 'fa-gauge-high', sub: 'Standings & Live Feed' },
-      { id: 'matchup', label: 'Matchups', icon: 'fa-bolt', sub: 'Weekly H2H & Net Draft' },
+      { id: 'analytics', label: 'Analytics', icon: 'fa-chart-line', sub: 'Decision IQ & ELO Leaderboard' },
       { id: 'league', label: 'League Matrix', icon: 'fa-trophy', sub: 'Odds, ELO & Record Book' },
-      { id: 'team', label: 'Team Hub', icon: 'fa-users', sub: 'Active Rosters & Metrics' },
       { id: 'trade', label: 'Trade Center', icon: 'fa-right-left', sub: 'Executed Deals & Audits' },
+      { id: 'matchup', label: 'Matchups', icon: 'fa-bolt', sub: 'Weekly H2H & Net Draft' },
+      { id: 'team', label: 'Team Hub', icon: 'fa-users', sub: 'Active Rosters & Metrics' },
       { id: 'waiver', label: 'Free Agency', icon: 'fa-list-check', sub: 'Waiver Wire & Moves Log' },
-      { id: 'draft', label: 'Draft Center', icon: 'fa-clipboard-list', sub: '160 Picks & VORP Matrix' },
-      { id: 'analytics', label: 'Analytics', icon: 'fa-chart-line', sub: 'Decision IQ & ELO Leaderboard' }
+      { id: 'draft', label: 'Draft Center', icon: 'fa-clipboard-list', sub: '160 Picks & VORP Matrix' }
     ];
 
     const activeView = currentState.activeView || 'home';
@@ -96,17 +96,17 @@ class HeaderComponent {
           <i class="fa-solid fa-gauge-high"></i>
           <span>Home</span>
         </button>
-        <button class="mobile-nav-item ${activeView === 'matchup' || activeView === 'h2h' ? 'active' : ''}" data-view="matchup">
-          <i class="fa-solid fa-bolt"></i>
-          <span>Matchup</span>
+        <button class="mobile-nav-item ${activeView === 'analytics' || activeView === 'efficiency' ? 'active' : ''}" data-view="analytics">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Analytics</span>
         </button>
         <button class="mobile-nav-item ${activeView === 'league' || activeView === 'records' ? 'active' : ''}" data-view="league">
           <i class="fa-solid fa-trophy"></i>
           <span>League</span>
         </button>
-        <button class="mobile-nav-item ${activeView === 'team' || activeView === 'player' ? 'active' : ''}" data-view="team">
-          <i class="fa-solid fa-users"></i>
-          <span>Team</span>
+        <button class="mobile-nav-item ${activeView === 'trade' ? 'active' : ''}" data-view="trade">
+          <i class="fa-solid fa-right-left"></i>
+          <span>Trade</span>
         </button>
         <button class="mobile-nav-item" id="btn-bottom-nav-more">
           <i class="fa-solid fa-ellipsis"></i>
