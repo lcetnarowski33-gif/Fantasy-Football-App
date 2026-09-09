@@ -899,9 +899,17 @@ function normalizeEspnData(raw) {
     }
   });
 
-  // Sort transactions chronologically (newest first)
-  normalizedTransactions.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-  completedTrades.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  // Sort transactions chronologically (newest first, latest to oldest)
+  normalizedTransactions.sort((a, b) => {
+    const timeA = Number(a.timestamp) || (a.date ? new Date(a.date).getTime() : 0);
+    const timeB = Number(b.timestamp) || (b.date ? new Date(b.date).getTime() : 0);
+    return timeB - timeA;
+  });
+  completedTrades.sort((a, b) => {
+    const timeA = Number(a.timestamp) || (a.date ? new Date(a.date).getTime() : 0);
+    const timeB = Number(b.timestamp) || (b.date ? new Date(b.date).getTime() : 0);
+    return timeB - timeA;
+  });
 
   // Attach Authentic Decision IQ Stats for All 12 Teams (Zero Mock/Random Data)
   teams.forEach(t => {

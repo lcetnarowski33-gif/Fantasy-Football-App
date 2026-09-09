@@ -33,9 +33,13 @@ class TeamViewComponent {
     const bench = teamPlayers.filter(p => p.isBench || (!p.isStarter && !p.isIR));
     const ir = teamPlayers.filter(p => p.isIR);
 
-    // Filter authentic team draft picks and transactions
+    // Filter authentic team draft picks and transactions (sorted latest to oldest)
     const teamDraftPicks = (state && state.data && state.data.draftPicks && state.data.draftPicks.filter(p => p.teamId === team.teamId)) || [];
-    const teamTransactions = (state && state.data && state.data.transactions && state.data.transactions.filter(tx => tx.teamId === team.teamId || tx.teamName === team.name)) || [];
+    const teamTransactions = ((state && state.data && state.data.transactions && state.data.transactions.filter(tx => tx.teamId === team.teamId || tx.teamName === team.name)) || []).sort((a, b) => {
+      const timeA = Number(a.timestamp) || (a.date ? new Date(a.date).getTime() : 0);
+      const timeB = Number(b.timestamp) || (b.date ? new Date(b.date).getTime() : 0);
+      return timeB - timeA;
+    });
 
     const renderPlayerRow = (p, roleBadge) => `
       <tr style="cursor:pointer;" onclick="store.setView('player', {playerId: '${p.id}'});">

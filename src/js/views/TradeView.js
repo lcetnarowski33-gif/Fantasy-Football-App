@@ -135,6 +135,14 @@ class TradeViewComponent {
         deduplicated.push(t);
       }
     }
+
+    // Sort strictly chronological: latest to oldest (most recent first)
+    deduplicated.sort((a, b) => {
+      const timeA = Number(a.timestamp) || (a.date ? new Date(a.date).getTime() : 0);
+      const timeB = Number(b.timestamp) || (b.date ? new Date(b.date).getTime() : 0);
+      return timeB - timeA;
+    });
+
     return deduplicated;
   }
 

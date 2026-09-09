@@ -8,7 +8,11 @@ class TickerComponent {
     if (!mountEl) return;
 
     const matchups = (currentState && currentState.data && currentState.data.weeklyMatchups) || [];
-    const transactions = (currentState && currentState.data && currentState.data.transactions) || [];
+    const transactions = [...((currentState && currentState.data && currentState.data.transactions) || [])].sort((a, b) => {
+      const timeA = Number(a.timestamp) || (a.date ? new Date(a.date).getTime() : 0);
+      const timeB = Number(b.timestamp) || (b.date ? new Date(b.date).getTime() : 0);
+      return timeB - timeA;
+    });
 
     const tickerItems = [
       ...matchups.map(m => `

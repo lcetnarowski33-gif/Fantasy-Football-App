@@ -97,10 +97,13 @@ class FreeAgencyViewComponent {
         logoUrl: ''
       };
 
+      const rawTime = Number(tx.timestamp) || (tx.date ? new Date(tx.date).getTime() : 0);
+
       return {
         id: tx.id,
         week: tx.week || 1,
         date: tx.date || 'Aug 30, 2026',
+        timestamp: rawTime,
         teamId: tx.teamId,
         teamName: team.name,
         managerName: team.managerName,
@@ -126,6 +129,9 @@ class FreeAgencyViewComponent {
         }
       };
     });
+
+    // Sort strictly chronological: latest to oldest (most recent first)
+    executedMoves.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
     // Calculate manager activity stats across all 12 teams
     const teamActivity = teams.map(t => {
@@ -153,17 +159,20 @@ class FreeAgencyViewComponent {
       };
     }).sort((a, b) => b.movesCount - a.movesCount || b.netVal - a.netVal);
 
-    // Filter actual moves
+    // Filter actual moves while preserving latest to oldest chronological order
     let filteredMoves = [...executedMoves];
     if (this.activeFilter === 'WAIVERS') {
-      filteredMoves = filteredMoves.filter(m => m.claimType === 'Waiver Claim');
+      filteredMoves = filteredMoves.filter(m => (m.claimType || '').toLowerCase().includes('waiver'));
     } else if (this.activeFilter === 'FREE_AGENTS') {
-      filteredMoves = filteredMoves.filter(m => m.claimType === 'Free Agent Add');
+      filteredMoves = filteredMoves.filter(m => !(m.claimType || '').toLowerCase().includes('waiver'));
     }
 
     if (this.activePosFilter !== 'ALL') {
       filteredMoves = filteredMoves.filter(m => m.addedPos === this.activePosFilter);
     }
+
+    // Guarantee latest to oldest order
+    filteredMoves.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
     mountEl.innerHTML = `
       <div class="animate-fade-in">

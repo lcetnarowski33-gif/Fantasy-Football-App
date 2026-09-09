@@ -29,16 +29,28 @@ class HomeViewComponent {
 
     const teams = state?.data?.teams || [];
     const rawMatchups = state?.data?.weeklyMatchups || [];
-    const transactions = (state?.data?.transactions || []).slice(0, 8);
+    // Sort all transactions latest to oldest (most recent first)
+    const allTx = [...(state?.data?.transactions || [])].sort((a, b) => {
+      const timeA = Number(a.timestamp) || (a.date ? new Date(a.date).getTime() : 0);
+      const timeB = Number(b.timestamp) || (b.date ? new Date(b.date).getTime() : 0);
+      return timeB - timeA;
+    });
+    const transactions = allTx.slice(0, 8);
 
-    // Filter strictly accepted / executed trades
+    // Filter strictly accepted / executed trades and sort latest to oldest
     const validTradeStatuses = ['EXECUTED', 'PROCESSED', 'ACCEPTED'];
     const invalidTradeStatuses = ['PENDING', 'PROPOSED', 'CANCELLED', 'REJECTED', 'EXPIRED', 'WITHDRAWN'];
-    const completedTrades = (state?.data?.completedTrades || []).filter(t => 
-      validTradeStatuses.includes(String(t.status).toUpperCase()) &&
-      !invalidTradeStatuses.includes(String(t.status).toUpperCase()) &&
-      !String(t.type || '').toUpperCase().includes('PROPOSAL')
-    );
+    const completedTrades = (state?.data?.completedTrades || [])
+      .filter(t => 
+        validTradeStatuses.includes(String(t.status).toUpperCase()) &&
+        !invalidTradeStatuses.includes(String(t.status).toUpperCase()) &&
+        !String(t.type || '').toUpperCase().includes('PROPOSAL')
+      )
+      .sort((a, b) => {
+        const timeA = Number(a.timestamp) || (a.date ? new Date(a.date).getTime() : 0);
+        const timeB = Number(b.timestamp) || (b.date ? new Date(b.date).getTime() : 0);
+        return timeB - timeA;
+      });
 
     // Standings sorted by wins, then pointsFor
     const sortedStandings = [...teams].sort((a, b) => (b.wins - a.wins) || (b.pointsFor - a.pointsFor));
