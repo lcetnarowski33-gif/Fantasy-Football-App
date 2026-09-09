@@ -24,7 +24,7 @@
  */
 
 class DraftViewComponent {
-  static activeTab = 'cards'; // 'cards', 'teams', 'board'
+  static activeTab = 'board'; // 'board', 'cards', 'teams'
   static activeRoundFilter = 'ALL';
   static activeTeamFilter = 'ALL';
   static activeGradeFilter = 'ALL';
@@ -115,7 +115,7 @@ class DraftViewComponent {
 
     const teams = state.data.teams || [];
     const fullDraftPicks = [...(state.data.draftPicks || [])].sort((a, b) => (Number(a.overallPick || a.overallPickNumber || 0) - Number(b.overallPick || b.overallPickNumber || 0)));
-    const activeTab = this.activeTab || 'cards';
+    const activeTab = this.activeTab || 'board';
 
     // Calculate League Honors from real 2026 draft
     const sortedByAdpDiff = [...fullDraftPicks].sort((a, b) => b.adpDiff - a.adpDiff);
@@ -249,25 +249,25 @@ class DraftViewComponent {
 
         <!-- Segmented Tab Switcher -->
         <div class="segmented-tab-bar" style="margin-bottom:0.85rem;">
+          <button class="segmented-tab-btn ${activeTab === 'board' ? 'active' : ''}" onclick="DraftViewComponent.setTab('board')">
+            <i class="fa-solid fa-table-cells"></i> <span>16-Round Board</span>
+          </button>
           <button class="segmented-tab-btn ${activeTab === 'cards' ? 'active' : ''}" onclick="DraftViewComponent.setTab('cards')">
             <i class="fa-solid fa-layer-group"></i> <span>Pick Cards (${filteredPicks.length})</span>
           </button>
           <button class="segmented-tab-btn ${activeTab === 'teams' ? 'active' : ''}" onclick="DraftViewComponent.setTab('teams')">
             <i class="fa-solid fa-users"></i> <span>Team Recaps (12)</span>
           </button>
-          <button class="segmented-tab-btn ${activeTab === 'board' ? 'active' : ''}" onclick="DraftViewComponent.setTab('board')">
-            <i class="fa-solid fa-table-cells"></i> <span>16-Round Board</span>
-          </button>
         </div>
 
-        <!-- TAB 1: PICK-BY-PICK VISUAL CARDS -->
+        <!-- TAB 1: 16-ROUND BOARD (DEFAULT) -->
+        ${activeTab === 'board' ? this.renderBoard(teams, fullDraftPicks) : ''}
+
+        <!-- TAB 2: PICK-BY-PICK VISUAL CARDS -->
         ${activeTab === 'cards' ? this.renderPickCards(displayPicks, filteredPicks.length, teams) : ''}
 
-        <!-- TAB 2: TEAM DRAFT RECAPS -->
+        <!-- TAB 3: TEAM DRAFT RECAPS -->
         ${activeTab === 'teams' ? this.renderTeamRecaps(teams, fullDraftPicks) : ''}
-
-        <!-- TAB 3: 16-ROUND BOARD -->
-        ${activeTab === 'board' ? this.renderBoard(teams, fullDraftPicks) : ''}
       </div>
     `;
   }
@@ -608,36 +608,45 @@ class DraftViewComponent {
 
     return `
       <div class="analytics-card" style="padding:0.65rem 0.75rem; border-radius:var(--radius-lg);">
-        <div class="card-header" style="margin-bottom:0.5rem; padding-bottom:0.25rem;">
-          <div class="card-title" style="font-size:0.85rem; font-weight:800;">
-            <i class="fa-solid fa-table-cells text-blue"></i> Full 16-Round Draft Board (12 Teams)
+        <div class="card-header" style="margin-bottom:0.55rem; padding-bottom:0.35rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem;">
+          <div class="card-title" style="font-size:0.88rem; font-weight:800; display:flex; align-items:center; gap:0.45rem;">
+            <i class="fa-solid fa-table-cells text-blue"></i> 
+            <span>16-Round Draft Board (12 Teams)</span>
+          </div>
+          <div style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.68rem; color:var(--text-secondary); background:rgba(255,255,255,0.04); padding:0.2rem 0.55rem; border-radius:var(--radius-full); border:1px solid rgba(255,255,255,0.08);">
+            <i class="fa-solid fa-arrows-left-right text-gold"></i>
+            <span>Swipe across 12 teams</span>
           </div>
         </div>
 
-        <div style="max-height:520px; overflow-y:auto; overflow-x:auto;">
-          <div style="display:grid; grid-template-columns:repeat(12, minmax(115px, 1fr)); gap:0.4rem;">
+        <div style="max-height:560px; overflow-y:auto; overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+          <div style="display:grid; grid-template-columns:repeat(12, minmax(125px, 1fr)); gap:0.4rem; padding:0.5rem; min-width:1500px;">
             ${draftOrderTeams.map(t => `
-              <div style="text-align:center; font-weight:800; padding:0.45rem; background:var(--bg-surface); border-radius:var(--radius-sm); font-size:0.75rem; border-bottom:2px solid var(--accent-sleeper); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                #${t.slot} ${t.name}
-                <div style="font-size:0.65rem; color:var(--text-secondary);">${t.managerName}</div>
+              <div style="position:sticky; top:0; z-index:3; text-align:center; font-weight:800; padding:0.45rem 0.35rem; background:var(--bg-surface); border-radius:var(--radius-sm); font-size:0.75rem; border-bottom:2px solid var(--accent-sleeper); border-top:1px solid var(--border-color); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; box-shadow:0 2px 5px rgba(0,0,0,0.25);">
+                <div style="color:var(--accent-sleeper); font-size:0.62rem; text-transform:uppercase; letter-spacing:0.04em;">Pick #${t.slot}</div>
+                <div style="color:var(--text-primary); font-weight:800; text-overflow:ellipsis; overflow:hidden; font-size:0.78rem;">${t.name}</div>
+                <div style="font-size:0.63rem; color:var(--text-secondary); font-weight:normal;">${t.managerName}</div>
               </div>
             `).join('')}
 
-            ${gridPicks.map(p => `
-              <div class="analytics-card" style="padding:0.35rem 0.45rem; margin-bottom:0; cursor:pointer; background:rgba(255,255,255,0.02);" onclick="DraftViewComponent.setTab('cards'); DraftViewComponent.toggleExpandPick(${p.overallPick});">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.1rem;">
-                  <span class="font-mono text-muted" style="font-size:0.65rem; font-weight:700;">${p.pickStr} (#${p.overallPick})</span>
+            ${gridPicks.map(p => {
+              const posBadge = p.position === 'RB' ? 'badge-blue' : (p.position === 'WR' ? 'badge-green' : (p.position === 'QB' ? 'badge-red' : (p.position === 'TE' ? 'badge-purple' : 'badge-gold')));
+              return `
+              <div class="analytics-card" style="padding:0.35rem 0.45rem; margin-bottom:0; cursor:pointer; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); transition:all 0.15s ease;" onclick="DraftViewComponent.setTab('cards'); DraftViewComponent.toggleExpandPick(${p.overallPick});" onmouseover="this.style.borderColor='var(--accent-sleeper)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.12rem;">
+                  <span class="font-mono text-muted" style="font-size:0.62rem; font-weight:700;">${p.pickStr} (#${p.overallPick})</span>
                   <span class="badge ${this.getGradeClass(p.letterGrade)}" style="font-size:0.58rem; padding:0.04rem 0.2rem;">${p.letterGrade}</span>
                 </div>
-                <strong style="font-size:0.75rem; color:var(--text-primary); display:block; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${p.player}</strong>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.15rem; font-size:0.65rem;">
-                  <span class="text-secondary">${p.position}-${p.team}</span>
-                  <span class="font-mono ${p.adpDiff >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800;">
+                <strong style="font-size:0.75rem; color:var(--text-primary); display:block; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; margin-bottom:0.15rem;" title="${p.player}">${p.player}</strong>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.65rem;">
+                  <span class="badge ${posBadge}" style="font-size:0.58rem; padding:0.03rem 0.22rem;">${p.position} · ${p.team}</span>
+                  <span class="font-mono ${p.adpDiff >= 0 ? 'text-green' : 'text-red'}" style="font-weight:800; font-size:0.65rem;">
                     ${p.adpDiff >= 0 ? '+' : ''}${p.adpDiff}
                   </span>
                 </div>
               </div>
-            `).join('')}
+            `;
+            }).join('')}
           </div>
         </div>
       </div>

@@ -123,7 +123,12 @@ class AppStore {
     if (options && options.playerId !== undefined) {
       this.state.selectedPlayerId = options.playerId;
     }
-    if (this.state.activeView !== viewName || options) {
+    if (viewName === 'draft') {
+      if (typeof DraftViewComponent !== 'undefined') {
+        DraftViewComponent.activeTab = (options && options.tab) ? options.tab : 'board';
+      }
+    }
+    if (this.state.activeView !== viewName || options || viewName === 'draft') {
       if (this.state.activeView && this.state.activeView !== viewName) {
         this.state.viewHistory.push(this.state.activeView);
       }
