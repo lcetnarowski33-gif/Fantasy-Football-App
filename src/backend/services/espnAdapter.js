@@ -223,25 +223,21 @@ async function fetchEspnLeagueData(leagueId, season = 2026, swid = null, espnS2 
     console.warn('Non-critical: Unable to fetch kona_player_info directory:', e.message);
   }
 
-  // 3. Fetch Real 2026 Transactions across active scoring periods
+  // 3. Fetch Real 2026 Transactions (Global Season View without restrictive scoringPeriodId filter)
   try {
-    const currentSp = parsed.scoringPeriodId || (parsed.status && parsed.status.currentMatchupPeriod) || 1;
     const allTxs = [];
-    const maxSpToCheck = Math.max(1, Math.min(18, currentSp));
-
-    for (let sp = 1; sp <= maxSpToCheck; sp++) {
-      const txUrl = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${targetSeason}/segments/0/leagues/${cleanLeagueId}?view=mTransactions2&scoringPeriodId=${sp}`;
-      const txRes = await makeEspnRequest(txUrl, headers);
-      if (txRes.statusCode === 200) {
-        const txData = JSON.parse(txRes.data);
-        if (Array.isArray(txData.transactions)) {
-          allTxs.push(...txData.transactions);
-        }
+    const txUrl = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${targetSeason}/segments/0/leagues/${cleanLeagueId}?view=mTransactions2`;
+    const txRes = await makeEspnRequest(txUrl, headers);
+    if (txRes.statusCode === 200) {
+      const txData = JSON.parse(txRes.data);
+      if (Array.isArray(txData.transactions)) {
+        allTxs.push(...txData.transactions);
       }
     }
     parsed._transactionsList = allTxs;
+    console.log(`📡 [ESPN Adapter] Successfully fetched ${allTxs.length} league transactions.`);
   } catch (e) {
-    console.warn('Non-critical: Unable to fetch scoringPeriod transactions:', e.message);
+    console.warn('Non-critical: Unable to fetch transactions:', e.message);
   }
 
   return parsed;
@@ -663,28 +659,30 @@ function normalizeEspnData(raw) {
     mostQuestionablePick: earlyReaches[0] || sortedPicksByDiff[sortedPicksByDiff.length - 1]
   };
 
-  // 5. Parse Real 2026 Transactions (Free Agent Adds/Drops, Waivers, Trades)
+  // 5. Parse Real 2026 Transactions (Free Agent Adds/Drops, Waivers, Trades, Roster Drops)
   const rawTransactions = raw._transactionsList || [];
   const normalizedTransactions = [];
   const completedTrades = [];
+  const seenTradeKeys = new Set();
+  const seenTxKeys = new Set();
 
   rawTransactions.forEach((t, idx) => {
     const isExecuted = t.status === 'EXECUTED' || t.status === 'PROCESSED' || t.status === 'ACCEPTED';
     const week = t.scoringPeriodId || currentWeek || 1;
-    const dateStr = t.processDate || t.proposedDate
-      ? new Date(t.processDate || t.proposedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    const rawTime = t.processDate || t.acceptedDate || t.proposedDate || t.executionDate;
+    const dateStr = rawTime
+      ? new Date(rawTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
       : `Week ${week}`;
 
     const items = t.items || [];
     const statusUpper = String(t.status || '').toUpperCase();
     const typeUpper = String(t.type || '').toUpperCase();
-    const isExplicitlyExecuted = (statusUpper === 'EXECUTED' || statusUpper === 'PROCESSED' || statusUpper === 'ACCEPTED');
-    const isDisallowedStatus = (statusUpper === 'PENDING' || statusUpper === 'PROPOSED' || statusUpper === 'CANCELLED' || statusUpper === 'REJECTED' || statusUpper === 'EXPIRED' || statusUpper === 'WITHDRAWN');
+    const isDisallowedStatus = ['PENDING', 'PROPOSED', 'CANCELLED', 'CANCELED', 'REJECTED', 'DECLINED', 'EXPIRED', 'WITHDRAWN', 'VETOED', 'FAILED_ROSTERLIMIT'].includes(statusUpper);
     const isDisallowedType = (typeUpper === 'TRADE_PROPOSAL' || typeUpper === 'TRADE_DECLINE' || typeUpper === 'TRADE_REJECT' || typeUpper === 'TRADE_CANCEL');
     const isTrade = (typeUpper === 'TRADE' || typeUpper === 'TRADE_ACCEPT' || items.some(it => String(it.type || '').toUpperCase() === 'TRADE')) && !isDisallowedType;
 
-    // ONLY Authentic Accepted / Completed Trades
-    if (isTrade && isExplicitlyExecuted && !isDisallowedStatus) {
+    // A. ONLY Authentic Accepted / Completed Trades (Executed & items with traded players)
+    if (isTrade && isExecuted && !isDisallowedStatus && items.length > 0) {
       const fromTeamIds = [...new Set(items.map(it => it.fromTeamId).filter(id => id !== undefined && id !== null && id !== 0))];
       const toTeamIds = [...new Set(items.map(it => it.toTeamId).filter(id => id !== undefined && id !== null && id !== 0))];
       const involvedTeamIds = [...new Set([...fromTeamIds, ...toTeamIds])];
@@ -693,175 +691,217 @@ function normalizeEspnData(raw) {
       let teamBEspnId = involvedTeamIds[1];
 
       if (teamAEspnId && teamBEspnId) {
-        const teamA = teams.find(tm => tm.espnId === teamAEspnId) || { teamId: `espn-${teamAEspnId}`, name: `Team ${teamAEspnId}`, managerName: `Team ${teamAEspnId}` };
-        const teamB = teams.find(tm => tm.espnId === teamBEspnId) || { teamId: `espn-${teamBEspnId}`, name: `Team ${teamBEspnId}`, managerName: `Team ${teamBEspnId}` };
+        // Stable deduplication key using sorted team IDs and player IDs
+        const playerIdsKey = items.map(it => it.playerId).sort().join('-');
+        const tradeDedupeKey = `${Math.min(teamAEspnId, teamBEspnId)}-${Math.max(teamAEspnId, teamBEspnId)}-${playerIdsKey}`;
 
-        const teamAItems = items.filter(it => it.fromTeamId === teamAEspnId || it.toTeamId === teamBEspnId);
-        const teamBItems = items.filter(it => it.fromTeamId === teamBEspnId || it.toTeamId === teamAEspnId);
+        if (!seenTradeKeys.has(tradeDedupeKey)) {
+          seenTradeKeys.add(tradeDedupeKey);
 
-        const formatItem = (it) => {
-          const info = masterPlayerMap.get(String(it.playerId)) || { name: `Player #${it.playerId}`, position: 'NFL', nflTeam: 'NFL' };
-          return `${info.name} (${info.position} - ${info.nflTeam})`;
-        };
+          const teamA = teams.find(tm => tm.espnId === teamAEspnId) || { teamId: `espn-${teamAEspnId}`, name: `Team ${teamAEspnId}`, managerName: `Team ${teamAEspnId}` };
+          const teamB = teams.find(tm => tm.espnId === teamBEspnId) || { teamId: `espn-${teamBEspnId}`, name: `Team ${teamBEspnId}`, managerName: `Team ${teamBEspnId}` };
 
-        const teamAGives = teamAItems.map(formatItem);
-        const teamBGives = teamBItems.map(formatItem);
+          const teamAItems = items.filter(it => it.fromTeamId === teamAEspnId);
+          const teamBItems = items.filter(it => it.fromTeamId === teamBEspnId);
 
-        // Realistic Trade Grades and Winner Analysis
-        let winnerName = teamA.name;
-        let winnerManager = teamA.managerName;
-        let teamAGrade = 'B+';
-        let teamBGrade = 'B-';
-        let summary = 'Fair exchange of positional assets between both franchises.';
-        let deepAnalysis = {
-          immediateValue: 'Both rosters swapped active assets to balance depth.',
-          longTermValue: 'Long-term payoff depends on volume and target distribution.',
-          positionalNeeds: 'Addressed active lineup and bench requirements.',
-          rosterConstruction: 'Shifted depth across starting slots.',
-          opportunityCost: 'Giving up reliable starters carries inherent replacement risk.',
-          risk: 'Moderate risk based on player health and weekly touches.'
-        };
-
-        if (teamAGives.some(g => g.includes('Downs')) || teamBGives.some(g => g.includes('Downs'))) {
-          const isZachTeamA = teamA.name.toLowerCase().includes('zach');
-          winnerName = isZachTeamA ? teamA.name : teamB.name;
-          winnerManager = isZachTeamA ? teamA.managerName : teamB.managerName;
-          teamAGrade = isZachTeamA ? 'A-' : 'C+';
-          teamBGrade = isZachTeamA ? 'C+' : 'A-';
-          summary = `${winnerName} secured a proven high-floor slot weapon in Josh Downs while giving up speculative depth.`;
-          deepAnalysis = {
-            immediateValue: 'Acquired an established NFL starter with verified target volume in Indianapolis.',
-            longTermValue: 'Downs commands consistent intermediate snaps, providing weekly PPR flex stability.',
-            positionalNeeds: 'Directly upgraded starting WR / FLEX tier with high-upside rookie RB insurance in Tuten.',
-            rosterConstruction: 'Consolidated bench lottery tickets into an everyday starting contributor.',
-            opportunityCost: 'Surrendering a starting asset in Downs leaves significant opportunity cost on the table.',
-            risk: 'Low risk for the acquiring side; high variance for the side receiving developmental stashes.'
+          const formatItem = (it) => {
+            const info = masterPlayerMap.get(String(it.playerId)) || { name: `Player #${it.playerId}`, position: 'NFL', nflTeam: 'NFL' };
+            return `${info.name} (${info.position} - ${info.nflTeam})`;
           };
-        } else if (teamAGives.some(g => g.includes('Kaleb')) || teamBGives.some(g => g.includes('Kaleb'))) {
-          const isLucasTeamA = teamA.name.toLowerCase().includes('mile-high');
-          winnerName = isLucasTeamA ? teamA.name : teamB.name;
-          winnerManager = isLucasTeamA ? teamA.managerName : teamB.managerName;
-          teamAGrade = isLucasTeamA ? 'B+' : 'B-';
-          teamBGrade = isLucasTeamA ? 'B-' : 'B+';
-          summary = `${winnerName} capitalized on positional scarcity by acquiring running back insurance for depth wideout capital.`;
-          deepAnalysis = {
-            immediateValue: 'Converted an expendable depth wide receiver into valuable backfield leverage.',
-            longTermValue: 'Running back handcuffs historically provide higher emergency ceiling during bye weeks.',
-            positionalNeeds: 'Reinforced backfield stability without sacrificing starting wide receiver production.',
-            rosterConstruction: 'Optimized bench slot allocation toward scarce running back equity.',
-            opportunityCost: 'Giving up wideout depth is acceptable given abundant waiver options at WR.',
-            risk: 'Minimal downside with high contingent upside.'
+
+          const teamAGives = teamAItems.map(formatItem);
+          const teamBGives = teamBItems.map(formatItem);
+
+          // Realistic Trade Grades and Winner Analysis
+          let winnerName = teamA.name;
+          let winnerManager = teamA.managerName;
+          let teamAGrade = 'B+';
+          let teamBGrade = 'B-';
+          let summary = 'Fair exchange of positional assets between both franchises.';
+          let deepAnalysis = {
+            immediateValue: 'Both rosters swapped active assets to balance depth.',
+            longTermValue: 'Long-term payoff depends on volume and target distribution.',
+            positionalNeeds: 'Addressed active lineup and bench requirements.',
+            rosterConstruction: 'Shifted depth across starting slots.',
+            opportunityCost: 'Giving up reliable starters carries inherent replacement risk.',
+            risk: 'Moderate risk based on player health and weekly touches.'
           };
-        }
 
-        completedTrades.push({
-          id: `trade-${t.id || (idx + 1)}`,
-          week: week,
-          date: dateStr,
-          status: t.status,
-          type: t.type,
-          isPending: false,
-          teamAId: teamA.teamId,
-          teamAName: teamA.name.trim(),
-          teamAManager: teamA.managerName,
-          teamAGrade: teamAGrade,
-          teamAGives: teamAGives.length > 0 ? teamAGives : ['Player Asset'],
-          teamAGains: teamBGives.length > 0 ? teamBGives : ['Player Asset'],
-          teamBId: teamB.teamId,
-          teamBName: teamB.name.trim(),
-          teamBManager: teamB.managerName,
-          teamBGrade: teamBGrade,
-          teamBGives: teamBGives.length > 0 ? teamBGives : ['Player Asset'],
-          teamBGains: teamAGives.length > 0 ? teamAGives : ['Player Asset'],
-          winnerName: winnerName.trim(),
-          winnerManager: winnerManager,
-          summary: summary,
-          deepAnalysis: deepAnalysis,
-          outcome: 'FINALIZED'
-        });
-      }
-    } else if (isExecuted) {
-      // Free Agent Adds & Drops, Waiver Claims
-      const addedItems = items.filter(it => it.type === 'ADD');
-      const droppedItems = items.filter(it => it.type === 'DROP');
-
-      const teamEspnId = (items[0] && (items[0].toTeamId || items[0].fromTeamId)) || t.teamId || 0;
-      const team = teams.find(tm => tm.espnId === teamEspnId);
-
-      const added = addedItems.map(it => {
-        const info = masterPlayerMap.get(String(it.playerId)) || { name: `Player #${it.playerId}`, position: 'NFL', nflTeam: 'NFL', projPts: 12.0 };
-        return { name: info.name, pos: info.position, team: info.nflTeam, pts: info.projPts };
-      });
-
-      const dropped = droppedItems.map(it => {
-        const info = masterPlayerMap.get(String(it.playerId)) || { name: `Player #${it.playerId}`, position: 'NFL', nflTeam: 'NFL', projPts: 10.0 };
-        return { name: info.name, pos: info.position, team: info.nflTeam, pts: info.projPts };
-      });
-
-      let details = '';
-      if (added.length > 0 && dropped.length > 0) {
-        details = `${team ? team.name.trim() : 'Team'} added ${added.map(a => `${a.name} (${a.pos})`).join(', ')} & dropped ${dropped.map(d => `${d.name} (${d.pos})`).join(', ')}`;
-      } else if (added.length > 0) {
-        details = `${team ? team.name.trim() : 'Team'} claimed ${added.map(a => `${a.name} (${a.pos})`).join(', ')}`;
-      } else if (dropped.length > 0) {
-        details = `${team ? team.name.trim() : 'Team'} dropped ${dropped.map(d => `${d.name} (${d.pos})`).join(', ')}`;
-      }
-
-      if (details) {
-        const addPts = added[0] ? (added[0].pts || 10) : 0;
-        const dropPts = dropped[0] ? (dropped[0].pts || 8) : 0;
-        const net = parseFloat((addPts - dropPts).toFixed(1));
-
-        let stars = '★★★☆☆';
-        let moveQuality = 'Average Move';
-        let moveGrade = 'B';
-        if (net >= 4.0) {
-          stars = '★★★★★';
-          moveQuality = 'Strong Upgrade';
-          moveGrade = 'A';
-        } else if (net >= 1.0) {
-          stars = '★★★★☆';
-          moveQuality = 'Quality Addition';
-          moveGrade = 'B+';
-        } else if (net >= -1.0) {
-          stars = '★★★☆☆';
-          moveQuality = 'Lateral Depth Swap';
-          moveGrade = 'B';
-        } else {
-          stars = '★★☆☆☆';
-          moveQuality = 'Questionable Drop';
-          moveGrade = 'C';
-        }
-
-        normalizedTransactions.push({
-          id: `tx-${t.id || (idx + 1)}`,
-          type: t.type === 'WAIVER' ? 'Waiver Claim' : 'Free Agent Add',
-          season: seasonYear,
-          week: week,
-          date: dateStr,
-          teamId: team ? team.teamId : `espn-${teamEspnId}`,
-          teamName: team ? team.name.trim() : `Team ${teamEspnId}`,
-          managerName: team ? team.managerName : 'Manager',
-          added: added,
-          dropped: dropped,
-          details: details,
-          netPoints: net,
-          grade: moveGrade,
-          stars: stars,
-          moveQuality: moveQuality,
-          whyItMatters: `${team ? team.name.trim() : 'Team'} added ${added[0] ? added[0].name : 'a player'} to address immediate roster depth.`,
-          deepAnalysis: {
-            whyMadeSense: `Targeted ${added[0]?.pos || 'bench'} depth ahead of weekly kickoff.`,
-            weaknessAddressed: `Bolstered ${added[0]?.pos || 'skill position'} bench rotation.`,
-            teamGained: `${added[0]?.name || 'Player'} (${added[0]?.pos} - ${added[0]?.team})`,
-            teamSurrendered: dropped[0] ? `${dropped[0].name} (${dropped[0].pos})` : 'Free roster spot',
-            impactRating: stars,
-            futureOutlook: `Provides depth flexibility during upcoming bye weeks.`
+          if (teamAGives.some(g => g.includes('Downs')) || teamBGives.some(g => g.includes('Downs'))) {
+            const isZachTeamA = teamA.name.toLowerCase().includes('zach');
+            winnerName = isZachTeamA ? teamA.name : teamB.name;
+            winnerManager = isZachTeamA ? teamA.managerName : teamB.managerName;
+            teamAGrade = isZachTeamA ? 'A-' : 'C+';
+            teamBGrade = isZachTeamA ? 'C+' : 'A-';
+            summary = `${winnerName} secured a proven high-floor slot weapon in Josh Downs while giving up speculative depth.`;
+            deepAnalysis = {
+              immediateValue: 'Acquired an established NFL starter with verified target volume in Indianapolis.',
+              longTermValue: 'Downs commands consistent intermediate snaps, providing weekly PPR flex stability.',
+              positionalNeeds: 'Directly upgraded starting WR / FLEX tier with high-upside rookie RB insurance in Tuten.',
+              rosterConstruction: 'Consolidated bench lottery tickets into an everyday starting contributor.',
+              opportunityCost: 'Surrendering a starting asset in Downs leaves significant opportunity cost on the table.',
+              risk: 'Low risk for the acquiring side; high variance for the side receiving developmental stashes.'
+            };
+          } else if (teamAGives.some(g => g.includes('Kaleb')) || teamBGives.some(g => g.includes('Kaleb'))) {
+            const isLucasTeamA = teamA.name.toLowerCase().includes('mile-high');
+            winnerName = isLucasTeamA ? teamA.name : teamB.name;
+            winnerManager = isLucasTeamA ? teamA.managerName : teamB.managerName;
+            teamAGrade = isLucasTeamA ? 'B+' : 'B-';
+            teamBGrade = isLucasTeamA ? 'B-' : 'B+';
+            summary = `${winnerName} capitalized on positional scarcity by acquiring running back insurance for depth wideout capital.`;
+            deepAnalysis = {
+              immediateValue: 'Converted an expendable depth wide receiver into valuable backfield leverage.',
+              longTermValue: 'Running back handcuffs historically provide higher emergency ceiling during bye weeks.',
+              positionalNeeds: 'Reinforced backfield stability without sacrificing starting wide receiver production.',
+              rosterConstruction: 'Optimized bench slot allocation toward scarce running back equity.',
+              opportunityCost: 'Giving up wideout depth is acceptable given abundant waiver options at WR.',
+              risk: 'Minimal downside with high contingent upside.'
+            };
           }
+
+          completedTrades.push({
+            id: `trade-${t.id || (idx + 1)}`,
+            espnTransactionId: t.id,
+            week: week,
+            date: dateStr,
+            timestamp: rawTime,
+            status: t.status,
+            type: t.type,
+            isPending: false,
+            teamAId: teamA.teamId,
+            teamAName: teamA.name.trim(),
+            teamAManager: teamA.managerName,
+            teamAGrade: teamAGrade,
+            teamAGives: teamAGives.length > 0 ? teamAGives : ['Player Asset'],
+            teamAGains: teamBGives.length > 0 ? teamBGives : ['Player Asset'],
+            teamBId: teamB.teamId,
+            teamBName: teamB.name.trim(),
+            teamBManager: teamB.managerName,
+            teamBGrade: teamBGrade,
+            teamBGives: teamBGives.length > 0 ? teamBGives : ['Player Asset'],
+            teamBGains: teamAGives.length > 0 ? teamAGives : ['Player Asset'],
+            winnerName: winnerName.trim(),
+            winnerManager: winnerManager,
+            summary: summary,
+            deepAnalysis: deepAnalysis,
+            outcome: 'FINALIZED'
+          });
+        }
+      }
+    } else if (isExecuted && !isDisallowedStatus) {
+      // B. Free Agent Moves, Waivers, and Roster Drops
+      const isWaiver = (typeUpper === 'WAIVER');
+      const isFreeAgent = (typeUpper === 'FREEAGENT');
+      const isRosterDrop = (typeUpper === 'ROSTER' && items.some(it => it.type === 'DROP'));
+
+      if (isWaiver || isFreeAgent || isRosterDrop) {
+        const addedItems = items.filter(it => it.type === 'ADD');
+        const droppedItems = items.filter(it => it.type === 'DROP');
+
+        const teamEspnId = (items[0] && (items[0].toTeamId || items[0].fromTeamId)) || t.teamId || 0;
+        const team = teams.find(tm => tm.espnId === teamEspnId);
+
+        const added = addedItems.map(it => {
+          const info = masterPlayerMap.get(String(it.playerId)) || { name: `Player #${it.playerId}`, position: 'NFL', nflTeam: 'NFL', projPts: 12.0 };
+          return { id: it.playerId, name: info.name, pos: info.position, team: info.nflTeam, pts: info.projPts };
         });
+
+        const dropped = droppedItems.map(it => {
+          const info = masterPlayerMap.get(String(it.playerId)) || { name: `Player #${it.playerId}`, position: 'NFL', nflTeam: 'NFL', projPts: 10.0 };
+          return { id: it.playerId, name: info.name, pos: info.position, team: info.nflTeam, pts: info.projPts };
+        });
+
+        let details = '';
+        let txType = 'Free Agent Move';
+
+        if (isWaiver) {
+          txType = 'Waiver Claim';
+          const bid = t.bidAmount !== undefined && t.bidAmount > 0 ? ` ($${t.bidAmount} FAAB)` : '';
+          if (added.length > 0 && dropped.length > 0) {
+            details = `${team ? team.name.trim() : 'Team'} won waiver claim${bid} for ${added.map(a => `${a.name} (${a.pos})`).join(', ')} & dropped ${dropped.map(d => `${d.name} (${d.pos})`).join(', ')}`;
+          } else if (added.length > 0) {
+            details = `${team ? team.name.trim() : 'Team'} won waiver claim${bid} for ${added.map(a => `${a.name} (${a.pos})`).join(', ')}`;
+          }
+        } else if (isRosterDrop) {
+          txType = 'Roster Drop';
+          details = `${team ? team.name.trim() : 'Team'} dropped ${dropped.map(d => `${d.name} (${d.pos})`).join(', ')}`;
+        } else {
+          txType = added.length > 0 && dropped.length > 0 ? 'Free Agent Swap' : (added.length > 0 ? 'Free Agent Add' : 'Free Agent Drop');
+          if (added.length > 0 && dropped.length > 0) {
+            details = `${team ? team.name.trim() : 'Team'} added ${added.map(a => `${a.name} (${a.pos})`).join(', ')} & dropped ${dropped.map(d => `${d.name} (${d.pos})`).join(', ')}`;
+          } else if (added.length > 0) {
+            details = `${team ? team.name.trim() : 'Team'} claimed ${added.map(a => `${a.name} (${a.pos})`).join(', ')}`;
+          } else if (dropped.length > 0) {
+            details = `${team ? team.name.trim() : 'Team'} dropped ${dropped.map(d => `${d.name} (${d.pos})`).join(', ')}`;
+          }
+        }
+
+        const txId = t.id ? `tx-${t.id}` : `tx-${idx + 1}`;
+        if (details && !seenTxKeys.has(txId)) {
+          seenTxKeys.add(txId);
+
+          const addPts = added[0] ? (added[0].pts || 10) : 0;
+          const dropPts = dropped[0] ? (dropped[0].pts || 8) : 0;
+          const net = parseFloat((addPts - dropPts).toFixed(1));
+
+          let stars = '★★★☆☆';
+          let moveQuality = 'Average Move';
+          let moveGrade = 'B';
+          if (net >= 4.0) {
+            stars = '★★★★★';
+            moveQuality = 'Strong Upgrade';
+            moveGrade = 'A';
+          } else if (net >= 1.0) {
+            stars = '★★★★☆';
+            moveQuality = 'Quality Addition';
+            moveGrade = 'B+';
+          } else if (net >= -1.0) {
+            stars = '★★★☆☆';
+            moveQuality = 'Lateral Depth Swap';
+            moveGrade = 'B';
+          } else {
+            stars = '★★☆☆☆';
+            moveQuality = 'Questionable Drop';
+            moveGrade = 'C';
+          }
+
+          normalizedTransactions.push({
+            id: txId,
+            espnTransactionId: t.id,
+            type: txType,
+            season: seasonYear,
+            week: week,
+            date: dateStr,
+            timestamp: rawTime,
+            bidAmount: t.bidAmount || 0,
+            teamId: team ? team.teamId : `espn-${teamEspnId}`,
+            teamName: team ? team.name.trim() : `Team ${teamEspnId}`,
+            managerName: team ? team.managerName : 'Manager',
+            added: added,
+            dropped: dropped,
+            details: details,
+            netPoints: net,
+            grade: moveGrade,
+            stars: stars,
+            moveQuality: moveQuality,
+            whyItMatters: `${team ? team.name.trim() : 'Team'} ${isRosterDrop ? 'dropped' : 'added'} ${added[0] ? added[0].name : (dropped[0] ? dropped[0].name : 'a player')} to optimize roster slots.`,
+            deepAnalysis: {
+              whyMadeSense: `Targeted roster composition adjustments ahead of weekly matchups.`,
+              weaknessAddressed: `Optimized bench rotation and depth tiers.`,
+              teamGained: added[0] ? `${added[0].name} (${added[0].pos} - ${added[0].team})` : 'Open roster spot',
+              teamSurrendered: dropped[0] ? `${dropped[0].name} (${dropped[0].pos})` : 'Free roster spot',
+              impactRating: stars,
+              futureOutlook: `Provides weekly agility across the roster.`
+            }
+          });
+        }
       }
     }
   });
+
+  // Sort transactions chronologically (newest first)
+  normalizedTransactions.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  completedTrades.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
   // Attach Authentic Decision IQ Stats for All 12 Teams (Zero Mock/Random Data)
   teams.forEach(t => {
@@ -1032,7 +1072,17 @@ function normalizeEspnData(raw) {
   };
 }
 
+/**
+ * Authoritative single-source sync function for ESPN League
+ */
+async function syncEspnLeague(leagueId, season = 2026, swid = null, espnS2 = null) {
+  const raw = await fetchEspnLeagueData(leagueId, season, swid, espnS2);
+  const normalized = normalizeEspnData(raw);
+  return normalized;
+}
+
 module.exports = {
   fetchEspnLeagueData,
-  normalizeEspnData
+  normalizeEspnData,
+  syncEspnLeague
 };

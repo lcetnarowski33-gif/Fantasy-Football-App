@@ -129,76 +129,70 @@ function bootApp() {
     } catch (e) {}
   }
 
-  // Auto-detect sync token in URL query or hash (e.g. when launching from iOS Home Screen PWA)
-  async function checkUrlSyncParam() {
-    try {
-      const urlParams = new URLSearchParams(window.location.search);
-      let token = urlParams.get('sync');
-      if (!token && window.location.hash.includes('sync=')) {
-        const match = window.location.hash.match(/sync=([A-Za-z0-9+/=]+)/);
-        if (match) token = match[1];
-      }
-
-      if (token) {
-        try {
-          const payload = JSON.parse(decodeURIComponent(escape(atob(token))));
-          const targetId = String(payload.id || payload.leagueId || '');
-          // If token references an old or different league, strip it from the URL immediately
-          if (targetId.includes('1585576113') || (targetId && targetId !== '1990371748')) {
-            console.warn('Scrubbing outdated sync token from URL:', targetId);
-            const cleanUrl = new URL(window.location.href);
-            cleanUrl.searchParams.delete('sync');
-            window.history.replaceState({}, '', cleanUrl.toString());
-            return;
-          }
-
-          if (payload && (payload.id || payload.leagueId)) {
-            const creds = {
-              leagueId: payload.id || payload.leagueId,
-              season: payload.yr || payload.season || 2025,
-              swid: payload.sw || payload.swid || '',
-              espnS2: payload.s2 || payload.espnS2 || ''
-            };
-            console.log(`🔗 Detected valid ESPN sync token in URL for League #${creds.leagueId}`);
-            if (typeof store !== 'undefined') {
-              store.saveEspnCredentials(creds);
-            }
-          }
-        } catch (err) {
-          console.warn('Sync token parse failed:', err);
-        }
-      }
-    } catch (e) {
-      console.warn('URL sync check warning:', e);
+  // Clean up any legacy or deprecated sync token in URL
+  try {
+    const currentUrl = new URL(window.location.href);
+    if (currentUrl.searchParams.has('sync')) {
+      currentUrl.searchParams.delete('sync');
+      window.history.replaceState({}, '', currentUrl.toString());
     }
-  }
+  } catch (e) {}
 
-  checkUrlSyncParam();
-
-  // Fetch Global Persistent Server League Data on Startup
-  async function initGlobalLeagueData() {
+  // Authoritative Revalidation Function: Fetches latest league data and sync state from backend
+  async function revalidateLeagueData(showSpinner = false) {
     try {
+      if (showSpinner && typeof store !== 'undefined') {
+        store.setSyncStatus({ isSyncing: true });
+      }
       const res = await fetch('/api/league/current');
       if (res.ok) {
         const payload = await res.json();
-        if (payload.success && payload.hasCachedData && payload.data && typeof store !== 'undefined') {
-          console.log(`🌐 Automatically loaded global single-league dataset: "${payload.data.name}"`);
-          store.applyEspnSync(payload.data, payload.config);
-        } else if (payload.config && typeof store !== 'undefined') {
-          if (payload.config.leagueId || payload.config.swid || payload.config.espnS2) {
-            store.state.espnCredentials = { ...store.state.espnCredentials, ...payload.config };
-            store.saveEspnCredentials(store.state.espnCredentials);
-          }
+        if (payload.success && payload.data && typeof store !== 'undefined') {
+          store.applyEspnSync(payload.data, { lastSynced: payload.lastSynced });
+        }
+        if (typeof store !== 'undefined') {
+          store.setSyncStatus({
+            lastSynced: payload.lastSynced || null,
+            isSyncing: false,
+            error: payload.syncError || null
+          });
         }
       }
     } catch (err) {
-      console.warn('Initial server league fetch skipped or offline.');
+      console.warn('Background league revalidation notice:', err.message);
+      if (typeof store !== 'undefined') {
+        store.setSyncStatus({ isSyncing: false, error: 'Offline / Network error' });
+      }
     }
   }
 
-  initGlobalLeagueData();
+  // Initial startup sync with server
+  revalidateLeagueData();
 
-  // Listen to Server-Sent Events (SSE) Stream for Live Multi-User Sync
+  // Instant Revalidation on Window/Tab Focus (e.g. user opens phone or switches back to tab)
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        console.log('📱 App foregrounded — automatically verifying ESPN league activity...');
+        revalidateLeagueData();
+      }
+    });
+  }
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('focus', () => {
+      revalidateLeagueData();
+    });
+  }
+
+  // Periodic lightweight background revalidation every 45 seconds while tab is active
+  setInterval(() => {
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+      revalidateLeagueData();
+    }
+  }, 45 * 1000);
+
+  // Listen to Server-Sent Events (SSE) Stream for Instant Push from Server
   if (typeof EventSource !== 'undefined') {
     try {
       const eventSource = new EventSource('/api/sync/stream');
@@ -210,7 +204,7 @@ function bootApp() {
           const data = JSON.parse(event.data);
           if ((data.type === 'ESPN_SYNC_SUCCESS' || data.type === 'ESPN_AUTO_SYNC_SUCCESS') && data.data && typeof store !== 'undefined') {
             console.log(`⚡ Received live server update for "${data.data.name}"`);
-            store.applyEspnSync(data.data);
+            store.applyEspnSync(data.data, { lastSynced: data.lastSynced });
           }
         } catch (e) {}
       };

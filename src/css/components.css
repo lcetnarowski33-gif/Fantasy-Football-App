@@ -1068,32 +1068,48 @@
 /* Extra Compact Phones (iPhone SE, Galaxy Fold outer screen: <= 360px) */
 @media (max-width: 360px) {
   .app-header {
-    padding: calc(0.35rem + env(safe-area-inset-top, 0px)) 0.5rem 0.35rem !important;
+    padding: calc(0.3rem + env(safe-area-inset-top, 0px)) 0.35rem 0.3rem !important;
   }
 
   .header-container {
-    gap: 0.25rem !important;
+    gap: 0.2rem !important;
   }
 
   .brand-logo {
-    font-size: 0.85rem !important;
-    gap: 0.25rem !important;
+    font-size: 0.8rem !important;
+    gap: 0.2rem !important;
   }
 
-  .brand-logo i {
-    font-size: 1rem !important;
+  .brand-logo div:first-child {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.9rem !important;
   }
 
+  .brand-title {
+    font-size: 0.82rem !important;
+  }
+
+  .header-sync-badge {
+    padding: 0.12rem 0.35rem !important;
+    font-size: 0.62rem !important;
+    gap: 0.2rem !important;
+  }
+
+  .header-sync-badge .sync-dot {
+    width: 4px !important;
+    height: 4px !important;
+  }
 
   .btn-icon-search,
   .btn-mobile-menu {
-    width: 30px !important;
-    height: 30px !important;
-    font-size: 0.8rem !important;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.75rem !important;
   }
 
   .header-actions {
-    gap: 0.25rem !important;
+    gap: 0.2rem !important;
   }
 
   .segmented-tab-btn {

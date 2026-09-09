@@ -35,16 +35,19 @@ class AppStore {
 
       searchQuery: '',
       isEspnSynced: false,
-      espnCredentials: null,
+      syncStatus: {
+        lastSynced: null,
+        isSyncing: false,
+        error: null
+      },
       viewHistory: [],
 
       // Active Dataset (Defaults to Mock Data)
       data: defaultData
     };
 
-    // Load saved data and ESPN credentials safely if browser tracking prevention permits
+    // Load saved league snapshot safely if browser tracking prevention permits
     this.loadSavedLeagueData();
-    this.loadSavedEspnCredentials();
   }
 
   /**
@@ -189,51 +192,40 @@ class AppStore {
   }
 
   /**
+   * Update sync status state for the header badge and connection monitor
+   * @param {Object} statusUpdates 
+   */
+  setSyncStatus(statusUpdates) {
+    this.state.syncStatus = { ...this.state.syncStatus, ...statusUpdates };
+    this.notify();
+  }
+
+  /**
    * Apply live ESPN API synced dataset to store state
    * @param {Object} espnNormalizedData 
-   * @param {Object} credentials 
+   * @param {Object} [syncMeta] 
    */
-  applyEspnSync(espnNormalizedData, credentials = null) {
+  applyEspnSync(espnNormalizedData, syncMeta = null) {
     if (!espnNormalizedData || !espnNormalizedData.teams) return;
 
     this._ensureDraftOrder(espnNormalizedData);
     this.state.data = espnNormalizedData;
     this.state.isEspnSynced = true;
 
-    if (credentials) {
-      this.state.espnCredentials = credentials;
-      this.saveEspnCredentials(credentials);
-      this.updateUrlSyncToken(credentials);
+    const syncedAt = (syncMeta && syncMeta.lastSynced) || espnNormalizedData.lastSynced || new Date().toISOString();
+    this.state.syncStatus = {
+      lastSynced: syncedAt,
+      isSyncing: false,
+      error: null
+    };
+
+    if (espnNormalizedData.teams.length > 0 && !this.state.selectedTeamId) {
+      this.state.selectedTeamId = espnNormalizedData.teams[0].teamId || espnNormalizedData.teams[0].id || 'espn-1';
     }
 
-    if (espnNormalizedData.teams.length > 0) {
-      this.state.selectedTeamId = espnNormalizedData.teams[0].teamId || espnNormalizedData.teams[0].id || 'team-1';
-    }
-
-    console.log(`✅ Applied live ESPN API data for "${espnNormalizedData.name}"`);
+    console.log(`✅ Applied authoritative ESPN data for "${espnNormalizedData.name}" (Synced: ${syncedAt})`);
     this.saveLeagueData();
     this.notify();
-  }
-
-  /**
-   * Update browser URL with a compact sync token so adding to Home Screen retains the league
-   */
-  updateUrlSyncToken(credentials) {
-    try {
-      if (typeof window === 'undefined' || !credentials || !credentials.leagueId) return;
-      const payload = {
-        id: credentials.leagueId,
-        yr: credentials.season || 2024,
-        sw: credentials.swid || '',
-        s2: credentials.espnS2 || ''
-      };
-      const token = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-      const currentUrl = new URL(window.location.href);
-      currentUrl.searchParams.set('sync', token);
-      window.history.replaceState({}, '', currentUrl.toString());
-    } catch (e) {
-      console.warn('Unable to set sync URL token:', e);
-    }
   }
 
   /**
@@ -242,42 +234,24 @@ class AppStore {
   resetToMockData() {
     this.state.data = (typeof INITIAL_MOCK_DATA !== 'undefined' ? INITIAL_MOCK_DATA : (typeof window !== 'undefined' && window.INITIAL_MOCK_DATA ? window.INITIAL_MOCK_DATA : {}));
     this.state.isEspnSynced = false;
-    this.state.espnCredentials = null;
-
-    try {
-      if (typeof window !== 'undefined') {
-        const currentUrl = new URL(window.location.href);
-        currentUrl.searchParams.delete('sync');
-        window.history.replaceState({}, '', currentUrl.toString());
-      }
-    } catch (e) {}
+    this.state.syncStatus = {
+      lastSynced: null,
+      isSyncing: false,
+      error: null
+    };
 
     const storage = this.getLocalStorage();
     if (storage) {
       try {
         storage.removeItem('espn_sync_creds');
         storage.removeItem('fantasy_league_data_2025');
+        storage.removeItem('fantasy_league_data_2026');
         storage.removeItem('espn_is_synced');
       } catch (e) {}
     }
 
     console.log('🔄 Reset store state to default baseline dataset.');
     this.notify();
-  }
-
-  /**
-   * Persist ESPN sync credentials to browser localStorage
-   */
-  saveEspnCredentials(credentials) {
-    this.state.espnCredentials = credentials;
-    const storage = this.getLocalStorage();
-    if (storage) {
-      try {
-        storage.setItem('espn_sync_creds', JSON.stringify(credentials));
-      } catch (e) {
-        console.warn('Unable to write ESPN credentials to localStorage.');
-      }
-    }
   }
 
   /**
@@ -302,8 +276,10 @@ class AppStore {
     const storage = this.getLocalStorage();
     if (!storage) return;
     try {
-      // Clean up deprecated 2025 cache key if present
+      // Clean up deprecated keys if present
       storage.removeItem('fantasy_league_data_2025');
+      storage.removeItem('espn_sync_creds');
+
       const saved = storage.getItem('fantasy_league_data_2026');
       const isSynced = storage.getItem('espn_is_synced') === 'true';
       if (saved) {
@@ -313,7 +289,6 @@ class AppStore {
           console.warn('Scrubbing outdated league data from localStorage:', leagueIdStr, parsed.season);
           storage.removeItem('fantasy_league_data_2026');
           storage.removeItem('espn_is_synced');
-          storage.removeItem('espn_sync_creds');
           return;
         }
 
@@ -321,34 +296,14 @@ class AppStore {
           this._ensureDraftOrder(parsed);
           this.state.data = parsed;
           this.state.isEspnSynced = isSynced;
+          if (parsed.lastSynced) {
+            this.state.syncStatus.lastSynced = parsed.lastSynced;
+          }
           console.log(`📦 Successfully restored saved 2026 league data from localStorage! Synced: ${isSynced}`);
         }
       }
     } catch (e) {
       console.warn('Unable to load saved league data from localStorage.');
-    }
-  }
-
-  /**
-   * Load saved ESPN League credentials from browser localStorage
-   */
-  loadSavedEspnCredentials() {
-    const storage = this.getLocalStorage();
-    if (!storage) return;
-    try {
-      const saved = storage.getItem('espn_sync_creds');
-      if (saved) {
-        const creds = JSON.parse(saved);
-        if (creds && (String(creds.leagueId).includes('1585576113') || (creds.leagueId && !String(creds.leagueId).includes('1990371748')))) {
-          console.warn('Scrubbing outdated ESPN credentials from localStorage');
-          storage.removeItem('espn_sync_creds');
-          this.state.espnCredentials = null;
-          return;
-        }
-        this.state.espnCredentials = creds;
-      }
-    } catch (e) {
-      console.warn('Unable to access localStorage for ESPN credentials.');
     }
   }
 }

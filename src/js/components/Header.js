@@ -25,6 +25,23 @@ class HeaderComponent {
     }
   }
 
+  static formatSyncTime(isoString) {
+    if (!isoString) return 'Synced just now';
+    try {
+      const diffMs = Date.now() - new Date(isoString).getTime();
+      if (diffMs < 0 || isNaN(diffMs)) return 'Synced just now';
+      const seconds = Math.floor(diffMs / 1000);
+      if (seconds < 45) return 'Synced just now';
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `Synced ${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `Synced ${hours}h ago`;
+      return 'Synced today';
+    } catch (e) {
+      return 'Synced just now';
+    }
+  }
+
   static render(mountEl, currentState) {
     if (!mountEl) return;
 
@@ -40,6 +57,37 @@ class HeaderComponent {
     ];
 
     const activeView = currentState.activeView || 'home';
+    const syncStatus = currentState.syncStatus || {};
+    const lastSynced = syncStatus.lastSynced || currentState.data?.lastSynced;
+    const isSyncing = Boolean(syncStatus.isSyncing);
+    const syncError = syncStatus.error;
+
+    let syncBadgeHtml = '';
+    if (isSyncing) {
+      syncBadgeHtml = `
+        <div class="header-sync-badge" style="display:inline-flex; align-items:center; gap:0.35rem; padding:0.2rem 0.5rem; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); border-radius:var(--radius-full); font-size:0.7rem; color:#38bdf8; font-weight:700;">
+          <i class="fa-solid fa-arrows-rotate fa-spin" style="font-size:0.65rem;"></i>
+          <span class="desktop-only">Syncing with ESPN...</span>
+          <span class="mobile-only">Syncing</span>
+        </div>
+      `;
+    } else if (syncError) {
+      syncBadgeHtml = `
+        <div class="header-sync-badge" style="display:inline-flex; align-items:center; gap:0.35rem; padding:0.2rem 0.5rem; background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.3); border-radius:var(--radius-full); font-size:0.7rem; color:#fbbf24; font-weight:700;" title="ESPN connection notice: using cached data">
+          <i class="fa-solid fa-triangle-exclamation" style="font-size:0.65rem;"></i>
+          <span class="desktop-only">ESPN offline (cached)</span>
+          <span class="mobile-only">Cached</span>
+        </div>
+      `;
+    } else {
+      const syncTimeStr = this.formatSyncTime(lastSynced);
+      syncBadgeHtml = `
+        <div class="header-sync-badge" style="display:inline-flex; align-items:center; gap:0.35rem; padding:0.2rem 0.55rem; background:rgba(0,230,118,0.08); border:1px solid rgba(0,230,118,0.25); border-radius:var(--radius-full); font-size:0.7rem; color:var(--accent-sleeper); font-weight:700;" title="Automatic zero-touch sync with ESPN League #${currentState.data?.espnLeagueId || '1990371748'}">
+          <span class="sync-dot" style="width:6px; height:6px; border-radius:50%; background:var(--accent-sleeper); display:inline-block; box-shadow:0 0 6px var(--accent-sleeper);"></span>
+          <span>${syncTimeStr}</span>
+        </div>
+      `;
+    }
 
     mountEl.innerHTML = `
       <!-- Desktop & Mobile Top Header Bar -->
@@ -51,7 +99,7 @@ class HeaderComponent {
               <i class="fa-solid fa-football"></i>
             </div>
             <div style="display:flex; align-items:center; gap:0.45rem;">
-              <span style="font-weight:900; letter-spacing:-0.02em; font-size:1.05rem; background:linear-gradient(90deg, #ffffff, var(--accent-sleeper)); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
+              <span class="brand-title" style="font-weight:900; letter-spacing:-0.02em; font-size:1.05rem; background:linear-gradient(90deg, #ffffff, var(--accent-sleeper)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; white-space:nowrap;">
                 JP is a virgin
               </span>
               <span class="badge badge-green" style="font-size:0.62rem; padding:0.1rem 0.35rem; font-weight:800; text-transform:uppercase;">
@@ -79,12 +127,9 @@ class HeaderComponent {
           </nav>
 
           <!-- Top Header Right Actions -->
-          <div class="header-actions">
-            <!-- Verified League Indicator -->
-            <div class="desktop-only" style="display:flex; align-items:center; gap:0.35rem; padding:0.25rem 0.6rem; background:rgba(0,230,118,0.08); border:1px solid rgba(0,230,118,0.2); border-radius:var(--radius-full); font-size:0.72rem; color:var(--accent-sleeper); font-weight:700;">
-              <span style="width:6px; height:6px; border-radius:50%; background:var(--accent-sleeper); display:inline-block; box-shadow:0 0 6px var(--accent-sleeper);"></span>
-              <span>2026 Live League</span>
-            </div>
+          <div class="header-actions" style="display:flex; align-items:center; gap:0.4rem;">
+            <!-- Subtle Real-Time ESPN Sync Status Indicator -->
+            ${syncBadgeHtml}
 
             <button class="btn-icon-search" id="btn-open-search-modal" title="Search Players, Teams, Managers">
               <i class="fa-solid fa-magnifying-glass"></i>
@@ -169,7 +214,7 @@ class HeaderComponent {
         <div class="mobile-drawer-footer" style="display:flex; flex-direction:column; gap:0.45rem;">
           <div style="display:flex; align-items:center; justify-content:center; gap:0.4rem; padding:0.45rem; background:rgba(0,230,118,0.08); border-radius:var(--radius-sm); font-size:0.75rem; color:var(--accent-sleeper); font-weight:700;">
             <i class="fa-solid fa-circle-check"></i>
-            <span>Official 2026 League Connected</span>
+            <span>Auto-Synced with ESPN • ${this.formatSyncTime(lastSynced)}</span>
           </div>
           <button class="btn btn-outline btn-block btn-pwa-install" id="drawer-btn-pwa-install" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; width:100%; padding:0.6rem; font-size:0.82rem;" onclick="if(window.PWA) window.PWA.promptInstall();">
             <i class="fa-solid fa-mobile-screen-button text-gold"></i>

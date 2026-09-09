@@ -9,7 +9,7 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const { fetchEspnLeagueData, normalizeEspnData } = require('./src/backend/services/espnAdapter');
+const { fetchEspnLeagueData, normalizeEspnData, syncEspnLeague } = require('./src/backend/services/espnAdapter');
 
 try {
   require('dotenv').config();
@@ -39,6 +39,10 @@ let serverConfig = {
 };
 
 let cachedLeagueData = null;
+let lastSyncTime = null;
+let isSyncInProgress = false;
+let lastSyncError = null;
+const SYNC_TTL_MS = 3 * 60 * 1000; // 3 minutes TTL for background check
 
 // Load server config on startup
 function loadServerConfig() {
@@ -71,7 +75,10 @@ function loadCachedLeagueData() {
       if (cachedLeagueData && Array.isArray(cachedLeagueData.draftPicks)) {
         cachedLeagueData.draftPicks.sort((a, b) => (Number(a.overallPick || a.overallPickNumber || 0) - Number(b.overallPick || b.overallPickNumber || 0)));
       }
-      console.log(`📦 Loaded cached ESPN dataset for "${cachedLeagueData.name}"`);
+      if (cachedLeagueData && cachedLeagueData.lastSynced) {
+        lastSyncTime = new Date(cachedLeagueData.lastSynced).getTime();
+      }
+      console.log(`📦 Loaded cached ESPN dataset for "${cachedLeagueData.name}" (Last synced: ${cachedLeagueData.lastSynced || 'N/A'})`);
     }
   } catch (e) {
     console.warn('Unable to load league cache:', e.message);
@@ -111,27 +118,54 @@ function saveCachedLeagueData(data) {
 }
 
 /**
- * Background auto-refresh function using configured server credentials
+ * Authoritative background auto-sync function using configured server credentials.
+ * Preserves cached data on error; never clears dataset.
  */
-async function autoRefreshEspnData() {
-  if (!serverConfig.leagueId) return;
+async function performServerLeagueSync(options = { force: false }) {
+  if (isSyncInProgress) {
+    console.log('⏳ [Server Sync] Sync already active in background, skipping duplicate request.');
+    return cachedLeagueData;
+  }
+
+  if (!serverConfig.leagueId) return cachedLeagueData;
+
+  const now = Date.now();
+  if (!options.force && lastSyncTime && (now - lastSyncTime < SYNC_TTL_MS)) {
+    return cachedLeagueData;
+  }
+
+  isSyncInProgress = true;
 
   try {
-    console.log(`🔄 [Auto-Sync] Syncing ESPN League #${serverConfig.leagueId}...`);
-    const raw = await fetchEspnLeagueData(serverConfig.leagueId, serverConfig.season, serverConfig.swid, serverConfig.espnS2);
-    const normalized = normalizeEspnData(raw);
+    console.log(`🔄 [Auto-Sync] Authoritative sync for ESPN League #${serverConfig.leagueId}...`);
+    const normalized = await syncEspnLeague(
+      serverConfig.leagueId,
+      serverConfig.season,
+      serverConfig.swid,
+      serverConfig.espnS2
+    );
 
+    lastSyncTime = Date.now();
+    lastSyncError = null;
     saveCachedLeagueData(normalized);
+
     broadcastLiveUpdate({
       type: 'ESPN_AUTO_SYNC_SUCCESS',
       leagueId: serverConfig.leagueId,
       leagueName: normalized.name,
       data: normalized,
+      lastSynced: new Date(lastSyncTime).toISOString(),
       timestamp: new Date().toISOString()
     });
-    console.log(`✅ [Auto-Sync] Successfully updated "${normalized.name}" for all users!`);
+
+    console.log(`✅ [Auto-Sync] Live sync complete for "${normalized.name}" (${normalized.completedTrades?.length || 0} trades, ${normalized.transactions?.length || 0} transactions)`);
+    return normalized;
   } catch (e) {
-    console.warn(`⚠️ [Auto-Sync] Refresh attempt warning: ${e.message}`);
+    lastSyncError = e.message;
+    console.warn(`⚠️ [Auto-Sync] Refresh attempt warning (last known good data preserved): ${e.message}`);
+    return cachedLeagueData;
+  } finally {
+    isSyncInProgress = false;
   }
 }
 
@@ -153,6 +187,7 @@ app.get('/api/sync/stream', (req, res) => {
     type: 'CONNECTED', 
     message: 'Instant Real-Time Stream active', 
     hasCachedData: !!cachedLeagueData,
+    lastSynced: lastSyncTime ? new Date(lastSyncTime).toISOString() : (cachedLeagueData?.lastSynced || null),
     data: cachedLeagueData,
     timestamp: new Date().toISOString() 
   })}\n\n`);
@@ -167,29 +202,51 @@ app.get('/api/sync/stream', (req, res) => {
  */
 function broadcastLiveUpdate(payload) {
   sseClients.forEach(client => {
-    client.res.write(`data: ${JSON.stringify(payload)}\n\n`);
+    try {
+      client.res.write(`data: ${JSON.stringify(payload)}\n\n`);
+    } catch (e) {}
   });
 }
 
 /**
+ * GET /api/sync/status
+ * Lightweight sync status endpoint for client auto-revalidation
+ */
+app.get('/api/sync/status', (req, res) => {
+  return res.json({
+    success: true,
+    leagueId: serverConfig.leagueId,
+    season: serverConfig.season,
+    lastSynced: lastSyncTime ? new Date(lastSyncTime).toISOString() : (cachedLeagueData?.lastSynced || null),
+    isSyncing: isSyncInProgress,
+    error: lastSyncError,
+    tradesCount: cachedLeagueData?.completedTrades?.length || 0,
+    transactionsCount: cachedLeagueData?.transactions?.length || 0,
+    timestamp: new Date().toISOString()
+  });
+});
+
+/**
  * GET /api/league/current
- * Serves active global ESPN dataset to any visiting client
+ * Serves active global ESPN dataset with Stale-While-Revalidate background synchronization.
+ * Scrubbed of all private session credentials before returning to client.
  */
 app.get('/api/league/current', async (req, res) => {
-  // If memory cache is empty, check disk cache
+  // 1. Ensure cache is loaded
   if (!cachedLeagueData) {
     loadCachedLeagueData();
   }
 
-  // If still empty and we have leagueId + credentials, attempt on-demand fetch
-  if (!cachedLeagueData && serverConfig.leagueId && (serverConfig.swid || process.env.ESPN_SWID)) {
-    try {
-      console.log(`🔄 [On-Demand] Syncing ESPN League #${serverConfig.leagueId}...`);
-      const raw = await fetchEspnLeagueData(serverConfig.leagueId, serverConfig.season, serverConfig.swid, serverConfig.espnS2);
-      cachedLeagueData = normalizeEspnData(raw);
-      saveCachedLeagueData(cachedLeagueData);
-    } catch (e) {
-      console.warn(`⚠️ [On-Demand] Fetch failed: ${e.message}`);
+  // 2. If completely empty, perform synchronous initial sync
+  if (!cachedLeagueData && serverConfig.leagueId) {
+    await performServerLeagueSync({ force: true });
+  } else {
+    // 3. Stale-While-Revalidate: If cache is older than TTL, trigger non-blocking background refresh
+    const now = Date.now();
+    if (!lastSyncTime || (now - lastSyncTime >= SYNC_TTL_MS)) {
+      performServerLeagueSync({ force: false }).catch(err => {
+        console.warn('Background revalidation notice:', err.message);
+      });
     }
   }
 
@@ -197,13 +254,14 @@ app.get('/api/league/current', async (req, res) => {
     success: true,
     hasCachedData: !!cachedLeagueData,
     isEspnSynced: !!(cachedLeagueData && cachedLeagueData.teams && cachedLeagueData.teams.length > 0),
+    lastSynced: lastSyncTime ? new Date(lastSyncTime).toISOString() : (cachedLeagueData?.lastSynced || null),
+    isSyncing: isSyncInProgress,
+    syncError: lastSyncError,
     data: cachedLeagueData,
     config: {
       leagueId: serverConfig.leagueId,
       season: serverConfig.season,
-      swid: serverConfig.swid || '',
-      espnS2: serverConfig.espnS2 || '',
-      isAutoSyncEnabled: serverConfig.isAutoSyncEnabled
+      isAutoSyncEnabled: true
     }
   });
 });
@@ -291,8 +349,8 @@ function startServer(portToTry) {
     console.log(`====================================================`);
 
     // Initial background sync on boot if config present
-    if (serverConfig.leagueId && (!cachedLeagueData || !cachedLeagueData.teams)) {
-      autoRefreshEspnData();
+    if (serverConfig.leagueId) {
+      performServerLeagueSync({ force: false });
     }
   });
 
@@ -306,10 +364,10 @@ function startServer(portToTry) {
   });
 }
 
-// Auto-refresh ESPN data every 10 minutes in background when running standalone
+// Auto-refresh ESPN data every 5 minutes in background when running standalone
 if (process.env.VERCEL !== '1' && require.main === module) {
   startServer(PORT);
-  setInterval(autoRefreshEspnData, 10 * 60 * 1000);
+  setInterval(() => performServerLeagueSync({ force: false }), 5 * 60 * 1000);
 }
 
 module.exports = app;

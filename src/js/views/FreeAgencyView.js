@@ -89,8 +89,8 @@ class FreeAgencyViewComponent {
 
     // Normalize actual executed transactions
     const executedMoves = rawTxList.map(tx => {
-      const added = (tx.added && tx.added[0]) || { name: 'Player Asset', pos: 'FLEX', team: 'NFL', pts: 0 };
-      const dropped = (tx.dropped && tx.dropped[0]) || null;
+      const added = (tx.added && tx.added.length > 0) ? tx.added[0] : null;
+      const dropped = (tx.dropped && tx.dropped.length > 0) ? tx.dropped[0] : null;
       const team = teams.find(t => t.teamId === tx.teamId || t.name === tx.teamName) || {
         name: tx.teamName || 'Team',
         managerName: tx.managerName || 'Manager',
@@ -105,13 +105,13 @@ class FreeAgencyViewComponent {
         teamName: team.name,
         managerName: team.managerName,
         logoUrl: team.logoUrl,
-        addedName: added.name,
-        addedPos: added.pos,
-        addedTeam: added.team,
+        addedName: added ? added.name : null,
+        addedPos: added ? added.pos : null,
+        addedTeam: added ? added.team : null,
         droppedName: dropped ? dropped.name : null,
         droppedPos: dropped ? dropped.pos : null,
         droppedTeam: dropped ? dropped.team : null,
-        claimType: tx.type || 'Free Agent Add',
+        claimType: tx.type || 'Free Agent Move',
         netPoints: parseFloat(tx.netPoints || 0),
         grade: tx.grade || 'B',
         stars: tx.stars || '★★★☆☆',
@@ -119,10 +119,10 @@ class FreeAgencyViewComponent {
         whyItMatters: tx.whyItMatters || `${team.name} made a transaction to adjust active depth.`,
         deepAnalysis: tx.deepAnalysis || {
           whyMadeSense: 'Targeted depth adjustment ahead of kickoff.',
-          weaknessAddressed: `Bolstered ${added.pos} rotation.`,
-          teamGained: `${added.name} (${added.pos} - ${added.team})`,
-          teamSurrendered: dropped ? `${dropped.name} (${dropped.pos})` : 'Roster Spot',
-          futureOutlook: 'Provides situational depth during bye weeks.'
+          weaknessAddressed: `Bolstered active roster composition.`,
+          teamGained: added ? `${added.name} (${added.pos} - ${added.team})` : 'Open roster spot',
+          teamSurrendered: dropped ? `${dropped.name} (${dropped.pos})` : 'Free roster spot',
+          futureOutlook: 'Provides situational depth during upcoming matchups.'
         }
       };
     });
@@ -266,14 +266,16 @@ class FreeAgencyViewComponent {
                 <!-- Core Transaction Line (+ Added, - Dropped) -->
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.6rem;">
                   <div style="display:flex; flex-direction:column; gap:0.25rem;">
-                    <!-- Added Player -->
-                    <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
-                      <span style="color:var(--accent-sleeper); font-weight:900; font-size:0.95rem;">+</span>
-                      <strong style="color:var(--text-primary); font-size:0.92rem; font-weight:800;">${tx.addedName}</strong>
-                      <span class="badge ${tx.addedPos === 'RB' ? 'badge-blue' : (tx.addedPos === 'WR' ? 'badge-green' : (tx.addedPos === 'QB' ? 'badge-red' : 'badge-gold'))}" style="font-size:0.62rem; padding:0.08rem 0.3rem;">
-                        ${tx.addedPos} • ${tx.addedTeam}
-                      </span>
-                    </div>
+                    <!-- Added Player (if applicable) -->
+                    ${tx.addedName ? `
+                      <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                        <span style="color:var(--accent-sleeper); font-weight:900; font-size:0.95rem;">+</span>
+                        <strong style="color:var(--text-primary); font-size:0.92rem; font-weight:800;">${tx.addedName}</strong>
+                        <span class="badge ${tx.addedPos === 'RB' ? 'badge-blue' : (tx.addedPos === 'WR' ? 'badge-green' : (tx.addedPos === 'QB' ? 'badge-red' : 'badge-gold'))}" style="font-size:0.62rem; padding:0.08rem 0.3rem;">
+                          ${tx.addedPos} • ${tx.addedTeam}
+                        </span>
+                      </div>
+                    ` : ''}
 
                     <!-- Dropped Player (if applicable) -->
                     ${tx.droppedName ? `
