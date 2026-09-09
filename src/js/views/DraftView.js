@@ -163,11 +163,11 @@ class DraftViewComponent {
           <div>
             <h2 style="font-size:1.15rem; margin:0; display:flex; align-items:center; gap:0.4rem;">
               <i class="fa-solid fa-clipboard-list text-gold"></i>
-              <span>2026 Draft Center</span>
-              <span class="badge badge-gold" style="font-size:0.68rem; padding:0.12rem 0.4rem;">192 Total Picks</span>
+              <span>2026 Draft Analytics</span>
+              <span class="badge badge-gold" style="font-size:0.68rem; padding:0.12rem 0.4rem;">192 Picks Analyzed</span>
             </h2>
             <p class="text-secondary" style="font-size:0.78rem; margin:0.15rem 0 0 0;">
-              Real draft intelligence judged against available alternatives and team needs at each pick.
+              In-depth draft intelligence, pick-by-pick value vs ADP, steal/reach metrics, and franchise capital.
             </p>
           </div>
 

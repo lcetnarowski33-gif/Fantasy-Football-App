@@ -30,13 +30,13 @@ class HeaderComponent {
 
     const views = [
       { id: 'home', label: 'Dashboard', icon: 'fa-gauge-high' },
+      { id: 'analytics', label: 'League Analytics', icon: 'fa-chart-line' },
+      { id: 'trade', label: 'Accepted Trades', icon: 'fa-right-left' },
+      { id: 'draft', label: 'Draft Analytics', icon: 'fa-clipboard-list' },
       { id: 'matchup', label: 'Matchups', icon: 'fa-bolt' },
-      { id: 'trade', label: 'Trades', icon: 'fa-right-left' },
       { id: 'waiver', label: 'Free Agency', icon: 'fa-list-check' },
-      { id: 'draft', label: 'Draft', icon: 'fa-clipboard-list' },
-      { id: 'team', label: 'Teams', icon: 'fa-users' },
-      { id: 'league', label: 'Standings', icon: 'fa-trophy' },
-      { id: 'analytics', label: 'Analytics', icon: 'fa-chart-line' }
+      { id: 'team', label: 'Franchises', icon: 'fa-users' },
+      { id: 'league', label: 'Standings', icon: 'fa-trophy' }
     ];
 
     const activeView = currentState.activeView || 'home';
@@ -102,25 +102,25 @@ class HeaderComponent {
         </div>
       </header>
 
-      <!-- Mobile Bottom Navigation Bar -->
+      <!-- Mobile Bottom Navigation Bar: Home, Analytics, Trades, Draft, More -->
       <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
         <button class="mobile-nav-item ${activeView === 'home' ? 'active' : ''}" data-view="home">
           <i class="fa-solid fa-gauge-high"></i>
           <span>Home</span>
         </button>
-        <button class="mobile-nav-item ${activeView === 'matchup' ? 'active' : ''}" data-view="matchup">
-          <i class="fa-solid fa-bolt"></i>
-          <span>Matchup</span>
+        <button class="mobile-nav-item ${activeView === 'analytics' || activeView === 'efficiency' ? 'active' : ''}" data-view="analytics">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Analytics</span>
         </button>
         <button class="mobile-nav-item ${activeView === 'trade' ? 'active' : ''}" data-view="trade">
           <i class="fa-solid fa-right-left"></i>
           <span>Trades</span>
         </button>
-        <button class="mobile-nav-item ${activeView === 'waiver' ? 'active' : ''}" data-view="waiver">
-          <i class="fa-solid fa-list-check"></i>
-          <span>Waivers</span>
+        <button class="mobile-nav-item ${activeView === 'draft' ? 'active' : ''}" data-view="draft">
+          <i class="fa-solid fa-clipboard-list"></i>
+          <span>Draft</span>
         </button>
-        <button class="mobile-nav-item" id="mobile-nav-more-btn" aria-label="More Navigation Pages">
+        <button class="mobile-nav-item ${['matchup', 'waiver', 'team', 'league', 'h2h', 'records', 'player'].includes(activeView) ? 'active' : ''}" id="mobile-nav-more-btn" aria-label="More Navigation Pages">
           <i class="fa-solid fa-ellipsis"></i>
           <span>More</span>
         </button>

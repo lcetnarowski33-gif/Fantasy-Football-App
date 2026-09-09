@@ -137,10 +137,16 @@ class HomeViewComponent {
 
         <!-- 3. QUICK NAVIGATION TILES -->
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.5rem; margin-bottom:0.85rem;">
-          <div class="analytics-card" style="padding:0.65rem; text-align:center; cursor:pointer; border-radius:var(--radius-md);" onclick="store.setView('matchup')">
-            <div style="color:var(--accent-gold); font-size:1.1rem; margin-bottom:0.15rem;"><i class="fa-solid fa-bolt"></i></div>
-            <strong style="font-size:0.82rem; color:var(--text-primary); display:block;">Matchup Hub</strong>
-            <span style="font-size:0.68rem; color:var(--accent-gold);">Week ${league.currentWeek} Slate</span>
+          <div class="analytics-card" style="padding:0.65rem; text-align:center; cursor:pointer; border-radius:var(--radius-md);" onclick="store.setView('analytics')">
+            <div style="color:var(--accent-sleeper); font-size:1.1rem; margin-bottom:0.15rem;"><i class="fa-solid fa-chart-line"></i></div>
+            <strong style="font-size:0.82rem; color:var(--text-primary); display:block;">League Analytics</strong>
+            <span style="font-size:0.68rem; color:var(--accent-sleeper);">Decision IQ & Odds</span>
+          </div>
+
+          <div class="analytics-card" style="padding:0.65rem; text-align:center; cursor:pointer; border-radius:var(--radius-md);" onclick="store.setView('draft')">
+            <div style="color:#a855f7; font-size:1.1rem; margin-bottom:0.15rem;"><i class="fa-solid fa-clipboard-list"></i></div>
+            <strong style="font-size:0.82rem; color:var(--text-primary); display:block;">Draft Analytics</strong>
+            <span style="font-size:0.68rem; color:#a855f7;">192 Analyzed Picks</span>
           </div>
 
           <div class="analytics-card" style="padding:0.65rem; text-align:center; cursor:pointer; border-radius:var(--radius-md);" onclick="store.setView('trade')">
@@ -149,16 +155,10 @@ class HomeViewComponent {
             <span style="font-size:0.68rem; color:var(--accent-blue);">${completedTrades.length} Verified</span>
           </div>
 
-          <div class="analytics-card" style="padding:0.65rem; text-align:center; cursor:pointer; border-radius:var(--radius-md);" onclick="store.setView('waiver')">
-            <div style="color:var(--accent-sleeper); font-size:1.1rem; margin-bottom:0.15rem;"><i class="fa-solid fa-list-check"></i></div>
-            <strong style="font-size:0.82rem; color:var(--text-primary); display:block;">Free Agency</strong>
-            <span style="font-size:0.68rem; color:var(--accent-sleeper);">Waiver Activity</span>
-          </div>
-
-          <div class="analytics-card" style="padding:0.65rem; text-align:center; cursor:pointer; border-radius:var(--radius-md);" onclick="store.setView('draft')">
-            <div style="color:#a855f7; font-size:1.1rem; margin-bottom:0.15rem;"><i class="fa-solid fa-clipboard-list"></i></div>
-            <strong style="font-size:0.82rem; color:var(--text-primary); display:block;">Draft Board</strong>
-            <span style="font-size:0.68rem; color:#a855f7;">192 Analyzed Picks</span>
+          <div class="analytics-card" style="padding:0.65rem; text-align:center; cursor:pointer; border-radius:var(--radius-md);" onclick="store.setView('matchup')">
+            <div style="color:var(--accent-gold); font-size:1.1rem; margin-bottom:0.15rem;"><i class="fa-solid fa-bolt"></i></div>
+            <strong style="font-size:0.82rem; color:var(--text-primary); display:block;">Matchup Hub</strong>
+            <span style="font-size:0.68rem; color:var(--accent-gold);">Week ${league.currentWeek} Slate</span>
           </div>
         </div>
 
