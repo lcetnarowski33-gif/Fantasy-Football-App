@@ -68,6 +68,9 @@ function loadCachedLeagueData() {
     if (fs.existsSync(CACHE_FILE)) {
       const raw = fs.readFileSync(CACHE_FILE, 'utf8');
       cachedLeagueData = JSON.parse(raw);
+      if (cachedLeagueData && Array.isArray(cachedLeagueData.draftPicks)) {
+        cachedLeagueData.draftPicks.sort((a, b) => (Number(a.overallPick || a.overallPickNumber || 0) - Number(b.overallPick || b.overallPickNumber || 0)));
+      }
       console.log(`📦 Loaded cached ESPN dataset for "${cachedLeagueData.name}"`);
     }
   } catch (e) {
@@ -96,6 +99,9 @@ function saveServerConfig(newConfig) {
  */
 function saveCachedLeagueData(data) {
   try {
+    if (data && Array.isArray(data.draftPicks)) {
+      data.draftPicks.sort((a, b) => (Number(a.overallPick || a.overallPickNumber || 0) - Number(b.overallPick || b.overallPickNumber || 0)));
+    }
     cachedLeagueData = data;
     fs.writeFileSync(CACHE_FILE, JSON.stringify(data, null, 2), 'utf8');
     console.log(`💾 Saved cached ESPN dataset snapshot for "${data.name}"`);

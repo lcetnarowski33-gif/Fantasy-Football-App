@@ -128,8 +128,11 @@ class EfficiencyViewComponent {
               <i class="fa-solid fa-list-check"></i> Move Efficiency Leaderboard
             </div>
           </div>
-          <div class="analytics-table-wrapper">
-            <table class="analytics-table">
+          
+          <!-- Desktop Table (769px+) -->
+          <div class="desktop-only">
+            <div class="analytics-table-wrapper">
+              <table class="analytics-table">
               <thead>
                 <tr>
                   <th>#</th>
@@ -144,7 +147,7 @@ class EfficiencyViewComponent {
                   <th>ROI</th>
                   <th>Start %</th>
                   <th>Trades</th>
-                  <th>Audit</th>
+                  <th>Profile</th>
                 </tr>
               </thead>
               <tbody>
@@ -175,9 +178,9 @@ class EfficiencyViewComponent {
                       <td data-label="Trade Net Pts" class="font-mono ${ds.tradeNetValue >= 0 ? 'text-green' : 'text-red'}" style="font-weight:700;">
                         ${ds.tradeNetValue >= 0 ? '+' : ''}${ds.tradeNetValue} Pts
                       </td>
-                      <td data-label="Audit Moves">
-                        <button class="btn btn-outline btn-sm" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="HomeViewComponent.openAuditModal('${t.teamId}')">
-                          <i class="fa-solid fa-clipboard-list"></i> Audit
+                      <td data-label="Profile">
+                        <button class="btn btn-outline btn-sm" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="store.setView('team', { teamId: '${t.teamId}' })">
+                          <i class="fa-solid fa-arrow-right"></i> View
                         </button>
                       </td>
                     </tr>
@@ -185,6 +188,63 @@ class EfficiencyViewComponent {
                 }).join('')}
               </tbody>
             </table>
+          </div>
+        </div>
+
+          <!-- Mobile Card List (<768px) -->
+          <div class="mobile-only" style="display:flex; flex-direction:column; gap:0.6rem;">
+            ${displayedTeams.map((t, idx) => {
+              const ds = t.decisionStats || {};
+              const pa = ds.positionalAcquisitions || {};
+              return `
+                <div style="padding:0.75rem; border-radius:var(--radius-md); background:rgba(255,255,255,0.03); border:1px solid var(--border-color);">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; gap:0.4rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; min-width:0;">
+                      <span style="font-weight:900; font-size:0.9rem; color:${idx < 3 ? 'var(--accent-gold)' : 'var(--text-secondary)'};">#${idx + 1}</span>
+                      <img src="${t.logoUrl}" style="width:28px; height:28px; border-radius:4px; object-fit:cover; flex-shrink:0;">
+                      <div style="min-width:0;">
+                        <strong style="color:var(--text-primary); font-size:0.82rem; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${t.managerName}</strong>
+                        <div style="font-size:0.68rem; color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${t.name}</div>
+                      </div>
+                    </div>
+                    <span class="badge badge-gold" style="font-size:0.62rem; padding:0.12rem 0.35rem; flex-shrink:0;">${ds.persona || 'Manager'}</span>
+                  </div>
+
+                  <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:0.35rem; margin-bottom:0.5rem; background:rgba(0,0,0,0.25); padding:0.4rem; border-radius:var(--radius-sm); text-align:center;">
+                    <div>
+                      <div style="font-size:0.6rem; color:var(--text-muted); text-transform:uppercase;">FLEX Eff</div>
+                      <div class="font-mono text-green" style="font-size:0.8rem; font-weight:800;">${ds.flexEfficiency || 80}%</div>
+                    </div>
+                    <div>
+                      <div style="font-size:0.6rem; color:var(--text-muted); text-transform:uppercase;">FLEX PPG</div>
+                      <div class="font-mono text-primary" style="font-size:0.8rem; font-weight:800;">${ds.flexPpg || 14.0}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:0.6rem; color:var(--text-muted); text-transform:uppercase;">FA Moves</div>
+                      <div class="font-mono" style="font-size:0.8rem; font-weight:800; color:var(--text-primary);">${pa.totalAdditions || 15}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:0.6rem; color:var(--text-muted); text-transform:uppercase;">FAAB ROI</div>
+                      <div class="font-mono text-gold" style="font-size:0.8rem; font-weight:800;">${ds.faabRoi || 2.1}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:0.6rem; color:var(--text-muted); text-transform:uppercase;">Start IQ</div>
+                      <div class="font-mono text-primary" style="font-size:0.8rem; font-weight:800;">${ds.startIQ}%</div>
+                    </div>
+                    <div>
+                      <div style="font-size:0.6rem; color:var(--text-muted); text-transform:uppercase;">Trades</div>
+                      <div class="font-mono ${ds.tradeNetValue >= 0 ? 'text-green' : 'text-red'}" style="font-size:0.8rem; font-weight:800;">
+                        ${ds.tradeNetValue >= 0 ? '+' : ''}${ds.tradeNetValue}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button class="btn btn-outline btn-sm" style="width:100%; font-size:0.72rem; padding:0.3rem;" onclick="store.setView('team', { teamId: '${t.teamId}' })">
+                    <i class="fa-solid fa-arrow-right"></i> Franchise Profile
+                  </button>
+                </div>
+              `;
+            }).join('')}
           </div>
         </div>
 

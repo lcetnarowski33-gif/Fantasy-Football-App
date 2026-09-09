@@ -92,8 +92,10 @@ class PlayerViewComponent {
               <i class="fa-solid fa-users text-blue"></i> Players (${filtered.length})
             </div>
           </div>
-          <div class="analytics-table-wrapper">
-            <table class="analytics-table">
+          <!-- Desktop Table View (769px+) -->
+          <div class="desktop-only">
+            <div class="analytics-table-wrapper">
+              <table class="analytics-table">
               <thead>
                 <tr>
                   <th>#</th>
@@ -147,6 +149,58 @@ class PlayerViewComponent {
                 `}
               </tbody>
             </table>
+          </div>
+        </div>
+
+          <!-- Mobile Card List (<768px) -->
+          <div class="mobile-only" style="display:flex; flex-direction:column; gap:0.5rem;">
+            ${filtered.length > 0 ? filtered.map((p, idx) => {
+              const pff = p.pff || { xFP: 'N/A', FPOE: 0, targetShare: 0, snapShare: 0 };
+              return `
+                <div style="padding:0.65rem 0.75rem; border-radius:var(--radius-md); background:rgba(255,255,255,0.03); border:1px solid var(--border-color); cursor:pointer;" onclick="store.setView('player', {playerId: '${p.id}'});">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem; gap:0.4rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; min-width:0;">
+                      <span style="font-weight:900; font-size:0.85rem; color:${idx < 3 ? 'var(--accent-gold)' : 'var(--text-secondary)'}; width:22px; flex-shrink:0;">#${idx + 1}</span>
+                      <img src="${p.photo}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color); background:var(--bg-surface); flex-shrink:0;" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
+                      <div style="min-width:0;">
+                        <strong style="color:var(--text-primary); font-size:0.88rem; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name}</strong>
+                        <div style="font-size:0.7rem; color:var(--text-secondary); display:flex; align-items:center; gap:0.3rem;">
+                          <span class="badge badge-blue" style="font-size:0.62rem; padding:0.1rem 0.3rem;">${p.position}</span>
+                          <span>${p.nflTeam}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div style="text-align:right; flex-shrink:0;">
+                      <div class="font-mono text-green" style="font-size:0.92rem; font-weight:800;">${p.seasonPts} <span style="font-size:0.62rem; color:var(--text-muted);">pts</span></div>
+                      <span class="badge ${p.status === 'HEALTHY' ? 'badge-green' : 'badge-gold'}" style="font-size:0.58rem; padding:0.08rem 0.28rem;">${p.status}</span>
+                    </div>
+                  </div>
+
+                  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:0.25rem; background:rgba(0,0,0,0.25); padding:0.35rem 0.3rem; border-radius:var(--radius-sm); text-align:center;">
+                    <div>
+                      <div style="font-size:0.58rem; color:var(--text-muted); text-transform:uppercase;">Avg PPG</div>
+                      <div class="font-mono text-primary" style="font-size:0.78rem; font-weight:800;">${p.avgPts}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:0.58rem; color:var(--text-muted); text-transform:uppercase;">xFP</div>
+                      <div class="font-mono text-gold" style="font-size:0.78rem; font-weight:800;">${pff.xFP}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:0.58rem; color:var(--text-muted); text-transform:uppercase;">FPOE</div>
+                      <div class="font-mono ${pff.FPOE >= 0 ? 'text-green' : 'text-red'}" style="font-size:0.78rem; font-weight:800;">
+                        ${pff.FPOE >= 0 ? '+' : ''}${pff.FPOE}
+                      </div>
+                    </div>
+                    <div>
+                      <div style="font-size:0.58rem; color:var(--text-muted); text-transform:uppercase;">Target %</div>
+                      <div class="font-mono" style="font-size:0.78rem; font-weight:800; color:var(--text-primary);">${pff.targetShare ? pff.targetShare + '%' : 'N/A'}</div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('') : `
+              <div class="text-muted" style="text-align:center; padding:2rem;">No players match your search.</div>
+            `}
           </div>
         </div>
       </div>

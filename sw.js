@@ -27,7 +27,6 @@ const PRECACHE_ASSETS = [
   '/src/js/components/Header.js',
   '/src/js/components/Ticker.js',
   '/src/js/components/SearchModal.js',
-  '/src/js/components/EspnSyncModal.js',
   '/src/js/views/HomeView.js',
   '/src/js/views/LeagueView.js',
   '/src/js/views/TeamView.js',

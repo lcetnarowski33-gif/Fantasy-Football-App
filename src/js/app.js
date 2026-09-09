@@ -12,12 +12,10 @@ function bootApp() {
   const tickerMount = document.getElementById('ticker-mount');
   const mainViewContainer = document.getElementById('main-view-container');
   const searchModalMount = document.getElementById('search-modal-mount');
-  const espnModalMount = document.getElementById('espn-modal-mount');
 
   // Render Static Component Framework
   try {
     if (searchModalMount && typeof SearchModalComponent !== 'undefined') SearchModalComponent.render(searchModalMount);
-    if (espnModalMount && typeof EspnSyncModalComponent !== 'undefined') EspnSyncModalComponent.render(espnModalMount);
   } catch (e) {
     console.warn('Modal framework render warning:', e);
   }

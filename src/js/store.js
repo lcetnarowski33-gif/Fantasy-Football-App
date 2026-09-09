@@ -88,6 +88,15 @@ class AppStore {
   }
 
   /**
+   * Helper to ensure draft picks are always strictly sorted by overall pick number
+   */
+  _ensureDraftOrder(data) {
+    if (data && Array.isArray(data.draftPicks)) {
+      data.draftPicks.sort((a, b) => (Number(a.overallPick || a.overallPickNumber || 0) - Number(b.overallPick || b.overallPickNumber || 0)));
+    }
+  }
+
+  /**
    * Get current state snapshot
    */
   getState() {
@@ -95,6 +104,7 @@ class AppStore {
       const fallback = (typeof INITIAL_MOCK_DATA !== 'undefined' ? INITIAL_MOCK_DATA : (typeof window !== 'undefined' && window.INITIAL_MOCK_DATA ? window.INITIAL_MOCK_DATA : null));
       if (fallback) this.state.data = fallback;
     }
+    this._ensureDraftOrder(this.state.data);
     return this.state;
   }
 
@@ -186,6 +196,7 @@ class AppStore {
   applyEspnSync(espnNormalizedData, credentials = null) {
     if (!espnNormalizedData || !espnNormalizedData.teams) return;
 
+    this._ensureDraftOrder(espnNormalizedData);
     this.state.data = espnNormalizedData;
     this.state.isEspnSynced = true;
 
@@ -307,6 +318,7 @@ class AppStore {
         }
 
         if (parsed && parsed.teams && (parsed.league || parsed.name)) {
+          this._ensureDraftOrder(parsed);
           this.state.data = parsed;
           this.state.isEspnSynced = isSynced;
           console.log(`📦 Successfully restored saved 2026 league data from localStorage! Synced: ${isSynced}`);
