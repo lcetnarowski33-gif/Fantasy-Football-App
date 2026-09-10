@@ -166,6 +166,181 @@ class ChartManager {
   }
 
   /**
+   * Render Quadrant Scatter Plot: Points For vs Points Against
+   */
+  static renderQuadrantScatter(canvasId, pointsData, medX, medY) {
+    if (typeof Chart === 'undefined') return;
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (canvas._chartInstance) canvas._chartInstance.destroy();
+
+    canvas._chartInstance = new Chart(ctx, {
+      type: 'scatter',
+      data: {
+        datasets: pointsData.map(p => ({
+          label: p.label,
+          data: [{ x: p.x, y: p.y }],
+          backgroundColor: p.color || '#38bdf8',
+          borderColor: '#f8fafc',
+          borderWidth: 1.5,
+          pointRadius: 8,
+          pointHoverRadius: 11
+        }))
+      },
+      options: {
+        ...this.getDefaultDarkOptions(),
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#141923',
+            titleColor: '#f8fafc',
+            bodyColor: '#38bdf8',
+            borderColor: '#2a3447',
+            borderWidth: 1,
+            callbacks: {
+              title: (items) => items[0].dataset.label,
+              label: (item) => `PF: ${item.raw.x} | PA: ${item.raw.y} (${item.raw.x >= medX ? (item.raw.y <= medY ? 'Juggernaut' : 'Tough Luck') : (item.raw.y <= medY ? 'Lucky' : 'Rebuilder')})`
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Points Scored (PF)', color: '#94a3b8', font: { weight: '700' } },
+            grid: { color: '#1e2638' }
+          },
+          y: {
+            title: { display: true, text: 'Points Against (PA)', color: '#94a3b8', font: { weight: '700' } },
+            grid: { color: '#1e2638' }
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * Render Multi-Bar Chart for Volatility (Floor, Median, Ceiling)
+   */
+  static renderVolatilityBarChart(canvasId, labels, floors, medians, ceilings) {
+    if (typeof Chart === 'undefined') return;
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (canvas._chartInstance) canvas._chartInstance.destroy();
+
+    canvas._chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Floor (Lowest)',
+            data: floors,
+            backgroundColor: 'rgba(239, 68, 68, 0.65)',
+            borderColor: '#ef4444',
+            borderWidth: 1,
+            borderRadius: 4
+          },
+          {
+            label: 'Projected Median',
+            data: medians,
+            backgroundColor: 'rgba(56, 189, 248, 0.75)',
+            borderColor: '#38bdf8',
+            borderWidth: 1,
+            borderRadius: 4
+          },
+          {
+            label: 'Ceiling (Peak)',
+            data: ceilings,
+            backgroundColor: 'rgba(0, 230, 118, 0.75)',
+            borderColor: '#00e676',
+            borderWidth: 1,
+            borderRadius: 4
+          }
+        ]
+      },
+      options: {
+        ...this.getDefaultDarkOptions(),
+        scales: {
+          x: { ticks: { autoSkip: false, maxRotation: 45 }, grid: { color: '#1e2638' } },
+          y: { title: { display: true, text: 'Weekly Fantasy Points', color: '#94a3b8' }, grid: { color: '#1e2638' } }
+        }
+      }
+    });
+  }
+
+  /**
+   * Render Stacked Bar Chart for Roster Depth (Starters vs Bench)
+   */
+  static renderDepthStackedChart(canvasId, labels, starterPts, benchPts) {
+    if (typeof Chart === 'undefined') return;
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (canvas._chartInstance) canvas._chartInstance.destroy();
+
+    canvas._chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Starter Equity',
+            data: starterPts,
+            backgroundColor: '#38bdf8',
+            borderRadius: 4
+          },
+          {
+            label: 'Bench Depth',
+            data: benchPts,
+            backgroundColor: '#a855f7',
+            borderRadius: 4
+          }
+        ]
+      },
+      options: {
+        ...this.getDefaultDarkOptions(),
+        scales: {
+          x: { stacked: true, ticks: { autoSkip: false, maxRotation: 45 }, grid: { color: '#1e2638' } },
+          y: { stacked: true, title: { display: true, text: 'Total Roster Fantasy Points', color: '#94a3b8' }, grid: { color: '#1e2638' } }
+        }
+      }
+    });
+  }
+
+  /**
+   * Render Strength of Schedule (SOS) Horizontal Bar Chart
+   */
+  static renderSosBarChart(canvasId, labels, sosRatings) {
+    if (typeof Chart === 'undefined') return;
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (canvas._chartInstance) canvas._chartInstance.destroy();
+
+    canvas._chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Schedule Difficulty Rating (Higher = Tougher)',
+          data: sosRatings,
+          backgroundColor: sosRatings.map(v => v > 103 ? '#ef4444' : (v < 97 ? '#00e676' : '#f59e0b')),
+          borderRadius: 6
+        }]
+      },
+      options: {
+        ...this.getDefaultDarkOptions(),
+        indexAxis: 'y',
+        scales: {
+          x: { title: { display: true, text: 'SOS Difficulty Index (100 = Neutral)', color: '#94a3b8' }, grid: { color: '#1e2638' } },
+          y: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  /**
    * Default Chart.js Options customized for Dark Theme PFF UI
    */
   static getDefaultDarkOptions() {
