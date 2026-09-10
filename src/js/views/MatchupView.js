@@ -3,9 +3,10 @@
  * Renders Full Team Matchup Comparisons from real ESPN 2026 schedule data:
  * 1. Real home vs away games across all weeks 1–14
  * 2. Real projected scores and official scores
- * 3. Position-by-position starting lineup comparisons
+ * 3. Position-by-position starting lineup comparisons STRICTLY ALIGNED TO CANONICAL SLOTS:
+ *    [QB, RB, RB, WR, WR, TE, FLEX, D/ST, K]
  * 4. Bench audit comparison
- * Clean neon visual styling, no ugly handles.
+ * Clean neon visual styling, 100% mobile-first responsive on iPhones.
  */
 
 class MatchupViewComponent {
@@ -41,6 +42,92 @@ class MatchupViewComponent {
     }
   }
 
+  /**
+   * Align starters deterministically to canonical fantasy starting lineup slots:
+   * [QB, RB, RB, WR, WR, TE, FLEX, D/ST, K]
+   * Ensures QBs never appear in WR slots, WRs never appear in QB slots, etc.
+   */
+  static alignStartersToSlots(starters) {
+    const slots = ['QB', 'RB', 'RB', 'WR', 'WR', 'TE', 'FLEX', 'D/ST', 'K'];
+    const pool = [...(starters || [])];
+    const aligned = [];
+
+    slots.forEach(slot => {
+      let matchIdx = -1;
+
+      if (slot === 'QB') {
+        matchIdx = pool.findIndex(p => p.slotName === 'QB' || p.lineupSlotId === 0 || p.position === 'QB');
+      } else if (slot === 'RB') {
+        // Look for designated primary RB slot first
+        matchIdx = pool.findIndex(p => p.slotName === 'RB' || p.lineupSlotId === 2);
+        if (matchIdx === -1) {
+          matchIdx = pool.findIndex(p => p.position === 'RB' && p.slotName !== 'FLEX' && p.lineupSlotId !== 23);
+        }
+      } else if (slot === 'WR') {
+        // Look for designated primary WR slot first
+        matchIdx = pool.findIndex(p => p.slotName === 'WR' || p.lineupSlotId === 4);
+        if (matchIdx === -1) {
+          matchIdx = pool.findIndex(p => p.position === 'WR' && p.slotName !== 'FLEX' && p.lineupSlotId !== 23);
+        }
+      } else if (slot === 'TE') {
+        matchIdx = pool.findIndex(p => p.slotName === 'TE' || p.lineupSlotId === 6 || p.position === 'TE');
+      } else if (slot === 'FLEX') {
+        // Look for designated FLEX slot
+        matchIdx = pool.findIndex(p => p.slotName === 'FLEX' || p.lineupSlotId === 23);
+        if (matchIdx === -1) {
+          // Any remaining offensive flex player (RB, WR, TE)
+          matchIdx = pool.findIndex(p => ['RB', 'WR', 'TE'].includes(p.position));
+        }
+      } else if (slot === 'D/ST') {
+        matchIdx = pool.findIndex(p => p.slotName === 'D/ST' || p.lineupSlotId === 16 || p.position === 'D/ST');
+      } else if (slot === 'K') {
+        matchIdx = pool.findIndex(p => p.slotName === 'K' || p.lineupSlotId === 17 || p.position === 'K');
+      }
+
+      // Fallback: any remaining player matching position
+      if (matchIdx === -1) {
+        matchIdx = pool.findIndex(p => p.position === slot);
+      }
+
+      if (matchIdx !== -1) {
+        aligned.push(pool[matchIdx]);
+        pool.splice(matchIdx, 1);
+      } else if (pool.length > 0) {
+        aligned.push(pool.shift());
+      } else {
+        aligned.push({ name: 'Empty', position: slot, nflTeam: 'NFL', projPts: 0 });
+      }
+    });
+
+    return aligned;
+  }
+
+  /**
+   * Sort bench players by position priority and projected fantasy points
+   */
+  static sortBenchPlayers(bench) {
+    const posOrder = { 'QB': 1, 'RB': 2, 'WR': 3, 'TE': 4, 'K': 5, 'D/ST': 6 };
+    return [...(bench || [])].sort((a, b) => {
+      const ordA = posOrder[a.position] || 9;
+      const ordB = posOrder[b.position] || 9;
+      if (ordA !== ordB) return ordA - ordB;
+      return (Number(b.projPts || b.seasonPts || 0)) - (Number(a.projPts || a.seasonPts || 0));
+    });
+  }
+
+  static getSlotBadgeClass(slot) {
+    switch (slot) {
+      case 'QB': return 'badge-red';
+      case 'RB': return 'badge-blue';
+      case 'WR': return 'badge-green';
+      case 'TE': return 'badge-purple';
+      case 'FLEX': return 'badge-gold';
+      case 'D/ST': return 'badge-blue';
+      case 'K': return 'badge-gold';
+      default: return 'badge-blue';
+    }
+  }
+
   static render(mountEl, state) {
     if (!mountEl) return;
 
@@ -66,15 +153,27 @@ class MatchupViewComponent {
     const homeTeam = activeMatchup.homeTeam || defaultHome;
     const awayTeam = activeMatchup.awayTeam || defaultAway;
 
-    const homeStarters = (homeTeam.starters && homeTeam.starters.length > 0) ? homeTeam.starters : [];
-    const awayStarters = (awayTeam.starters && awayTeam.starters.length > 0) ? awayTeam.starters : [];
-    const homeBench = (homeTeam.bench && homeTeam.bench.length > 0) ? homeTeam.bench : [];
-    const awayBench = (awayTeam.bench && awayTeam.bench.length > 0) ? awayTeam.bench : [];
+    // Get starters and bench from teams or lookup from all players
+    const allPlayers = state.data.players || [];
+    const homeTeamPlayers = allPlayers.filter(p => p.teamId === homeTeam.teamId);
+    const awayTeamPlayers = allPlayers.filter(p => p.teamId === awayTeam.teamId);
 
+    const homeRawStarters = (homeTeam.starters && homeTeam.starters.length > 0) ? homeTeam.starters : homeTeamPlayers.filter(p => p.isStarter);
+    const awayRawStarters = (awayTeam.starters && awayTeam.starters.length > 0) ? awayTeam.starters : awayTeamPlayers.filter(p => p.isStarter);
+
+    const homeRawBench = (homeTeam.bench && homeTeam.bench.length > 0) ? homeTeam.bench : homeTeamPlayers.filter(p => p.isBench || (!p.isStarter && !p.isIR));
+    const awayRawBench = (awayTeam.bench && awayTeam.bench.length > 0) ? awayTeam.bench : awayTeamPlayers.filter(p => p.isBench || (!p.isStarter && !p.isIR));
+
+    // STRICT ALIGNMENT: Align each starter into the exact designated slot
     const slots = ['QB', 'RB', 'RB', 'WR', 'WR', 'TE', 'FLEX', 'D/ST', 'K'];
+    const homeAligned = this.alignStartersToSlots(homeRawStarters);
+    const awayAligned = this.alignStartersToSlots(awayRawStarters);
+
+    const homeBench = this.sortBenchPlayers(homeRawBench);
+    const awayBench = this.sortBenchPlayers(awayRawBench);
 
     mountEl.innerHTML = `
-      <div class="animate-fade-in">
+      <div class="animate-fade-in" style="width:100%; max-width:100%; box-sizing:border-box;">
         <!-- Top Navigation Bar & Game Selector -->
         <div style="margin-bottom:0.65rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem; background:var(--bg-card); padding:0.5rem 0.75rem; border-radius:var(--radius-md); border:1px solid var(--border-color);">
           <div style="display:flex; align-items:center; gap:0.5rem;">
@@ -149,41 +248,70 @@ class MatchupViewComponent {
           </button>
         </div>
 
-        <!-- Lineup Comparison Table -->
-        <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem;">
+        <!-- Lineup Comparison Table with Slot Alignment -->
+        <div class="analytics-card" style="margin-bottom:0.75rem; padding:0.45rem 0.55rem; width:100%; box-sizing:border-box;">
           <div class="table-responsive">
             <table class="standings-table">
               <thead>
                 <tr>
                   <th style="text-align:left;">${homeTeam.name}</th>
                   <th style="width:45px; text-align:right;">Proj</th>
-                  <th style="width:45px; text-align:center;">Slot</th>
+                  <th style="width:52px; text-align:center;">Slot</th>
                   <th style="width:45px; text-align:left;">Proj</th>
                   <th style="text-align:right;">${awayTeam.name}</th>
                 </tr>
               </thead>
               <tbody>
                 ${this.activeTab === 'starters' ? slots.map((s, idx) => {
-                  const hp = homeStarters[idx] || { name: 'Starter', position: s, nflTeam: 'NFL', projPts: 12.0 };
-                  const ap = awayStarters[idx] || { name: 'Starter', position: s, nflTeam: 'NFL', projPts: 12.0 };
+                  const hp = homeAligned[idx] || { name: 'Empty', position: s, nflTeam: 'NFL', projPts: 0 };
+                  const ap = awayAligned[idx] || { name: 'Empty', position: s, nflTeam: 'NFL', projPts: 0 };
+                  const slotBadgeClass = this.getSlotBadgeClass(s);
+
                   return `
                     <tr>
-                      <td style="text-align:left;">
-                        <strong style="color:var(--text-primary); font-size:0.78rem;">${hp.name}</strong>
-                        <div style="font-size:0.65rem; color:var(--text-secondary);">${hp.position} - ${hp.nflTeam}</div>
+                      <!-- Home Player Column -->
+                      <td style="text-align:left; cursor:pointer;" onclick="${hp.id ? `store.setView('player', {playerId: '${hp.id}'})` : ''}">
+                        <div style="display:flex; align-items:center; gap:0.4rem; min-width:0;">
+                          <img src="${hp.photo || 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png'}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color); background:var(--bg-surface); flex-shrink:0;" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
+                          <div style="min-width:0; overflow:hidden;">
+                            <strong style="color:var(--text-primary); font-size:0.78rem; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">${hp.name}</strong>
+                            <div style="font-size:0.64rem; color:var(--text-secondary); display:flex; align-items:center; gap:0.25rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                              <span class="badge ${hp.position === 'RB' ? 'badge-blue' : (hp.position === 'WR' ? 'badge-green' : (hp.position === 'QB' ? 'badge-red' : 'badge-gold'))}" style="font-size:0.55rem; padding:0.04rem 0.22rem;">${hp.position}</span>
+                              <span>${hp.nflTeam || hp.team || ''}</span>
+                            </div>
+                          </div>
+                        </div>
                       </td>
-                      <td style="text-align:right; font-weight:700; font-size:0.78rem;" class="font-mono text-green">
-                        ${hp.projPts || 12.0}
+
+                      <!-- Home Projected Points -->
+                      <td style="text-align:right; font-weight:700; font-size:0.8rem;" class="font-mono text-green">
+                        ${hp.projPts !== undefined ? hp.projPts : 12.0}
                       </td>
+
+                      <!-- Center Lineup Slot Badge (QB, RB, WR, TE, FLEX, D/ST, K) -->
                       <td style="text-align:center;">
-                        <span class="badge badge-gold" style="font-size:0.62rem; padding:0.1rem 0.3rem;">${s}</span>
+                        <span class="badge ${slotBadgeClass}" style="font-size:0.65rem; padding:0.12rem 0.35rem; font-weight:800; letter-spacing:0.02em;">
+                          ${s}
+                        </span>
                       </td>
-                      <td style="text-align:left; font-weight:700; font-size:0.78rem;" class="font-mono text-blue">
-                        ${ap.projPts || 12.0}
+
+                      <!-- Away Projected Points -->
+                      <td style="text-align:left; font-weight:700; font-size:0.8rem;" class="font-mono text-blue">
+                        ${ap.projPts !== undefined ? ap.projPts : 12.0}
                       </td>
-                      <td style="text-align:right;">
-                        <strong style="color:var(--text-primary); font-size:0.78rem;">${ap.name}</strong>
-                        <div style="font-size:0.65rem; color:var(--text-secondary);">${ap.position} - ${ap.nflTeam}</div>
+
+                      <!-- Away Player Column -->
+                      <td style="text-align:right; cursor:pointer;" onclick="${ap.id ? `store.setView('player', {playerId: '${ap.id}'})` : ''}">
+                        <div style="display:flex; align-items:center; justify-content:flex-end; gap:0.4rem; min-width:0;">
+                          <div style="min-width:0; overflow:hidden; text-align:right;">
+                            <strong style="color:var(--text-primary); font-size:0.78rem; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">${ap.name}</strong>
+                            <div style="font-size:0.64rem; color:var(--text-secondary); display:flex; align-items:center; justify-content:flex-end; gap:0.25rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                              <span>${ap.nflTeam || ap.team || ''}</span>
+                              <span class="badge ${ap.position === 'RB' ? 'badge-blue' : (ap.position === 'WR' ? 'badge-green' : (ap.position === 'QB' ? 'badge-red' : 'badge-gold'))}" style="font-size:0.55rem; padding:0.04rem 0.22rem;">${ap.position}</span>
+                            </div>
+                          </div>
+                          <img src="${ap.photo || 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png'}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color); background:var(--bg-surface); flex-shrink:0;" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">
+                        </div>
                       </td>
                     </tr>
                   `;
@@ -193,22 +321,41 @@ class MatchupViewComponent {
                     const ap = awayBench[idx] || { name: '—', position: 'BE', nflTeam: '', projPts: '—' };
                     return `
                       <tr>
-                        <td style="text-align:left;">
-                          <strong style="color:var(--text-primary); font-size:0.78rem;">${hp.name}</strong>
-                          <div style="font-size:0.65rem; color:var(--text-secondary);">${hp.position} ${hp.nflTeam}</div>
+                        <!-- Home Bench Player -->
+                        <td style="text-align:left; cursor:pointer;" onclick="${hp.id ? `store.setView('player', {playerId: '${hp.id}'})` : ''}">
+                          <div style="display:flex; align-items:center; gap:0.4rem; min-width:0;">
+                            ${hp.photo ? `<img src="${hp.photo}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color); background:var(--bg-surface); flex-shrink:0;" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">` : ''}
+                            <div style="min-width:0; overflow:hidden;">
+                              <strong style="color:var(--text-primary); font-size:0.78rem; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${hp.name}</strong>
+                              <div style="font-size:0.64rem; color:var(--text-secondary);">${hp.position} ${hp.nflTeam || ''}</div>
+                            </div>
+                          </div>
                         </td>
+
+                        <!-- Home Proj -->
                         <td style="text-align:right; font-size:0.78rem;" class="font-mono text-muted">
                           ${hp.projPts}
                         </td>
+
+                        <!-- Center Slot -->
                         <td style="text-align:center;">
-                          <span class="badge badge-blue" style="font-size:0.62rem;">BE</span>
+                          <span class="badge badge-blue" style="font-size:0.6rem; padding:0.08rem 0.28rem;">BE</span>
                         </td>
+
+                        <!-- Away Proj -->
                         <td style="text-align:left; font-size:0.78rem;" class="font-mono text-muted">
                           ${ap.projPts}
                         </td>
-                        <td style="text-align:right;">
-                          <strong style="color:var(--text-primary); font-size:0.78rem;">${ap.name}</strong>
-                          <div style="font-size:0.65rem; color:var(--text-secondary);">${ap.position} ${ap.nflTeam}</div>
+
+                        <!-- Away Bench Player -->
+                        <td style="text-align:right; cursor:pointer;" onclick="${ap.id ? `store.setView('player', {playerId: '${ap.id}'})` : ''}">
+                          <div style="display:flex; align-items:center; justify-content:flex-end; gap:0.4rem; min-width:0;">
+                            <div style="min-width:0; overflow:hidden; text-align:right;">
+                              <strong style="color:var(--text-primary); font-size:0.78rem; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${ap.name}</strong>
+                              <div style="font-size:0.64rem; color:var(--text-secondary);">${ap.position} ${ap.nflTeam || ''}</div>
+                            </div>
+                            ${ap.photo ? `<img src="${ap.photo}" style="width:24px; height:24px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color); background:var(--bg-surface); flex-shrink:0;" onerror="this.onerror=null; this.src='https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/default.png';">` : ''}
+                          </div>
                         </td>
                       </tr>
                     `;

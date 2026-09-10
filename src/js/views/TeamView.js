@@ -28,9 +28,20 @@ class TeamViewComponent {
       teamId: 'default', name: 'Team', managerName: 'Manager', logoUrl: '', wins: 0, losses: 0, pointsFor: 0, eloRating: 1500
     };
 
-    const teamPlayers = (state && state.data && state.data.players && state.data.players.filter(p => p.teamId === team.teamId)) || [];
-    const starters = teamPlayers.filter(p => p.isStarter);
-    const bench = teamPlayers.filter(p => p.isBench || (!p.isStarter && !p.isIR));
+    const slotSortOrder = { 0: 1, 2: 2, 4: 3, 6: 4, 23: 5, 16: 6, 17: 7, 20: 8, 21: 9 };
+    const posOrder = { 'QB': 1, 'RB': 2, 'WR': 3, 'TE': 4, 'K': 5, 'D/ST': 6 };
+    const starters = teamPlayers.filter(p => p.isStarter).sort((a, b) => {
+      const ordA = slotSortOrder[a.lineupSlotId] || posOrder[a.slotName] || posOrder[a.position] || 99;
+      const ordB = slotSortOrder[b.lineupSlotId] || posOrder[b.slotName] || posOrder[b.position] || 99;
+      if (ordA !== ordB) return ordA - ordB;
+      return (b.seasonPts || b.projPts || 0) - (a.seasonPts || a.projPts || 0);
+    });
+    const bench = teamPlayers.filter(p => p.isBench || (!p.isStarter && !p.isIR)).sort((a, b) => {
+      const ordA = posOrder[a.position] || 99;
+      const ordB = posOrder[b.position] || 99;
+      if (ordA !== ordB) return ordA - ordB;
+      return (b.seasonPts || b.projPts || 0) - (a.seasonPts || a.projPts || 0);
+    });
     const ir = teamPlayers.filter(p => p.isIR);
 
     // Filter authentic team draft picks and transactions (sorted latest to oldest)

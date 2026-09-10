@@ -434,11 +434,17 @@ function normalizeEspnData(raw) {
     });
   });
 
-  // Attach partitioned rosters to each team
+  // Attach partitioned rosters to each team (sorted canonically by fantasy lineup slot)
+  const slotSortOrder = { 0: 1, 2: 2, 4: 3, 6: 4, 23: 5, 16: 6, 17: 7, 20: 8, 21: 9 };
   teams.forEach(t => {
     const teamPlayers = allPlayers.filter(p => p.teamId === t.teamId);
     t.roster = teamPlayers;
-    t.starters = teamPlayers.filter(p => p.isStarter);
+    t.starters = teamPlayers.filter(p => p.isStarter).sort((a, b) => {
+      const pA = slotSortOrder[a.lineupSlotId] || 99;
+      const pB = slotSortOrder[b.lineupSlotId] || 99;
+      if (pA !== pB) return pA - pB;
+      return (b.seasonPts || b.projPts || 0) - (a.seasonPts || a.projPts || 0);
+    });
     t.bench = teamPlayers.filter(p => p.isBench);
     t.ir = teamPlayers.filter(p => p.isIR);
   });

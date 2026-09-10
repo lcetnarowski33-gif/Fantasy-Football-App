@@ -100,6 +100,27 @@ class AppStore {
   }
 
   /**
+   * Helper to ensure team starting lineups are strictly sorted in canonical fantasy slot order:
+   * [QB, RB, RB, WR, WR, TE, FLEX, D/ST, K]
+   */
+  _ensureRosterOrder(data) {
+    if (!data || !Array.isArray(data.teams)) return;
+    const slotSortOrder = { 0: 1, 2: 2, 4: 3, 6: 4, 23: 5, 16: 6, 17: 7, 20: 8, 21: 9 };
+    const posFallback = { 'QB': 1, 'RB': 2, 'WR': 3, 'TE': 4, 'FLEX': 5, 'D/ST': 6, 'K': 7 };
+
+    data.teams.forEach(t => {
+      if (Array.isArray(t.starters)) {
+        t.starters.sort((a, b) => {
+          const pA = slotSortOrder[a.lineupSlotId] || posFallback[a.slotName] || posFallback[a.position] || 99;
+          const pB = slotSortOrder[b.lineupSlotId] || posFallback[b.slotName] || posFallback[b.position] || 99;
+          if (pA !== pB) return pA - pB;
+          return (b.seasonPts || b.projPts || 0) - (a.seasonPts || a.projPts || 0);
+        });
+      }
+    });
+  }
+
+  /**
    * Get current state snapshot
    */
   getState() {
@@ -108,6 +129,7 @@ class AppStore {
       if (fallback) this.state.data = fallback;
     }
     this._ensureDraftOrder(this.state.data);
+    this._ensureRosterOrder(this.state.data);
     return this.state;
   }
 
@@ -214,6 +236,7 @@ class AppStore {
     if (!espnNormalizedData || !espnNormalizedData.teams) return;
 
     this._ensureDraftOrder(espnNormalizedData);
+    this._ensureRosterOrder(espnNormalizedData);
     this.state.data = espnNormalizedData;
     this.state.isEspnSynced = true;
 
@@ -303,6 +326,7 @@ class AppStore {
 
         if (parsed && parsed.teams && (parsed.league || parsed.name)) {
           this._ensureDraftOrder(parsed);
+          this._ensureRosterOrder(parsed);
           this.state.data = parsed;
           this.state.isEspnSynced = isSynced;
           if (parsed.lastSynced) {

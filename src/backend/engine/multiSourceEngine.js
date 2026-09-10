@@ -165,7 +165,13 @@ class MultiSourceEngine {
         unifiedLeague.teams.forEach(team => {
           const teamRoster = enrichedLeaguePlayers.filter(p => p.teamId === team.teamId);
           team.roster = teamRoster;
-          team.starters = teamRoster.filter(p => p.isStarter);
+          const slotSortOrder = { 0: 1, 2: 2, 4: 3, 6: 4, 23: 5, 16: 6, 17: 7, 20: 8, 21: 9 };
+          team.starters = teamRoster.filter(p => p.isStarter).sort((a, b) => {
+            const pA = slotSortOrder[a.lineupSlotId] || 99;
+            const pB = slotSortOrder[b.lineupSlotId] || 99;
+            if (pA !== pB) return pA - pB;
+            return (b.seasonPts || b.projPts || 0) - (a.seasonPts || a.projPts || 0);
+          });
           team.bench = teamRoster.filter(p => p.isBench);
           team.ir = teamRoster.filter(p => p.isIR);
 
