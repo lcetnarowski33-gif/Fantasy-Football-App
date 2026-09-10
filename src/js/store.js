@@ -224,6 +224,10 @@ class AppStore {
       error: null
     };
 
+    if (syncMeta && syncMeta.engineStats) {
+      this.state.engineStats = syncMeta.engineStats;
+    }
+
     if (espnNormalizedData.teams.length > 0 && !this.state.selectedTeamId) {
       this.state.selectedTeamId = espnNormalizedData.teams[0].teamId || espnNormalizedData.teams[0].id || 'espn-1';
     }

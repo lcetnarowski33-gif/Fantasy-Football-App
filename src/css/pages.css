@@ -1148,6 +1148,18 @@
     gap: 0.5rem !important;
   }
 
+  .player-header-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 0.5rem !important;
+  }
+
+  .player-header-card > div:last-child {
+    text-align: center !important;
+  }
+
   .h2h-vs-header {
     display: grid !important;
     grid-template-columns: 1fr auto 1fr !important;

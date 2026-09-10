@@ -518,7 +518,13 @@ class TradeViewComponent {
 
     const avgPtsA = selectedA.reduce((sum, p) => sum + (p.avgPts || (p.seasonPts ? p.seasonPts / 12 : 12)), 0);
     const avgPtsB = selectedB.reduce((sum, p) => sum + (p.avgPts || (p.seasonPts ? p.seasonPts / 12 : 12)), 0);
+    const tradeValA = selectedA.reduce((sum, p) => sum + (p.calculated?.tradeValue || Math.round((p.avgPts || 12) * 5)), 0);
+    const tradeValB = selectedB.reduce((sum, p) => sum + (p.calculated?.tradeValue || Math.round((p.avgPts || 12) * 5)), 0);
     const diff = parseFloat((avgPtsB - avgPtsA).toFixed(1));
+    const valDiff = tradeValB - tradeValA;
+
+    // Check for active injuries from Sleeper/NFL
+    const injuryAlerts = [...selectedA, ...selectedB].filter(p => p.injuryNotes || p.calculated?.injuryRisk === 'High');
 
     let verdictTitle = 'Select Assets to Evaluate';
     let verdictClass = 'badge-blue';
@@ -526,21 +532,21 @@ class TradeViewComponent {
     let verdictText = 'Choose player assets from both rosters to run an instant simulated trade audit.';
 
     if (selectedA.length > 0 && selectedB.length > 0) {
-      if (Math.abs(diff) <= 1.8) {
+      if (Math.abs(diff) <= 1.8 && Math.abs(valDiff) <= 15) {
         verdictTitle = '🤝 Fair & Balanced Trade';
         verdictClass = 'badge-green';
         verdictGrade = 'A';
-        verdictText = `Differential is within ${Math.abs(diff).toFixed(1)} PPG. Both teams maintain positional equilibrium without lopsided opportunity cost.`;
-      } else if (diff > 1.8) {
+        verdictText = `Differential is within ${Math.abs(diff).toFixed(1)} PPG (Market Equity Gap: ${Math.abs(valDiff)} pts). Both teams maintain positional equilibrium without lopsided opportunity cost.`;
+      } else if (diff > 1.8 || valDiff > 15) {
         verdictTitle = `🔥 Advantage ${teamA.name}`;
         verdictClass = 'badge-gold';
         verdictGrade = 'A-';
-        verdictText = `${teamA.name} upgrades starters by +${diff.toFixed(1)} PPG. Strong acquisition value for ${teamA.managerName}.`;
+        verdictText = `${teamA.name} upgrades starters by +${diff.toFixed(1)} PPG (+${Math.abs(valDiff)} Engine Equity). Strong acquisition value for ${teamA.managerName}.`;
       } else {
         verdictTitle = `⚠️ Advantage ${teamB.name}`;
         verdictClass = 'badge-gold';
         verdictGrade = 'C+';
-        verdictText = `${teamB.name} extracts higher starter equity (+${Math.abs(diff).toFixed(1)} PPG). ${teamA.name} may be surrendering excess capital.`;
+        verdictText = `${teamB.name} extracts higher starter equity (+${Math.abs(diff).toFixed(1)} PPG, +${Math.abs(valDiff)} Engine Equity). ${teamA.name} may be surrendering excess capital.`;
       }
     }
 
@@ -619,9 +625,26 @@ class TradeViewComponent {
             <span class="badge ${verdictClass}" style="font-size:0.72rem; font-weight:800;">${verdictTitle}</span>
             <span class="badge badge-gold" style="font-size:0.72rem; font-weight:800;">Grade: ${verdictGrade}</span>
           </div>
-          <div style="font-size:0.76rem; color:var(--text-secondary); line-height:1.4;">
+          <div style="font-size:0.76rem; color:var(--text-secondary); line-height:1.4; margin-bottom:0.4rem;">
             <strong style="color:var(--text-primary);">Evaluator Verdict:</strong> ${verdictText}
           </div>
+
+          <!-- Multi-Source Equity Breakdown -->
+          ${(selectedA.length > 0 || selectedB.length > 0) ? `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-top:0.35rem; border-top:1px solid rgba(255,255,255,0.05); font-size:0.7rem; color:var(--text-muted); flex-wrap:wrap; gap:0.3rem;">
+              <span><strong>Team A Value:</strong> <span class="text-blue font-mono">${tradeValA} pts</span> (${avgPtsA.toFixed(1)} PPG)</span>
+              <span><strong>Team B Value:</strong> <span class="text-green font-mono">${tradeValB} pts</span> (${avgPtsB.toFixed(1)} PPG)</span>
+              <span class="badge badge-purple" style="font-size:0.6rem; padding:0.06rem 0.25rem;">Multi-Source v2.0</span>
+            </div>
+          ` : ''}
+
+          <!-- Injury Warning Alert (if any) -->
+          ${injuryAlerts.length > 0 ? `
+            <div style="margin-top:0.45rem; padding:0.4rem 0.6rem; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:4px; font-size:0.68rem; color:#fca5a5;">
+              <i class="fa-solid fa-triangle-exclamation text-red"></i>
+              <strong>Sleeper/NFL Injury Notice:</strong> ${injuryAlerts.map(p => `${p.name} (${p.injuryNotes || p.calculated?.injuryRisk + ' Risk'})`).join(', ')}
+            </div>
+          ` : ''}
         </div>
 
       </div>

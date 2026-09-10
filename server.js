@@ -10,6 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const { fetchEspnLeagueData, normalizeEspnData, syncEspnLeague } = require('./src/backend/services/espnAdapter');
+const { multiSourceEngine } = require('./src/backend/engine/multiSourceEngine');
 
 try {
   require('dotenv').config();
@@ -69,8 +70,10 @@ function loadServerConfig() {
 // Load cached league data on startup
 function loadCachedLeagueData() {
   try {
-    if (fs.existsSync(CACHE_FILE)) {
-      const raw = fs.readFileSync(CACHE_FILE, 'utf8');
+    const multiCache = path.join(storageDir, 'multi_source_cache.json');
+    const targetFile = fs.existsSync(multiCache) ? multiCache : (fs.existsSync(CACHE_FILE) ? CACHE_FILE : null);
+    if (targetFile) {
+      const raw = fs.readFileSync(targetFile, 'utf8');
       cachedLeagueData = JSON.parse(raw);
       if (cachedLeagueData && Array.isArray(cachedLeagueData.draftPicks)) {
         cachedLeagueData.draftPicks.sort((a, b) => (Number(a.overallPick || a.overallPickNumber || 0) - Number(b.overallPick || b.overallPickNumber || 0)));
@@ -78,7 +81,7 @@ function loadCachedLeagueData() {
       if (cachedLeagueData && cachedLeagueData.lastSynced) {
         lastSyncTime = new Date(cachedLeagueData.lastSynced).getTime();
       }
-      console.log(`📦 Loaded cached ESPN dataset for "${cachedLeagueData.name}" (Last synced: ${cachedLeagueData.lastSynced || 'N/A'})`);
+      console.log(`📦 Loaded cached dataset for "${cachedLeagueData.name}" from ${path.basename(targetFile)} (Last synced: ${cachedLeagueData.lastSynced || 'N/A'})`);
     }
   } catch (e) {
     console.warn('Unable to load league cache:', e.message);
@@ -137,32 +140,32 @@ async function performServerLeagueSync(options = { force: false }) {
   isSyncInProgress = true;
 
   try {
-    console.log(`🔄 [Auto-Sync] Authoritative sync for ESPN League #${serverConfig.leagueId}...`);
-    const normalized = await syncEspnLeague(
-      serverConfig.leagueId,
-      serverConfig.season,
-      serverConfig.swid,
-      serverConfig.espnS2
+    console.log(`🔄 [Data Engine] Authoritative multi-source sync for League #${serverConfig.leagueId}...`);
+    const unified = await multiSourceEngine.syncAllSources(
+      serverConfig,
+      cachedLeagueData,
+      options
     );
 
     lastSyncTime = Date.now();
     lastSyncError = null;
-    saveCachedLeagueData(normalized);
+    saveCachedLeagueData(unified);
 
     broadcastLiveUpdate({
       type: 'ESPN_AUTO_SYNC_SUCCESS',
       leagueId: serverConfig.leagueId,
-      leagueName: normalized.name,
-      data: normalized,
+      leagueName: unified.name,
+      data: unified,
+      engine: multiSourceEngine.getStatus(),
       lastSynced: new Date(lastSyncTime).toISOString(),
       timestamp: new Date().toISOString()
     });
 
-    console.log(`✅ [Auto-Sync] Live sync complete for "${normalized.name}" (${normalized.completedTrades?.length || 0} trades, ${normalized.transactions?.length || 0} transactions)`);
-    return normalized;
+    console.log(`✅ [Data Engine] Live sync complete for "${unified.name}" (${unified.completedTrades?.length || 0} trades, ${unified.transactions?.length || 0} transactions, ${unified.players?.length || 0} players unified)`);
+    return unified;
   } catch (e) {
     lastSyncError = e.message;
-    console.warn(`⚠️ [Auto-Sync] Refresh attempt warning (last known good data preserved): ${e.message}`);
+    console.warn(`⚠️ [Data Engine] Refresh attempt warning (last known good data preserved): ${e.message}`);
     return cachedLeagueData;
   } finally {
     isSyncInProgress = false;
@@ -222,6 +225,49 @@ app.get('/api/sync/status', (req, res) => {
     error: lastSyncError,
     tradesCount: cachedLeagueData?.completedTrades?.length || 0,
     transactionsCount: cachedLeagueData?.transactions?.length || 0,
+    engine: multiSourceEngine.getStatus(),
+    timestamp: new Date().toISOString()
+  });
+});
+
+/**
+ * GET /api/engine/status
+ * Real-time operational health matrix across ESPN, Sleeper, and NFL Stats sources
+ */
+app.get('/api/engine/status', (req, res) => {
+  return res.json({
+    success: true,
+    ...multiSourceEngine.getStatus(),
+    timestamp: new Date().toISOString()
+  });
+});
+
+/**
+ * GET /api/players/unified
+ * Canonical player registry with multi-source verified attributes and calculated fantasy intelligence
+ */
+app.get('/api/players/unified', (req, res) => {
+  const players = multiSourceEngine.getAllPlayers();
+  return res.json({
+    success: true,
+    count: players.length,
+    players: players.slice(0, 300),
+    timestamp: new Date().toISOString()
+  });
+});
+
+/**
+ * GET /api/players/:id
+ * Deep-dive canonical player profile with source provenance
+ */
+app.get('/api/players/:id', (req, res) => {
+  const p = multiSourceEngine.getPlayer(req.params.id);
+  if (!p) {
+    return res.status(404).json({ success: false, error: 'Player not found in canonical registry.' });
+  }
+  return res.json({
+    success: true,
+    player: p,
     timestamp: new Date().toISOString()
   });
 });
@@ -350,7 +396,7 @@ function startServer(portToTry) {
 
     // Initial background sync on boot if config present
     if (serverConfig.leagueId) {
-      performServerLeagueSync({ force: false });
+      performServerLeagueSync({ force: true });
     }
   });
 

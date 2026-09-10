@@ -148,7 +148,10 @@ function bootApp() {
       if (res.ok) {
         const payload = await res.json();
         if (payload.success && payload.data && typeof store !== 'undefined') {
-          store.applyEspnSync(payload.data, { lastSynced: payload.lastSynced });
+          store.applyEspnSync(payload.data, { 
+            lastSynced: payload.lastSynced,
+            engineStats: payload.engineStats
+          });
         }
         if (typeof store !== 'undefined') {
           store.setSyncStatus({

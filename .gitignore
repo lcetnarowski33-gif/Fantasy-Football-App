@@ -3,3 +3,6 @@ node_modules/
 scratch/
 .DS_Store
 Thumbs.db
+sleeper_players_cache.json
+multi_source_cache.json
+*.png
